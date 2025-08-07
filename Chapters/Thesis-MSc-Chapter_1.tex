@@ -7,9 +7,12 @@
 \cleardoublepage
 % The following line allows to ref this chapter
 \label{chap:intro}
-Edoclink is a cloud platform for business management. It aims at managing your information effectively, and autonomously. Using AI techniques. This is an increasingly feature rich platform for managing documents, business workflows, and information management.
-With the rise of \acp{LLM} and other \ac{NLP} techniques offering an actually comprehensive output. Provides a new way for programs to process documents. Even in a unstructured format more effectively. Essentially providing enhanced information management.
-The specific clients of Edoclink are confidential. As Edoclink ensures information confidentiality. So this thesis will focus in the general scenario of managing documents and information. While also making sure the feature is scalable in highly dynamic environments, and has easy interoperability.
+\section{Contextual Background}
+The topic of this thesis arises from the context of Edoclink, a cloud-based business management platform developed by Link Consulting.\footnote{\url{https://linkconsulting.com/what-we-do/products/edoclink-v8/}} Edoclink is designed to support organizations in managing their information in an effective, autonomous, and scalable manner, through the integration of advanced artificial intelligence techniques. The platform offers a broad range of functionalities for document management, workflow automation, and general information governance, making it increasingly feature-rich and adaptable to diverse operational needs.
+
+The recent advancements in natural language processing (NLP), particularly with the emergence of large language models (\acp{LLM}), have introduced new paradigms in document processing. These models are capable of producing contextually rich and semantically meaningful outputs, even from unstructured data sources. As such, they enable a new class of intelligent information systems that go beyond traditional keyword-based approaches, offering enhanced information extraction, retrieval, and summarization capabilities.
+
+Due to confidentiality constraints, the specific clients using Edoclink cannot be disclosed. Nevertheless, the work presented in this thesis is developed in a generalized context, with the aim of addressing typical challenges faced in enterprise information management. In particular, emphasis is placed on ensuring that the proposed solution is scalable in highly dynamic environments and maintains high interoperability with existing systems and standards.
 
 % #############################################################################
 \section{Motivation}
@@ -22,7 +25,17 @@ The Transformer revolutionized the field by introducing advanced self-attention 
 
 The combined use of \ac{RAG} and \ac{LLM} represents a promising solution to overcome these challenges. Models like ChatGPT and LLama which can be embedded with \ac{RAG} have demonstrated high performance in the contextualized retrieval of information and responding to complex queries. However, implementing these models in a corporate context requires a customized approach that respects information privacy and confidentiality, integration with existing organized information, and is scalable to meet the specific needs of each client. Additionally, it is necessary to ensure that the models can operate efficiently in local environments, ensuring that security and compliance with regulations, such as \ac{GDPR}, are fully met.
 
-
+\section{Objectives}
+This thesis aims to design and implement a lightweight yet functional architecture for semantic document search in enterprise environments. The proposed system integrates a set of components and services with the following main objectives:
+\begin{itemize}
+\item \textbf{API Service for Decentralized Semantic Search:} Develop a modular API that enables decentralized semantic search across multiple nodes, eliminating the need for a centralized server while ensuring accessibility and scalability.
+\item \textbf{Retrieval-Augmented Generation (RAG) Pipeline:} Implement a complete RAG pipeline capable of processing and indexing documents. This pipeline will extract and store document embeddings and metadata, enabling efficient retrieval of relevant content through semantic queries.
+\item \textbf{Metadata Extraction and Organization Suggestions:} Automatically extract metadata from documents to improve search accuracy and suggest organizational structures for better document management.
+\item \textbf{Hybrid Search System:} Combine semantic search (using dense vector embeddings) with metadata-based filtering and keyword-based ranking, providing users with more accurate and context-aware results.
+\item \textbf{Integration with External LLM and Embedding APIs:} Utilize external models such as OpenAI’s API for embedding generation and language understanding, with mechanisms to log usage and cost, ensuring budget-aware operation.
+\item \textbf{Internet-Aware Search Capabilities:} Explore the integration of external sources and databases over the internet to enable the system to retrieve information beyond the local knowledge base, when appropriate.
+\end{itemize}
+Together, these objectives form the basis of a robust, scalable, and cost-efficient information retrieval system tailored for use in dynamic and distributed enterprise environments.
 % #############################################################################
 \section{Organization of the Document}
 This thesis is is organized as follows: \Cref{chap:intro} \todo[color=cyan!40, author=RC, fancyline]{references to doc sections/chapters are automatic}{}interdum vel, tristique ac, condimentum non, tellus. 
