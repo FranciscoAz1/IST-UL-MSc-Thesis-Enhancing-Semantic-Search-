@@ -1,79 +1,86 @@
-% #############################################################################
-% This is Chapter 5
-% !TEX root = ../main.tex
-% #############################################################################
-% Change the Name of the Chapter i the following line
-\fancychapter{This is the Fifth Chapter}
-\cleardoublepage
-% The following line allows to ref this chapter
-\label{chap:evaluation}
-
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi commodo, ipsum sed pharetra gravida, orci magna rhoncus neque, id pulvinar odio lorem non turpis. Nullam sit amet enim. Suspendisse id velit vitae ligula volutpat condimentum. Aliquam erat volutpat. Sed quis velit. Nulla facilisi. Nulla libero. Vivamus pharetra posuere sapien. Nam consectetuer. Sed aliquam, nunc eget euismod ullamcorper, lectus nunc ullamcorper orci, fermentum bibendum enim nibh eget ipsum. Donec porttitor ligula eu dolor. Maecenas vitae nulla consequat libero cursus venenatis. Nam magna enim, accumsan eu, blandit sed, blandit a, eros. 
-% #############################################################################
-\section{Maecenas vitae nulla consequat} 
-Aliquam aliquet, est a ullamcorper condimentum, tellus nulla fringilla elit, a iaculis nulla turpis sed wisi. Fusce volutpat. Etiam sodales ante id nunc. Proin ornare dignissim lacus. Nunc porttitor nunc a sem. Sed sollicitudin velit eu magna. Aliquam erat volutpat. Vivamus ornare est non wisi. Proin vel quam. Vivamus egestas. Nunc tempor diam vehicula mauris. Nullam sapien eros \Cref{fig:test_env}, facilisis vel, eleifend non, auctor dapibus, pede.
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.8\textwidth]{./Images/test_env}
-\caption{Test Environment}
-\label{fig:test_env}
+\chapter{Methodologies}
+\label{chapter:Methodologies}
+This chapter introduces the methodologies employed in this project. The focus will be on information extraction techniques such as OCR engines and layout models, enabling the capture of both textual content and document structure. The extracted information will be stored in vector databases to facilitate efficient organization and retrieval. The Retrieval-Augmented Generation (RAG) framework will be utilized to retrieve relevant information, employing prompt engineering techniques to enhance the consistency and accuracy of user interactions. RAG will be tested in conjunction with the vector database, evaluating the accuracy of the indexed documents. Models will also be tested for their summarization capabilities, ensuring that large documents can be indexed efficiently while only presenting the most relevant sections during retrieval.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/graph_methods.png}
+    \caption{Diagram of the project}
+    \label{fig:methodology}
 \end{figure}
 
-Aliquam aliquet, est a ullamcorper condimentum, tellus nulla fringilla elit, a iaculis nulla turpis sed wisi. Fusce volutpat. Etiam sodales ante id nunc. Proin ornare dignissim lacus. Nunc porttitor nunc a sem. Sed sollicitudin velit eu magna. Aliquam erat volutpat. Vivamus egestas. Nunc tempor diam vehicula mauris. Nullam sapien eros, facilisis vel, eleifend non, auctor dapibus, pede \Cref{tab:network_profiles} used in the tests. The Network Link Conditioner allows to force/simulate fluctuations in fixed network segments.
+\section{Data Collection}
+The data used for testing in this thesis comprises a variety of formats commonly encountered in organizational settings, (for e.g. PDF documents, scanned images, emails and PowerPoint presentations)
 
-\begin{table}[htb]
-\centering
-\normalsize
-    \caption{Network Link Conditioner Profiles}
-    \label{tab:network_profiles}
-{\footnotesize
-    \begin{tabular}{ | c | c | c | c | }
-    \hline 
-    \textbf{Network Profile}	& \textbf{Bandwidth} & \textbf{Packets Droped} & \textbf{Delay}\\ \hline \hline
-    Wifi  & 40 mbps  &  0\%  &   1 ms \\ \hline
-    3G  & 780 kbps  &  0\%  &   100 ms \\ \hline 
-    Edge  & 240 kbps  &  0\%  &   400 ms \\ \hline
-    \end{tabular}
-    }
-\end{table}
+These formats pose challenges due to their semi-structured or unstructured nature. The testing data is collected to simulate real-world corporate environments, ensuring the robustness of the proposed system.
 
-Aliquam aliquet, est a ullamcorper condimentum, tellus nulla fringilla elit, a iaculis nulla turpis sed wisi. Fusce volutpat. Etiam sodales ante id nunc. Proin ornare dignissim lacus. Nunc porttitor nunc a sem. Sed sollicitudin velit eu magna. Aliquam erat volutpat. Vivamus ornare est non wisi. Proin vel quam. Vivamus egestas. Nunc tempor diam vehicula mauris. Nullam sapien eros, facilisis vel, eleifend non, auctor dapibus, pede.
-% #############################################################################
-\section{Proin ornare dignissim lacus}
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis.
+The research will focus on analyzing the challenges posed by semi-structured and unstructured information, commonly encountered in organizational settings, such as PDF documents, scanned images, emails, and PowerPoint presentations.  Research to identify patterns in these documents will be conducted. As well as techniques such as OCR engines \ref{sec:ocr} and layout analysis \ref{sec:layoutparser} on different file formats.
+A dataset will be compiled, with a vision to simulate real-world corporate environments to test the robustness of the system under diverse corporate scenarios.
 
-Et ``optimistic'' nulla dui purus, eleifend vel, consequat non, dictum porta, nulla. Duis ante mi, laoreet ut, commodo eleifend, cursus nec, lorem. Aenean eu est. Etiam imperdiet turpis. Praesent nec augue. Curabitur ligula quam, rutrum id, tempor sed, consequat ac, dui $G_j$, nec ligula et lorem consequat ullamcorper $p$ ut mauris eu mi mollis luctus $j$, porttitor ut, \Cref{unchoke_gain}, uctus posuere justo:
+\section{Information extraction and Structuring}
+Research will focus on evaluating multimodal models for their ability to capture both textual content and document structure. Models to be studied include:
+\begin{itemize}
+    \item \textbf{PrimaLayout}: Identifying and classifying regions such as text, tables, and images.
+    \item \textbf{PubLayNet}: Segmenting documents into logical blocks.
+    \item \textbf{Nougat}: An OCR engine that converts documents into markdown, preserving the hierarchy of chapters, sections, and subsections.
+    
+\end{itemize}
+Testing and integrating the best model to extract and preserve document structure will be studied. Aiming for the structuring of the extracted content for efficient storage and retrieval.
+\section{Vector Creation and Storage}
+Research with the focus on optimizing the process of generating and storing document embeddings to ensure accurate and fast retrieval. For example finding what embedding models provide the best performance for retrieval, or how can embeddings be stored and queried efficiently at scale.
+Tools such as Weaviate will be used to generate vector embeddings. And store in an optimal vector database for retrieval even at scale.
 
-\begin{description}
-  \item[$N_j$] Is the number of times peer $j$ has been optimistically unchoked.
-  \item[$n_j$] Among the $N_j$ unchokes, the number of times that peer $j$ responded with unchoke or supplied segments to peer $p$.
-  \item[$C_{r[j]}$] The cooperation ratio of peer $j$. If peer $j$ never supplied peer $p$, the information of $C_{r[j]}$ may not be available.
-  \item[$C_{r (max)}$] The maximum cooperation ratio of peer $p$’s neighbors, i.e., $C_{r (max)} = max(C_r)$.
-\end{description}
+\section{Prompt Engineering}
+Integrate a light \ac{LLM} to run locally and serve as the interface for retrieving information from documents, with their embeddings stored in the vector database. Implement techniques to ensure that the user's prompt becomes more consistent before reaching the retrieval stage. Techniques to be investigated include dynamic query refinement, which involves automatically enriching the user prompt by adding missing context, such as prior interactions or user-specific information. Another technique is follow-up questioning, where insufficient context in the user prompt is detected, and clarifying questions are asked to refine the query and provide better retrieval context. For example:
+\begin{itemize}
+    \item The retrieved documents span multiple categories. Are you specifically interested in category A or category B?
+    \item Would like the retrieved documents to focus on a specific time frame or region?
+\end{itemize}
 
-\begin{equation}
-\label{unchoke_gain}
- G_j =
-  \begin{dcases}
-    \frac{n_j C_{r[j]}}{N_j} &\quad \text{if } n_j > 0\\
-    \frac{C_{r (max)}}{N_j + 1} &\quad \text{if } n_j = 0
-  \end{dcases}
-\end{equation}
+\section{Access Control and Security}
+Investigate methodologies for access management and stored information security in the context of retrieval systems. Researching encryption and secure storage techniques for embeddings and documents. Study methods to implement user-based access restrictions to ensure privacy and compliance with organizational policies.
+Then implement access control mechanisms to restrict users to authorized information. Integrate access management features to make users restriction to information dynamic.
 
-Cursus $C_{r (max)}$ conubia nostra, per inceptos hymenaeos $j$ gadipiscing mollis massa $N_j = 0$, unc ut dui eget nulla venenatis aliquet $G_j = C_{r (max)}$.
+\section{Decentralized Database}
+For easier interoperability and integration, the storage for embeddings, generated and document metadata. Which are created from the pre-processing \ac{RAG} pipeline. A type of semantic database is necessary, to enhance semantic search through the internet security. For this a simple server implementation awating for semantic search requests will be implemented.
 
-Vestibulum accumsan eros nec magna. Vestibulum vitae dui. Vestibulum nec ligula et lorem consequat ullamcorper. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Phasellus eget nisl ut elit porta ullamcorper. Maecenas tincidunt velit quis orci. Sed in dui. Nullam ut mauris eu mi mollis luctus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Sed cursus cursus velit. Sed a massa. 
+\section{Semantic Search}
+With the use of embedding models. We process the prompt with an llm, for generalizing the prompt for a better search query. Then the embedding of the processed query is generated using the same embedding model used for processing the documents. Then a vector search is done to the vector database. Which finds the most relevant chunks. THe chunks are indexed to the document. The best documents are indexed.
+\chapter{Planning}
 
-Both \Cref{fig:tx_layer_4,fig:tx_layer_5} Phasellus eget nisl ut elit porta ``perfect'' tincidunt. Class aptent taciti sociosqu ad litora torquent per conubia nostra.
+To achieve the goals outlined above, including chapter \ref{chapter:Planned Results}, the project will be divided into distinct phases \ref{fig:planning}. Each phase will focus on specific milestones to ensure the timely and systematic development of the solution.
 
-\begin{figure}[h]
-%\centering
-       \subfigure[Adaptation System Test 4]{\label{fig:tx_layer_4}\includegraphics[width=0.5\textwidth]{./Images/tx_layer_4}}  
-   %    \centering 
-       \subfigure[Adaptation System Test 5]{\label{fig:tx_layer_5}\includegraphics[width=0.5\textwidth]{./Images/tx_layer_5}}   
-        \caption{Adaptation System Behavior Test}
-        \label{fig:fig:adapt_behave_2}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Images/planning.png}
+    \caption{Simplified Planned Workflow}
+    \label{fig:planning}
 \end{figure}
+\section{Until Now - Initial Research and Pre-processing of Information}
+Research has been conducted on \acr{RAG}, \ac{LLM}, and \ac{VD}. Tools like Weaviate have been identified to facilitate the integration of \acr{RAG} and \ac{VD}. By creating collections that combine these techniques, various approaches can be tested and evaluated. Additionally, lightweight \ac{LLM}s such as Llama3.2, which can run fully locally, have been explored. However, considering the rapid advancements in this field, newer lightweight \ac{LLM}s with improved integration capabilities may become available in the future.
 
-Cras sed ante. Phasellus in massa. Curabitur dolor eros, gravida et, hendrerit ac, cursus non, massa. Aliquam lorem. In hac habitasse platea dictumst. Cras eu mauris. Quisque lacus. Donec ipsum. Nullam vitae sem at nunc pharetra ultricies. Vivamus elit eros, ullamcorper a, adipiscing sit amet, porttitor ut, nibh. Maecenas adipiscing mollis massa. Nunc ut dui eget nulla venenatis aliquet. Sed luctus posuere justo. Cras vehicula varius turpis. Vivamus eros metus, tristique sit amet, molestie dignissim, malesuada et, urna.
+A preprocessing pipeline has been developed to extract text from documents while preserving their structure. Several OCR engines, including Google Vision, Tesseract, and Nougat, have been tested. Pre-trained layout models such as PrimaLayout and PubLayNet have also been evaluated. A script was implemented to extract text from PDFs by converting them to PNG format, enabling text extraction using Nougat \cite{blecher2023nougatneuralopticalunderstanding}.
+
+\section{By Month 3 - Initial Framework}
+
+The initial framework will involve creating a collection using Weaviate. Documents will be stored as vector embeddings, enabling vector search techniques such as semantic search and question-answer extraction. This collection will serve as the foundation for testing and experimentation.
+
+\section{By Month 4 - Dataset Creation / Benchmark Implementation}
+\label{sec:datasetcreation}
+A dedicated dataset will be developed to ensure consistent testing across different techniques for document storage and extraction. AS stated in subsection \ref{subsec:externalbenchmark}, if a recognized external benchmark dataset  for testing vector databases is identified, it will be adopted. Otherwise, a custom dataset will be created with sufficient variety and scale to validate the system, as explained above in chapter \ref{chapter:Planned Results}.
+
+\section{By Month 6 - Testing / Comparative Analysis}
+
+The testing phase will focus on evaluating various techniques for document storage and extraction. \ac{LLM}s will be integrated during this process, as they may enhance certain methodologies. Inspired by prior research such as \cite{densepassageretrievalopendomainkarpukhin2020}, this project aims to achieve improved outcomes using modern, larger-scale models with better training.
+
+Once testing is completed, the best results will be documented as a comparative analysis. Then an \ac{LLM} will be integrated to summarize the output, enabling a concise presentation of the findings.
+
+\section{By Month 7 - Security Measures}
+
+The program will be enhanced with robust security features to ensure controlled access to information. User roles will be defined, including standard users and administrators, where administrators will have the authority to manage access of different users to various types of documents. The program will only be accessible through authenticated user or admin accounts.
+
+Documents will be categorized with tags such as recruitment, human resources, finances, or treasury. Access permissions will be assigned based on user roles, ensuring that each user only has access to the documents relevant to their responsibilities.
+
+An Access Control List (ACL) will be implemented to enforce these restrictions on documents indexed in the \ac{VD}. Additionally, encryption mechanisms will be explored to protect sensitive information further. These security enhancements will be developed in collaboration with LinkConsulting, a company specializing in AI and information storage solutions like EdockLink, with proven expertise in addressing corporate software security requirements.
+
+
+
