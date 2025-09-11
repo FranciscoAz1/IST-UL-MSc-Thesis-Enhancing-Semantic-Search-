@@ -8,13 +8,33 @@ This chapter introduces the methodologies employed in this project. The focus wi
     \label{fig:methodology}
 \end{figure}
 
-\section{Data Collection}
-The data used for testing in this thesis comprises a variety of formats commonly encountered in organizational settings, (for e.g. PDF documents, scanned images, emails and PowerPoint presentations)
+\section{Optical Character Recognition Engines}
+\label{sec:ocr}
+Most documents in this thesis were digital-born PDFs, where text could be directly extracted with the \texttt{pdfreader} library. To ensure universal applicability of the RAG pipeline, an OCR fallback was included for cases where text was not embedded. 
 
-These formats pose challenges due to their semi-structured or unstructured nature. The testing data is collected to simulate real-world corporate environments, ensuring the robustness of the proposed system.
+OCR converts scanned PDFs or images into machine-readable text through preprocessing, segmentation, and recognition. Modern engines combine feature extraction, template matching, and contextual analysis with machine learning. Widely used options include Nougat \cite{blecher2023nougatneuralopticalunderstanding}, which preserves structure and outputs Markdown; Tesseract, an open-source tool supporting over 100 languages; and Google Vision API, a cloud-based service using deep neural networks for high accuracy.
 
-The research will focus on analyzing the challenges posed by semi-structured and unstructured information, commonly encountered in organizational settings, such as PDF documents, scanned images, emails, and PowerPoint presentations.  Research to identify patterns in these documents will be conducted. As well as techniques such as OCR engines \ref{sec:ocr} and layout analysis \ref{sec:layoutparser} on different file formats.
-A dataset will be compiled, with a vision to simulate real-world corporate environments to test the robustness of the system under diverse corporate scenarios.
+In this thesis, Nougat is used as it is open-source and outputs Markdown, the preferred format for integration with large language models.
+
+\section{Designing the Retrieval-Oriented Weaviate Schema in Edoclink}
+
+The first methodological step was the definition of a semantic data layer using Weaviate, integrated into the Edoclink platform. The goal was to capture the organizational logic of business documents—workflows, stages, entities, folders, and files—within a structure that supports semantic search and generative reasoning. To this end, six core classes were defined (Fluxo, Etapa, Entidade, Pasta, Ficheiro, Metadados), reflecting Edoclink’s information model. These were initially connected through cross-references, ensuring that workflows could be linked to their stages, entities to their folders, and files to their associated metadata.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\linewidth]{Images/Classe UML.jpeg}
+    \caption{Abstract UML representation of the schema structure, showing the relationships between objects, entities, folders, files, stages, and workflows in the Edoclink platform.}
+    \label{fig:weaviate_class}
+\end{figure}
+
+As the research progressed, the schema was refined by embedding \textit{entities}, \textit{file paths}, and \textit{metadata} directly into the object representation. This ensured that objects became self-contained, enabling consistent deletion cascades and reducing reliance on cross-reference traversal for retrieval. The UML diagram in Figure~\ref{fig:weaviate_class} illustrates this abstract model, which was investigated as a candidate for efficient implementation. In practice, the real deployment within Edoclink is more complex, but this abstraction served as a foundation for evaluating design choices and guiding the development of scalable semantic retrieval. The results presented here should therefore be interpreted as a conceptual example rather than a one-to-one description of the production system.
+
+Weaviate natively supports multi-tenancy, and this functionality is employed in Edoclink to store independent datasets under a shared schema, with each instance exposed through web hooks. While not a methodological focus of this work, this results in a decentralized-like architecture, as data is distributed across multiple instances. This design increases the complexity of retrieval, since agents must identify and query the appropriate web hooks when traversing datasets.  
+
+In summary, this section has focused on the database perspective: defining the schema, refining it through embedded fields, and placing it in the context of multi-tenant storage. The next section shifts attention to Agentic AI, where the challenge is not schema design but orchestrating retrieval with agents. This transition reflects the broader research landscape, where developments such as Weaviate’s Query Agent \cite{weaviate} exemplify the move toward automated reasoning layers capable of multi-step retrieval and problem solving.
+
+.
+
 
 \section{Information extraction and Structuring}
 Research will focus on evaluating multimodal models for their ability to capture both textual content and document structure. Models to be studied include:
