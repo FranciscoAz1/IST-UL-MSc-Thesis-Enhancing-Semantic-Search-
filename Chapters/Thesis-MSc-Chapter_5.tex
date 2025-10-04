@@ -1,106 +1,147 @@
-\chapter{Methodologies}
-\label{chapter:Methodologies}
-This chapter introduces the methodologies employed in this project. The focus will be on information extraction techniques such as OCR engines and layout models, enabling the capture of both textual content and document structure. The extracted information will be stored in vector databases to facilitate efficient organization and retrieval. The Retrieval-Augmented Generation (RAG) framework will be utilized to retrieve relevant information, employing prompt engineering techniques to enhance the consistency and accuracy of user interactions. RAG will be tested in conjunction with the vector database, evaluating the accuracy of the indexed documents. Models will also be tested for their summarization capabilities, ensuring that large documents can be indexed efficiently while only presenting the most relevant sections during retrieval.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{Figures/graph_methods.png}
-    \caption{Diagram of the project}
-    \label{fig:methodology}
-\end{figure}
-
-\section{Optical Character Recognition Engines}
-\label{sec:ocr}
-Most documents in this thesis were digital-born PDFs, where text could be directly extracted with the \texttt{pdfreader} library. To ensure universal applicability of the RAG pipeline, an OCR fallback was included for cases where text was not embedded. 
-
-OCR converts scanned PDFs or images into machine-readable text through preprocessing, segmentation, and recognition. Modern engines combine feature extraction, template matching, and contextual analysis with machine learning. Widely used options include Nougat \cite{blecher2023nougatneuralopticalunderstanding}, which preserves structure and outputs Markdown; Tesseract, an open-source tool supporting over 100 languages; and Google Vision API, a cloud-based service using deep neural networks for high accuracy.
-
-In this thesis, Nougat is used as it is open-source and outputs Markdown, the preferred format for integration with large language models.
-
-\section{Designing the Retrieval-Oriented Weaviate Schema in Edoclink}
-
-The first methodological step was the definition of a semantic data layer using Weaviate, integrated into the Edoclink platform. The goal was to capture the organizational logic of business documents—workflows, stages, entities, folders, and files—within a structure that supports semantic search and generative reasoning. To this end, six core classes were defined (Fluxo, Etapa, Entidade, Pasta, Ficheiro, Metadados), reflecting Edoclink’s information model. These were initially connected through cross-references, ensuring that workflows could be linked to their stages, entities to their folders, and files to their associated metadata.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=1\linewidth]{Images/Classe UML.jpeg}
-    \caption{Abstract UML representation of the schema structure, showing the relationships between objects, entities, folders, files, stages, and workflows in the Edoclink platform.}
-    \label{fig:weaviate_class}
-\end{figure}
-
-As the research progressed, the schema was refined by embedding \textit{entities}, \textit{file paths}, and \textit{metadata} directly into the object representation. This ensured that objects became self-contained, enabling consistent deletion cascades and reducing reliance on cross-reference traversal for retrieval. The UML diagram in Figure~\ref{fig:weaviate_class} illustrates this abstract model, which was investigated as a candidate for efficient implementation. In practice, the real deployment within Edoclink is more complex, but this abstraction served as a foundation for evaluating design choices and guiding the development of scalable semantic retrieval. The results presented here should therefore be interpreted as a conceptual example rather than a one-to-one description of the production system.
-
-Weaviate natively supports multi-tenancy, and this functionality is employed in Edoclink to store independent datasets under a shared schema, with each instance exposed through web hooks. While not a methodological focus of this work, this results in a decentralized-like architecture, as data is distributed across multiple instances. This design increases the complexity of retrieval, since agents must identify and query the appropriate web hooks when traversing datasets.  
-
-In summary, this section has focused on the database perspective: defining the schema, refining it through embedded fields, and placing it in the context of multi-tenant storage. The next section shifts attention to Agentic AI, where the challenge is not schema design but orchestrating retrieval with agents. This transition reflects the broader research landscape, where developments such as Weaviate’s Query Agent \cite{weaviate} exemplify the move toward automated reasoning layers capable of multi-step retrieval and problem solving.
-
-.
-
+% #############################################################################
+% This is Chapter 4
+% !TEX root = ../main.tex
+% #############################################################################
+% Change the Name of the Chapter i the following line
+\fancychapter{Results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                      %
+%     File: Thesis_Results.tex                                         %
+%     Tex Master: Thesis.tex                                           %
+%                                                                      %
+%     Author: Francisco Azeredo                                        %
+%     Last modified :  2 Jul 2015                                      %
+%                                                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{chapter:Results}
 
 \section{Information extraction and Structuring}
-Research will focus on evaluating multimodal models for their ability to capture both textual content and document structure. Models to be studied include:
+Some more complex multimodal models were tested in the beginning of the thesis for better information extraction.
 \begin{itemize}
     \item \textbf{PrimaLayout}: Identifying and classifying regions such as text, tables, and images.
     \item \textbf{PubLayNet}: Segmenting documents into logical blocks.
     \item \textbf{Nougat}: An OCR engine that converts documents into markdown, preserving the hierarchy of chapters, sections, and subsections.
-    
 \end{itemize}
-Testing and integrating the best model to extract and preserve document structure will be studied. Aiming for the structuring of the extracted content for efficient storage and retrieval.
-\section{Vector Creation and Storage}
-Research with the focus on optimizing the process of generating and storing document embeddings to ensure accurate and fast retrieval. For example finding what embedding models provide the best performance for retrieval, or how can embeddings be stored and queried efficiently at scale.
-Tools such as Weaviate will be used to generate vector embeddings. And store in an optimal vector database for retrieval even at scale.
+With testing, PrimaLayout, and PubLayNet promise good results with good training. This models unfortunately are not well trained yet, and need to be refined, as results were very unpredictable. Nougat was the engine used in case the pdf document doesn't have a text metadata.
 
-\section{Prompt Engineering}
-Integrate a light \ac{LLM} to run locally and serve as the interface for retrieving information from documents, with their embeddings stored in the vector database. Implement techniques to ensure that the user's prompt becomes more consistent before reaching the retrieval stage. Techniques to be investigated include dynamic query refinement, which involves automatically enriching the user prompt by adding missing context, such as prior interactions or user-specific information. Another technique is follow-up questioning, where insufficient context in the user prompt is detected, and clarifying questions are asked to refine the query and provide better retrieval context. For example:
-\begin{itemize}
-    \item The retrieved documents span multiple categories. Are you specifically interested in category A or category B?
-    \item Would like the retrieved documents to focus on a specific time frame or region?
-\end{itemize}
+\section{Experiment with metadata extraction versus naive RAG}
+In this setup, answers were generated by our RAG system, which employed a sentence embedding model \textit{all-MiniLM-L6-v2} for retrieval embeddings and a local \ac{LLM}, \textit{Qwen2M}, for generation in the offline benchmark. 
+Each generated answer was then compared against its gold reference using the evaluation metrics reported below. 
+These experiments relied on local models to provide a cost-effective baseline; stronger results were observed with larger hosted models but were too expensive to run this benchmark.
 
-\section{Access Control and Security}
-Investigate methodologies for access management and stored information security in the context of retrieval systems. Researching encryption and secure storage techniques for embeddings and documents. Study methods to implement user-based access restrictions to ensure privacy and compliance with organizational policies.
-Then implement access control mechanisms to restrict users to authorized information. Integrate access management features to make users restriction to information dynamic.
-
-\section{Decentralized Database}
-For easier interoperability and integration, the storage for embeddings, generated and document metadata. Which are created from the pre-processing \ac{RAG} pipeline. A type of semantic database is necessary, to enhance semantic search through the internet security. For this a simple server implementation awating for semantic search requests will be implemented.
-
-\section{Semantic Search}
-With the use of embedding models. We process the prompt with an llm, for generalizing the prompt for a better search query. Then the embedding of the processed query is generated using the same embedding model used for processing the documents. Then a vector search is done to the vector database. Which finds the most relevant chunks. THe chunks are indexed to the document. The best documents are indexed.
-\chapter{Planning}
-
-To achieve the goals outlined above, including chapter \ref{chapter:Planned Results}, the project will be divided into distinct phases \ref{fig:planning}. Each phase will focus on specific milestones to ensure the timely and systematic development of the solution.
-
+The experiment compares knowledge-graph–aware retrieval (Mini and Light) against a naive baseline.
+Figure~\ref{fig:Lihua-World} presents the results across all metrics.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{Images/planning.png}
-    \caption{Simplified Planned Workflow}
-    \label{fig:planning}
+    \includegraphics[width=1\linewidth]{Figures/Lihua-World.jpg}
+    \caption{3 query types tested. With qwen2m as the llm and all-MiniLM-L6-v2 as embedding model}
+    \label{fig:Lihua-World}
 \end{figure}
-\section{Until Now - Initial Research and Pre-processing of Information}
-Research has been conducted on \acr{RAG}, \ac{LLM}, and \ac{VD}. Tools like Weaviate have been identified to facilitate the integration of \acr{RAG} and \ac{VD}. By creating collections that combine these techniques, various approaches can be tested and evaluated. Additionally, lightweight \ac{LLM}s such as Llama3.2, which can run fully locally, have been explored. However, considering the rapid advancements in this field, newer lightweight \ac{LLM}s with improved integration capabilities may become available in the future.
+Among the metrics, \textbf{Token Recall} achieved the highest score (44\%), confirming its relevance as a benchmark measure, since it directly evaluates whether the essential tokens of the gold answer are covered in the prediction. 
 
-A preprocessing pipeline has been developed to extract text from documents while preserving their structure. Several OCR engines, including Google Vision, Tesseract, and Nougat, have been tested. Pre-trained layout models such as PrimaLayout and PubLayNet have also been evaluated. A script was implemented to extract text from PDFs by converting them to PNG format, enabling text extraction using Nougat \cite{blecher2023nougatneuralopticalunderstanding}.
+\subsection{Semantic Equivalence} 
+\textbf{BERT cosine similarity} obtained a moderate score (35\%), typically remaining around 0.3 even when the correct answer was present. 
+This can be explained by the imbalance between very short gold answers (sometimes a single word) and longer generated responses. 
+Sentence-level embeddings such as \textit{all-MiniLM-L6-v2} capture global semantics, so comparing a single-token embedding with a full-sentence embedding often results in artificially low similarity scores.
 
-\section{By Month 3 - Initial Framework}
+\subsection{Lexical Accuracy} 
+\textbf{Token Recall} achieved the highest score (44\%), confirming its relevance as a benchmark measure, since it directly evaluates whether the essential tokens of the gold answer are covered in the prediction. 
+The \textbf{Overlap Coefficient} also scored relatively well (30\%), as it only checks whether the gold answer is contained within the generated text, without penalizing additional tokens. 
+This makes it more robust than Jaccard in cases with large length differences between gold and predicted answers.
 
-The initial framework will involve creating a collection using Weaviate. Documents will be stored as vector embeddings, enabling vector search techniques such as semantic search and question-answer extraction. This collection will serve as the foundation for testing and experimentation.
+\textbf{Jaccard similarity} (7\%) produced very low values, since gold answers were often short while generated answers were longer, inflating the union size and reducing the overlap proportion. 
+This means that even partially correct answers were scored poorly when extra words were present.
 
-\section{By Month 4 - Dataset Creation / Benchmark Implementation}
-\label{sec:datasetcreation}
-A dedicated dataset will be developed to ensure consistent testing across different techniques for document storage and extraction. AS stated in subsection \ref{subsec:externalbenchmark}, if a recognized external benchmark dataset  for testing vector databases is identified, it will be adopted. Otherwise, a custom dataset will be created with sufficient variety and scale to validate the system, as explained above in chapter \ref{chapter:Planned Results}.
+\subsection{Structural Similarity} 
+\textbf{Levenshtein similarity} (6\%) also failed to provide useful signals, as the edit distance was large when comparing short references to long generated texts.  
+\textbf{ROUGE-1 F1} (11\%) and \textbf{ROUGE-2 F1} (3\%) partially mitigated this by accounting for both recall and precision over n-grams. 
+However, scores remained low because generated answers frequently included irrelevant tokens, which reduced precision despite containing the correct content. 
+The ROUGE-2 score was particularly low because short gold answers rarely contained bigrams, making exact matches uncommon.  
+Finally, \textbf{BLEU} performed worst (3\%). 
+Originally developed for machine translation, BLEU is highly sensitive to exact n-gram matches and brevity penalties, which makes it unsuitable for this task given the mismatch between short references and longer generated predictions.
 
-\section{By Month 6 - Testing / Comparative Analysis}
+\subsection{Summary}
+The experiments further show that GraphRAG is computationally too heavy for the modest gains it provides. 
+Even its optimized variants, LightRAG and MiniRAG, remain relatively expensive and yielded weaker results compared to a direct sentence embedding retriever, which is both cheaper and more efficient. 
+With stronger embedding models, this efficiency gap only widens, reinforcing the conclusion that knowledge-graph–based retrieval is not the most effective path. 
+Instead, a more promising direction is \emph{Agentic RAG}, explored later in this work, where retrieval is guided dynamically by agent reasoning rather than static graph structures.
 
-The testing phase will focus on evaluating various techniques for document storage and extraction. \ac{LLM}s will be integrated during this process, as they may enhance certain methodologies. Inspired by prior research such as \cite{densepassageretrievalopendomainkarpukhin2020}, this project aims to achieve improved outcomes using modern, larger-scale models with better training.
+\section{Experiment: Naive vs.\ Agentic RAG with Company Information}
 
-Once testing is completed, the best results will be documented as a comparative analysis. Then an \ac{LLM} will be integrated to summarize the output, enabling a concise presentation of the findings.
+For this experiment, a set of 20 questions was constructed using a generative model (specify model). Each question was designed to be answerable only through the content of a specific company file, ensuring that success required both correct retrieval and grounded reasoning.  
 
-\section{By Month 7 - Security Measures}
+The baseline (naive RAG) simply retrieved top-ranked passages and generated an answer from them. In contrast, the agentic setup employed RAG with an MCP Weaviate server as the retrieval backend. The agent explicitly planned its approach before answering, dividing the task into structured steps:  
+\begin{enumerate}
+  \item Identify candidate documents by querying the Weaviate server for relevant information.  
+  \item Select the file most likely to contain the correct answer.  
+  \item Use the selected file as grounded context to generate a concise, final answer.  
+\end{enumerate}
 
-The program will be enhanced with robust security features to ensure controlled access to information. User roles will be defined, including standard users and administrators, where administrators will have the authority to manage access of different users to various types of documents. The program will only be accessible through authenticated user or admin accounts.
+This setup highlights the difference between direct retrieval and generation versus a planning-based agentic approach that reasons over retrieved context.
+\subsection{Naive RAG results}
+% --- Lexical Accuracy ---
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\hline
+ & Token Recall & Jaccard & Overlap \\
+\hline
+\textbf{Correct} & 94\%\,(0,0\%) & 59\%\,(0,3\%) & 87\%\,(0,8\%) \\
+\textbf{Wrong}   & 51\%\,(4,9\%) & 22\%\,(1,2\%) & 51\%\,(4,3\%) \\
+\textbf{Total}   & 55\%\,(6,1\%) & 26\%\,(2,4\%) & 55\%\,(5,1\%) \\
+\hline
+\end{tabular}
+\caption{Lexical accuracy metrics. Variance shown in parentheses.}
+\end{table}
 
-Documents will be categorized with tags such as recruitment, human resources, finances, or treasury. Access permissions will be assigned based on user roles, ensuring that each user only has access to the documents relevant to their responsibilities.
 
-An Access Control List (ACL) will be implemented to enforce these restrictions on documents indexed in the \ac{VD}. Additionally, encryption mechanisms will be explored to protect sensitive information further. These security enhancements will be developed in collaboration with LinkConsulting, a company specializing in AI and information storage solutions like EdockLink, with proven expertise in addressing corporate software security requirements.
+% --- Structural Similarity ---
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccc}
+\hline
+ & Levenshtein & ROUGE & ROUGE 2 & BLEU \\
+\hline
+\textbf{Correct} & 58\%\,(0,0\%) & 73\%\,(0,1\%) & 63\%\,(0,5\%) & 51\%\,(0,2\%) \\
+\textbf{Wrong}   & 17\%\,(1,8\%) & 33\%\,(2,2\%) & 18\%\,(2,6\%) & 11\%\,(1,5\%) \\
+\textbf{Total}   & 21\%\,(3,2\%) & 38\%\,(3,5\%) & 23\%\,(4,3\%) & 15\%\,(2,8\%) \\
+\hline
+\end{tabular}
+\caption{Structural similarity metrics. Variance shown in parentheses.}
+\end{table}
 
+% --- Semantic Equivalence ---
+\begin{table}[h]
+\centering
+\begin{tabular}{lc}
+\hline
+ & BERT Cosine \\
+\hline
+\textbf{Correct} & 82\%\,(1,4\%) \\
+\textbf{Wrong}   & 72\%\,(0,4\%) \\
+\textbf{Total}   & 73\%\,(0,6\%) \\
+\hline
+\end{tabular}
+\caption{Semantic equivalence metric. Variance shown in parentheses.}
+\end{table}
 
+%\begin{figure}[h!]
+%    \centering
+%    \includegraphics[width=0.75\linewidth]{Figures/Agentic_Semantic_Score_Hallucination.png}
+%    \caption{Agentic Semantic Score, with chatgpt5-mini}
+%    \label{fig:placeholder}
+%\end{figure}
+%
+%\begin{figure}[h!]
+%    \centering
+%    \includegraphics[width=0.75\linewidth]{NaiveRAG.png}
+%    \caption{With Qwen2.5m}
+%    \label{fig:placeholder}
+%\end{figure}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{Naive Rag vs Agentic Rag.png}
+    \caption{Total}
+    \label{fig:placeholder}
+\end{figure}

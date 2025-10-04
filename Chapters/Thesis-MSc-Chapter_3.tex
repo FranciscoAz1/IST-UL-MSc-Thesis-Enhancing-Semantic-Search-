@@ -13,17 +13,39 @@ This chapter surveys \ac{AAI}, language-model driven agents that plan, use tools
 \textbf{Prompt engineering.} Well-designed instructions can control output format, tone, and constraints, and can inject short domain context. History (dialog state) may be summarized and re-provided as context; however, prompting alone does not guarantee factuality or stable tool use.
 
 \textbf{In-context learning vs.\ fine-tuning.} Few-shot prompts adapt behavior without training, at the cost of input tokens and brittle generalization. Fine-tuning bakes patterns into model weights, reducing prompt length and latency, but requires curated data, cost, and re-deployment.
-Add an example here of few-shot prompt
 
 \section{Reasoning and Planning}
-\textbf{Chain-of-Thought (CoT).} CoT prompting was introduced to address cases where the mapping from input $x$ to output $y$ is non-trivial, such as mathematical reasoning or multi-step logical inference. The key idea is to introduce a sequence of intermediate reasoning steps $z_{1}, \dots, z_{n}$ that bridge $x$ and $y$, where each $z_{i}$ represents a coherent language fragment (e.g., an intermediate equation or sub-derivation). Formally, each step is generated sequentially as $z_{i} \sim p_{\text{CoT}}(z_{i}\,|\,x, z_{1},\dots,z_{i-1})$, followed by $y \sim p_{\text{CoT}}(y\,|\,x, z_{1},\dots,z_{n})$. In practice, the entire reasoning trace and final answer $[z_{1}, \dots, z_{n}, y]$ is sampled as a continuous language sequence, with no fixed granularity for $z_{i}$—it may correspond to a phrase, a sentence, or even a full paragraph.
+\subsection{Chain of Thought (CoT)}
+CoT prompting was introduced by Wei et al.~\cite{chainofthought} to improve reasoning tasks where the input–output mapping is non-trivial (e.g., math problem $\to$ numerical answer). The method adds intermediate reasoning steps in natural language, which bridge the gap between question and solution.
+In benchmarks such as GSM8K and MultiArith, CoT significantly increased accuracy when compared to direct prompting. A refinement, \emph{Self-Consistency CoT} (CoT-SC), samples multiple reasoning chains and returns the most consistent answer, achieving further gains (e.g., PaLM 540B improved from 55\% $\to$ 74\% on GSM8K). However, CoT remains linear: each chain is generated without exploring alternatives.
 
-An extension, \emph{Self-Consistency with CoT} (CoT-SC), improves reliability by sampling $k$ independent reasoning chains $[z^{(i)}_{1}, \dots, z^{(i)}_{n}, y^{(i)}] \sim p_{\text{CoT}}(z, y\,|\,x)$ for $i=1,\dots,k$, and returning the most frequent output $\hat{y} = \arg\max_{y}\#\{i \mid y^{(i)} = y\}$. This ensemble approach mitigates the brittleness of a single sampled chain, since multiple distinct reasoning paths can converge to the same correct answer. CoT-SC is especially effective in domains where diverse thought processes are valid (e.g., different proofs of the same theorem). However, within each individual chain, there is no branching or exploration of alternative intermediate steps, and the majority-vote heuristic is mainly effective in restricted output spaces such as multiple-choice QA. These limitations motivated subsequent frameworks like Tree-of-Thoughts (ToT), which add structured search and backtracking over reasoning paths.
+\subsubsection{Few-Shot Chain-of-Thought \cite{chainofthought}}
+Handcraft 8 examples with this fields:
+Q: [Your question]
+A: [Step-by-step reasoning]. The answer is [final answer].
+Then use this for few-shot prompting. This is what made the paper achieve significantly increased accuracy.
 
-\textbf{Tree-of-Thoughts (ToT).} ToT generalizes CoT by treating intermediate reasoning steps as \emph{thoughts} that branch into a search tree. Instead of committing to a single linear chain, the model can decompose a problem into sub-goals, generate multiple candidate thoughts at each step, and heuristically evaluate the resulting states. Common evaluation criteria include task-specific scoring functions, likelihood of correctness, or external verification signals. The agent then applies a search algorithm—such as depth-first search, breadth-first search, or best-first search—to explore promising branches. Crucially, ToT enables backtracking: when a branch leads to a dead end, the system can return to a prior state and reconsider alternative thoughts, incorporating knowledge gained from failed attempts. This deliberative process allows LLMs to approximate planning and problem solving more effectively than linear CoT, particularly under uncertainty or when multi-step reasoning requires revisiting prior decisions.
+\subsubsection{Zero-Shot Chain-of-Thought (“Let’s think step by step”) \cite{chainofzero}}
+Q: [Your question here].  
+Let’s think step by step.
+The paper \cite{chainofzero} tested this prompts on the MultiArith dataset with text-davinci-002. Such prompts were such as "Let’s think about this logically" , " Before we dive into the answer", "Abrakadabra!"
+The template "Let's think step by step" got the highest score 78,7 \% , while others such as "Abrakadabra!" got a 15,5 \% which surprisingly isn't far from raw prompt template which scored 15,5 \%.
+
+\subsubsection{Conclusion}
+Form the paper \cite{chainofzero}, the chain of thought proposed in \cite{chainofthought} was tested to evaluate the actual difference of using few-shot prompt with chain of thought.
+Where the valuable mentions from the GSM8K benchmark, using PALM (540B) model.
+Zero-Shot was 12.5, Zero-Shot-CoT was 43.0, and Few-Shot-CoT \cite{chainofthought} was 56.9.
+ALl in all the Few-Shot-CoT is still better. But the fact that Zero-ShoT-CoT is much easier to implement withouth having to come up with specific domain CoT examples. It is the best solution for the thesis for universal application.
 
 
-\textbf{Reasoning \emph{and} Acting (ReAct).} ReAct interleaves thoughts with actions (tool calls, web/db queries) and observations. This closes the loop between planning and evidence gathering, reducing hallucinations on knowledge tasks. Compared to CoT it reduced hallucinations from 14\% to 6\%
+
+
+
+\subsection{Tree-of-Thoughts (ToT)}
+Yao et al.~\cite{treeofthought} extended CoT by introducing branching reasoning. Each intermediate step (a ``thought'') forms part of a search tree, where multiple candidate continuations can be generated, evaluated, and backtracked. This enables deliberate problem solving under uncertainty. On tasks such as the Game of 24, Mini Crosswords, and constrained story generation, ToT substantially outperformed both standard prompting and CoT (e.g., GPT-4 with ToT achieved 74\% accuracy on Game of 24, versus 19\% with CoT). The main trade-off is computational cost: ToT requires generating and evaluating many reasoning branches, making it slower and more resource-intensive.
+
+\subsection{Reasoning \emph{and} Acting (ReAct)}
+Yao et al.~\cite{react} proposed ReAct, a framework that interleaves reasoning traces with external actions (e.g., database queries, web search, or calculator calls) and observations. Unlike CoT, which is limited to internal reasoning, ReAct closes the loop between planning and evidence gathering, allowing the model to ground its reasoning in retrieved information. On knowledge-intensive QA tasks such as HotpotQA and FEVER, ReAct improved factual accuracy and significantly reduced hallucinations (e.g., from 14\% to 6\%). It also achieved strong performance on interactive environments like ALFWorld, where reasoning must be combined with sequential decision-making. The main trade-off is higher latency and token cost, since each step requires both reasoning tokens and tool interactions, but the gains in groundedness and reliability are substantial for retrieval-augmented applications.
 
 \section{Tool Use and Orchestration}
 \textbf{Self-taught tool use.} \emph{Toolformer} trains models to decide when and how to call APIs, improving arithmetic, lookup, and translation without heavy supervision.
@@ -40,28 +62,14 @@ An extension, \emph{Self-Consistency with CoT} (CoT-SC), improves reliability by
 \section{Agentic RAG for Enterprise Retrieval}
 \textbf{Problem.} Enterprise content lives in nested folders with metadata and ACLs. Pure dense retrieval over flat chunks ignores hierarchy, provenance, and permissions.
 
-\textbf{Plan–Retrieve–Verify loop.} An effective agentic RAG pipeline:
-\begin{enumerate}\itemsep2pt
-    \item \textbf{Plan.} Parse the question, identify entities/fields, and choose tools (vector DB, metadata filter, file system API).
-    \item \textbf{Hierarchical retrieval.} First select candidate folders/entities (sparse or metadata filters), then retrieve dense chunks within those scopes; rerank with cross-encoders; enforce ACLs.
-    \item \textbf{Self-reflection.} If evidence is thin or conflicting, reformulate the query, expand terms, or traverse adjacent folders/linked entities (multi-hop).
-    \item \textbf{Generate with grounding.} Compile an answer with citations to specific files/paths and timestamps; add uncertainty flags if evidence is weak.
-\end{enumerate}
-
-\textbf{Techniques.} Hierarchical retrieval (folder/entity$\to$document$\to$chunk) reduces noise and latency. Graph-guided retrieval (\emph{GraphRAG}) adds edges between entities/sections to improve multi-hop reasoning. Adaptive retrieval with \emph{Self-RAG} lets the model decide \emph{when} to retrieve and to critique its own generations, improving factuality and citation behavior. These patterns combine naturally with ReAct: thoughts trigger folder-scoped searches; observations update the plan.
-
-\section{Evaluation}
-Agent performance should be measured beyond answer text:
-\begin{itemize}\itemsep2pt
-    \item \textbf{Task success on interactive environments:} \emph{AgentBench}, \emph{WebArena}, \emph{Mind2Web}, \emph{OSWorld}, and \emph{BrowserGym} cover planning, tool use, and real web/computer operations.
-    \item \textbf{Retrieval quality:} precision/recall@k, MRR/nDCG on document IDs (folder-aware); groundedness/faithfulness (LLM- or rule-based); citation accuracy to specific file paths and versions.
-    \item \textbf{Latency and cost:} hops, tool calls, tokens.
-    \item \textbf{Robustness and safety:} resistance to prompt/indirect-prompt injection and unsafe actions (see below).
-\end{itemize}
-
-\section{Safety and Governance}
-Agents amplify risks because they act. Relevant threats include indirect prompt injection from retrieved documents or web pages, API misuse, and unsafe GUI/file operations. Use \emph{deny-by-default} tool policies, allow-lists, strict sandboxing, content sanitization before feeding to the model, and runtime guards (e.g., verification and user confirmation for destructive actions). Evaluate with dedicated safety benchmarks and industry guidance (e.g., OWASP LLM01) and log all actions for auditability.
-
+%\section{Evaluation}
+%Agent performance should be measured beyond answer text:
+%\begin{itemize}\itemsep2pt
+    %\item \textbf{Task success on interactive environments:} \emph{AgentBench}, \emph{WebArena}, \emph{Mind2Web}, \emph{OSWorld}, and \emph{BrowserGym} cover planning, tool use, and real web/computer operations.
+    %\item \textbf{Retrieval quality:} precision/recall@k, MRR/nDCG on document IDs (folder-aware); groundedness/faithfulness (LLM- or rule-based); citation accuracy to specific file paths and versions.
+    %\item \textbf{Latency and cost:} hops, tool calls, tokens.
+    %\item \textbf{Robustness and safety:} resistance to prompt/indirect-prompt injection and unsafe actions (see below).
+%\end{itemize}
 \section{Takeaways for This Thesis}
 For enterprise semantic search, \ac{AAI} adds:
 (i) \textbf{planning} to decompose queries and choose retrieval tools;
@@ -69,3 +77,23 @@ For enterprise semantic search, \ac{AAI} adds:
 (iii) \textbf{reflection} to re-query when evidence is weak;
 (iv) \textbf{grounded generation} with verifiable citations. 
 These capabilities directly target recall and precision in scattered document stores while preserving security and governance.
+
+\section{Model Context Protocol (MCP)}
+
+The \textbf{Model Context Protocol (MCP)} is an open standard introduced by Anthropic to connect large language models with external systems in a modular and reproducible way. It provides a universal interface---often described as a ``USB-C port for AI applications''---to integrate tools, data sources, and prompt templates without ad-hoc engineering \cite{mcp-intro}.
+
+\subsection{Architecture} 
+MCP follows a \textit{client--server model}. The \textit{host} (AI application) communicates through an MCP \textit{client} with one or more \textit{servers} that expose capabilities. Communication is structured in two layers:
+(i) \textbf{Data layer:} uses JSON-RPC 2.0 to define primitives, discovery mechanisms, and lifecycle management;
+(ii) \textbf{Transport layer:} handles message delivery (e.g., stdio for local, HTTP/SSE for remote) and authentication \cite{mcp-architecture}.
+
+
+\subsection{Core Primitives} 
+\begin{itemize}
+  \item \textbf{Tools} --- typed, executable functions (e.g., search, API calls, database queries).
+  \item \textbf{Resources} --- contextual data the model can access (files, records, metadata).
+  \item \textbf{Prompts} --- versioned templates or workflows to standardize interactions.
+  \item \textbf{Memory} --- structured persistence of state, supporting short-term caches and long-term profiles.
+\end{itemize}
+
+MCP contributes to the shift toward \textit{agentic LLMs}, where models not only generate text but also plan, act, and learn via external capabilities. Its main benefits include standardization, by providing a unified interface across backends; reproducibility, through versioned prompts and schemas; extensibility, since new tools and resources can be added without redesign; and safety, as schema validation and scoped access reduce errors \cite{mcp-spec}.

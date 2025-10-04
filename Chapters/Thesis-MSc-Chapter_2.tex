@@ -4,11 +4,13 @@
 % #############################################################################
 % Change the Name of the Chapter i the following line
 \fancychapter{Background}
-\cleardoublepage
 % The following line allows to ref this chapter
 \label{chap:back}
 
-\section{Background on Transformers} \subsection{The Transition from Sequential to Attention-Based Models}  
+This chapter introduces the fundamental concepts of \ac{IR}, while \ac{NLP} will be addressed in the following state-of-the-art chapter. \ac{IR} has evolved from lexical to semantic search, and understanding these approaches is essential to contextualize how \ac{NLP} later enables agents to reason over retrieved information to provide more intelligent responses. The following section presents these \ac{IR} approaches and the optimizations that have evolved from them.
+\section{Background on Transformers} 
+\label{sec:transformer}
+\subsection{The Transition from Sequential to Attention-Based Models}  
 Traditional sequence transduction models, such as \ac{RNN} and its variants (e.g., \ac{LSTM} \cite{hochreiter1997lstm} and \ac{GRU} \cite{cho2014gru}), were widely used in tasks such as machine translation and language modeling. Although effective, these models relied on sequential calculations, which limited their parallelization and computational efficiency in long sequences \cite{vaswani2017attention}.
 
 In 2017, Vaswani et al. introduced the Transformer architecture, marking a significant change from these sequential models. Transformer relies exclusively on attention mechanisms, specifically self-attention, to model dependencies between input and output sequences. By removing recursive and convolutional operations, Transformer achieves faster training times and superior performance in generative operations \cite{vaswani2017attention}.
@@ -44,7 +46,7 @@ In 2017, Vaswani et al. introduced the Transformer architecture, marking a signi
     \begin{itemize}
         \item $head_i = \text{Attention}(QW_i^Q, KW_i^K,VW_i^V)$
     \end{itemize}
-    \item \textbf{Feed-Forward}:  A Position-Wise Feed-Forward Network (FFN)\ref{eq:FNN} is a fully connected neural network designed to independently process each position in the sequence.  While FNN \ref{eq:FNN} operates identically at all positions, the parameters vary between layers. The dimension of the inner-layer has a larger dimension than the model's dimension to increase its capacity to learn complex transformation\cite{vaswani2017attention}.
+    \item \textbf{Feed-Forward}:  A Position-Wise Feed-Forward Network (FFN) \ref{eq:FNN} is a fully connected neural network designed to independently process each position in the sequence.  While FNN \ref{eq:FNN} operates identically at all positions, the parameters vary between layers. The dimension of the inner-layer has a larger dimension than the model's dimension to increase its capacity to learn complex transformation\cite{vaswani2017attention}.
     \begin{equation}
         \label{eq:FNN}
         \text{FNN}(x) = \max(0,xW_1+b_1)W_2+b_2
@@ -58,49 +60,22 @@ In 2017, Vaswani et al. introduced the Transformer architecture, marking a signi
 The Transformer architecture achieved top results in machine translation tasks, such as on the WMT 2014 English-German and English-French datasets, with significantly shorter training times compared to previous models. For example, the model achieved a BLEU score of 28.4 on English-to-German translation, outperforming previous architectures by more than 2 BLEU points \cite{vaswani2017attention}.  
 The Transformer architecture has had a transformative impact on \ac{NLP} . It serves as the basis for \ac{LLM} models such as BERT, GPT and others, which are based on the core principles of self-attention and scalability.
 
-\section{Vector Databases}
-\label{sec:vector-store}
-As described in more detail Section~\ref{sec:Sentence-Transformers}, embedding models transform unstructured data (e.g., text, images, or audio) into high-dimensional numerical vectors that capture semantic relationships. In such a vector space, similar objects are positioned closer together, while unrelated ones are placed farther apart. For example, the terms \emph{dog} and \emph{wolf} would be embedded near each other, whereas \emph{banana} would appear in a distant region (see Fig.~\ref{fig:vector-embedding}).  
+\section{Large Language Models (LLMs)}
+\label{sec:llm}
+Are transformer \ref{sec:transformer} based models trained on massive text corpora to generate natural language with high semantic accuracy \cite{bertpretrainingdeepbidirectional}.
+Summarization and reasoning are key capabilities of \ac{AAI} systems, which must distill context, interpret complex instructions, and generate coherent responses.
+While open-source models such as LLaMA, Mistral, and Falcon (available via Hugging Face) offer valuable baseline options, this thesis primarily utilizes the OpenAI API. Compared to hosting open-source models on local servers, OpenAI’s approach is cheaper, higher-performing, and more scalable, since it removes infrastructure costs while providing access to cutting-edge systems like GPT-4o and GPT-4o-mini.
 
-A vector database is then used to store and query these embeddings with vector indexation techniques, enabling similarity search at scale.
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.55\linewidth]{Images/vector-embedding.jpg}
-    \caption{Example of vector embeddings where semantically related terms are placed closer in the vector space}
-    \label{fig:vector-embedding}
-\end{figure}
-
-During inference, vector databases enable fast retrieval of relevant embeddings using Approximate Nearest Neighbor (\ac{ANN}) search. 
-Indexing algorithms such as \ac{HNSW}, IVF, Product Quantization (PQ), or ANNOY are commonly employed. 
-These methods differ in how they organize the search space: 
-\ac{HNSW} constructs a hierarchical graph, which supports dynamic insertion of new vectors and logarithmic-time search, making it suitable for continuously growing datasets. 
-ANNOY (Approximate Nearest Neighbors Oh Yeah) builds static random-projection trees that are optimized for read-heavy workloads, but generally require index rebuilding when new vectors are added. 
-IVF (Inverted File Index) partitions the vector space into clusters and restricts search to the most relevant clusters, which reduces query time at the cost of some recall. 
-PQ (Product Quantization) compresses vectors into smaller codewords, drastically reducing memory consumption while enabling efficient approximate similarity computations. 
-In practice, libraries such as FAISS provide efficient implementations of these algorithms, with optimized performance on both CPU and GPU environments.
-
-
-For subsequent \ac{STS} tasks, the similarity of the embeddings can be calculated with metrics such as:
-
+Strong empirical evidence supports this choice:
 \begin{itemize}
-    \item \textbf{Cosine similarity:} computes the cosine of the angle between two vectors. It is invariant to magnitude, making it useful when semantic meaning is encoded in direction rather than length:  
-    \[
-        \textit{cos\_sim}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\| \, \|\mathbf{v}\|}
-    \]
-    
-    \item \textbf{Euclidean distance:} computes the straight-line distance between two vectors in the embedding space. It is effective when similarity correlates with geometric closeness:  
-    \[
-        d_{\textit{euclidean}}(\mathbf{u}, \mathbf{v}) = \|\mathbf{u} - \mathbf{v}\|_2 = \sqrt{\sum_{i=1}^n (u_i - v_i)^2}
-    \]
-    
-    \item \textbf{Dot product:} measures the projection of one vector onto another, capturing both direction and magnitude. It is frequently employed in large-scale retrieval systems to approximate inner products between compressed vectors:  
-    \[
-        \textit{dot}(\mathbf{u}, \mathbf{v}) = \sum_{i=1}^n u_i v_i
-    \]
+  \item On Brazilian Portuguese grammatical error correction tasks, GPT-4 outperformed alternatives in recall, demonstrating improved handling of Portuguese grammar \cite{arxiv2306.15788}.
+  \item On the Brazilian ENEM entrance exam, GPT-4 with Chain-of-Thought prompting achieved 94.56\% accuracy, surpassing GPT-3.5 by approximately 11 points \cite{arxiv2303.17003}.
+  \item On the Portuguese National Medical Residency Access Examination, GPT-4o outperformed open-source model LLaMA 3.1 by 7–11\% across multiple medical domains \cite{pmc12166901}.
+  \item In another Portuguese medical benchmark, ChatGPT-4o significantly outperformed ChatGPT-3.5 (median score: 127 vs.\ 106) and ranked in the top 1\% of human candidates \cite{amp2025gpt4o}.
 \end{itemize}
 
+Given these performance advantages, even performing well in the Portuguese language, along with cost-effectiveness and scalability, OpenAI \ac{LLM}s are adopted in this thesis as the principal agents for reasoning and summarization.
 
-Vector databases exist across a spectrum of complexity. Full-featured systems such as Weaviate, Pinecone, and Milvus provide distributed storage, hybrid queries, and built-in integrations with embedding providers.
 
 \section{\acl{RAG}}
 \label{sec:rag}
@@ -129,7 +104,7 @@ The retrieval stage can be implemented in multiple ways. Traditional approaches 
 Later methods extend retrieval to dense vector representations (see Section~\ref{sec:vector-databases}), enabling semantic similarity search beyond exact keyword matching.
 
 \subsubsection{TF-IDF (Term Frequency-Inverse Document Frequency)}
-TF-IDF is a foundational term-weighting and ranking scheme in information retrieval systems \cite{tf-idf}. Its primary purpose is to measure how important a term is to a particular document within a large collection of documents. While frequency counts can highlight terms that often appear, they do not account for how common or rare those terms are across the entire dataset. TF-IDF addresses this by diminishing the weight of terms that occur frequently across many documents (common words)  and increasing the weight of terms that appear in fewer documents (more distinctive terms).
+TF-IDF is a foundational term-weighting and ranking scheme in information retrieval systems \cite{tf-idf}. Its primary purpose is to measure how important a term is to a particular document within a large collection of documents. While frequency counts can highlight terms that often appear, they do not account for how common or rare those terms are across the entire dataset. TF-IDF addresses this by diminishing the weight of terms that occur frequently across many documents and increasing the weight of terms that appear in fewer documents (more distinctive terms).
 The \ac{TF} measures how often a term \textit{t} appears in a single document \textit{d}. 
 \begin{equation}
     \label{eq:tf} 
@@ -182,7 +157,6 @@ where:
 
 \subsection{Vector-based Retrieval Methods}
 
-
 Retrieval of a relevant document from a large collection, based on a user query, was traditionally implemented using TF-IDF or BM25 \cite{bm25}. These are sparse vector space models that match keywords efficiently via an inverted index. Under such methods, both queries and documents are represented as high-dimensional, sparse vectors with term-based weighting. While these models are often effective for keyword-based matches, they struggle when queries and relevant documents use synonyms or paraphrases that do not share surface-level terms.
 
 Recent advancements in \ac{LLM}, particularly transformer-based models like BERT \cite{bertpretrainingdeepbidirectional}, have led to dense retrieval systems. In dense retrieval, queries and documents are represented as low-dimensional vectors that better capture semantic similarity. However, dense methods often require large training datasets (i.e., labeled question–passage pairs) to surpass classical methods such as TF-IDF/BM25. Modern pre-trained language models help mitigate this requirement by providing robust initial embeddings that can be fine-tuned on relatively smaller sets of question–context examples. This opens the door for dense retrieval methods to outperform traditional sparse approaches in many open-domain QA tasks.
@@ -196,22 +170,9 @@ The DPR architecture is based on a dual-encoder architecture~\cite{dualencoderar
     \text{similarity}(q, p) = E_Q(q)^T \, E_P(p).
 \end{equation}
 
-For very large document collections (e.g., a full Wikipedia dump), a dense vector index like \ac{FAISS} \cite{DOUZE2024FAISS} is typically used to support efficient similarity searches. \ac{FAISS} is a specialized library designed for rapid similarity search and clustering of dense vectors, enabling the system to scale to billions of embeddings. Concretely, DPR encodes all passages offline with \(E_P\), storing the resulting passage embeddings \((p_j)\) in the \ac{FAISS} index. This offline procedure ensures that the more computationally intensive step—embedding the entire corpus—happens only when the vector database needs to be updated.
+%For very large document collections (e.g., a full Wikipedia dump), a dense vector index like \ac{FAISS} \cite{DOUZE2024FAISS} is typically used to support efficient similarity searches. \ac{FAISS} is a specialized library designed for rapid similarity search and clustering of dense vectors, enabling the system to scale to billions of embeddings. Concretely, DPR encodes all passages offline with \(E_P\), storing the resulting passage embeddings \((p_j)\) in the \ac{FAISS} index. This offline procedure ensures that the more computationally intensive step—embedding the entire corpus—happens only when the vector database needs to be updated.
+%
 
-\section{Large Language Models (LLMs)}
-\label{sec:llm}
-Summarization and reasoning are key capabilities of \ac{AAI} systems, which must distill context, interpret complex instructions, and generate coherent responses.
-While open-source models such as LLaMA, Mistral, and Falcon (available via Hugging Face) offer valuable baseline options, this thesis primarily utilizes the OpenAI API. Compared to hosting open-source models on local servers, OpenAI’s approach is cheaper, higher-performing, and more scalable, since it removes infrastructure costs while providing access to cutting-edge systems like GPT-4o and GPT-4o-mini.
-
-Strong empirical evidence supports this choice:
-\begin{itemize}
-  \item On Brazilian Portuguese grammatical error correction tasks, GPT-4 outperformed alternatives in recall, demonstrating improved handling of Portuguese grammar \cite{arxiv2306.15788}.
-  \item On the Brazilian ENEM entrance exam, GPT-4 with Chain-of-Thought prompting achieved 94.56\% accuracy, surpassing GPT-3.5 by approximately 11 points \cite{arxiv2303.17003}.
-  \item On the Portuguese National Medical Residency Access Examination, GPT-4o outperformed open-source model LLaMA 3.1 by 7–11\% across multiple medical domains \cite{pmc12166901}.
-  \item In another Portuguese medical benchmark, ChatGPT-4o significantly outperformed ChatGPT-3.5 (median score: 127 vs.\ 106) and ranked in the top 1\% of human candidates \cite{amp2025gpt4o}.
-\end{itemize}
-
-Given these performance advantages, even performing well in the Portuguese language, along with cost-effectiveness and scalability, OpenAI \ac{LLM}s are adopted in this thesis as the principal agents for reasoning and summarization.
 
 \section{Sentence Transformers}
 \label{sec:Sentence-Transformers}
@@ -244,6 +205,91 @@ When trained on NLI data with a classification objective, SBERT further compares
 
 The quality of a Sentence Transformer is ultimately reflected in the accuracy and robustness of the embeddings it produces. Recent research has extended these methods to Portuguese, with the current state-of-the-art being the \textit{Serafim 900M IR} model \cite{gomes2024opensentenceembeddingsportuguese}, which has been specifically trained and benchmarked for \ac{STS} and \ac{IR} tasks.
 
+\section{Vector Databases}
+\label{sec:vector-store}
+As described in more detail Section~\ref{sec:Sentence-Transformers}, embedding models transform unstructured data (e.g., text, images, or audio) into high-dimensional numerical vectors that capture semantic relationships. In such a vector space, similar objects are positioned closer together, while unrelated ones are placed farther apart. For example, the terms \emph{dog} and \emph{wolf} would be embedded near each other, whereas \emph{banana} would appear in a distant region (see Fig.~\ref{fig:vector-embedding}).  
+
+A vector database stores these embeddings and supports efficient similarity search through vector indexing techniques, enabling similarity search at scale.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.55\linewidth]{Images/vector-embedding.jpg}
+    \caption{Example of vector embeddings where semantically related terms are placed closer in the vector space \cite{weaviate}}
+    \label{fig:vector-embedding}
+\end{figure}
+
+During inference, vector databases enable fast retrieval of relevant embeddings using Approximate Nearest Neighbor (\ac{ANN}) search. 
+Indexing algorithms such as \ac{HNSW}, IVF, Product Quantization (PQ), or ANNOY are commonly employed. 
+These methods differ in how they organize the search space: 
+\ac{HNSW} constructs a hierarchical graph, which supports dynamic insertion of new vectors and logarithmic-time search, making it suitable for continuously growing datasets. 
+ANNOY (Approximate Nearest Neighbors Oh Yeah) builds static random-projection trees that are optimized for read-heavy workloads, but generally require index rebuilding when new vectors are added. 
+IVF (Inverted File Index) partitions the vector space into clusters and restricts search to the most relevant clusters, which reduces query time at the cost of some recall. 
+PQ (Product Quantization) compresses vectors into smaller codewords, drastically reducing memory consumption while enabling efficient approximate similarity computations. 
+
+Figure~\ref{fig:semantic-search-pipeline} illustrates the flow from raw data to evaluation: embeddings are indexed using ANN algorithms and queried using a vector representation of the input. The retrieved results are then evaluated using similarity metrics \ref{sec:vector-similarity}
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.7cm and 2.2cm,
+        every node/.style={font=\small, align=center},
+        process/.style={rectangle, draw=black, rounded corners, minimum height=1.1cm, minimum width=2.8cm},
+        arrow/.style={->, thick}
+    ]
+        % Nodes
+        \node[process] (input) {Unstructured Data \\ (Text, Image, Audio)};
+        \node[process, right=of input] (embed) {Embedding Model \\ (e.g., SBERT)};
+        \node[process, right=of embed] (index) {Vector Database \\ + ANN Index (e.g., HNSW)};
+        \node[process, below=of index] (query) {Query Embedding};
+        \node[process, left=of query] (retrieval) {Nearest Neighbors \\ (Top-K Retrieval)};
+        \node[process, below=of retrieval] (metrics) {Similarity Metrics \\ (Cosine, Dot, Euclidean)};
+
+        % Arrows
+        \draw[arrow] (input) -- (embed);
+        \draw[arrow] (embed) -- (index);
+        \draw[arrow] (query) -- (index);
+        \draw[arrow] (index) -- (retrieval);
+        \draw[arrow] (retrieval) -- (metrics);
+    \end{tikzpicture}
+    \caption{Semantic retrieval pipeline: data is embedded, indexed, and queried using vector similarity search. Retrieved vectors are then evaluated using similarity metrics.}
+    \label{fig:semantic-search-pipeline}
+\end{figure}
+
+\subsection{HNSW: Hierarchical Navigable Small World Graph}
+
+\ac{HNSW}~\cite{malkov2018efficient} is a graph-based indexing algorithm widely used in vector databases for approximate nearest neighbor (\ac{ANN}) search. It is based on the principle of small-world networks, where most nodes can be reached in a small number of steps, despite the overall network being large.
+
+\begin{itemize}
+    \item \textbf{Graph Construction.} HNSW builds a multi-layer graph where each layer is a proximity graph: nodes (vectors) are connected to their closest neighbors according to a similarity metric (e.g., cosine similarity or Euclidean distance). The top layers have fewer nodes and longer links, forming a hierarchical structure. New vectors are inserted from the top layer down to the bottom, gradually establishing local connections at each level.
+
+    \item \textbf{Search Process.} The search begins at the topmost layer and navigates greedily toward the query vector by moving to the closest neighbor at each step. Once a local minimum is reached, the process descends to the next layer and repeats, refining the search as it approaches the bottom layer (the densest one). The final result is a list of approximate nearest neighbors from the base layer.
+
+    \item \textbf{Time and Space Complexity.} HNSW offers logarithmic search complexity—$\mathcal{O}(\log N)$ in practice—and supports dynamic insertion of vectors, unlike many tree-based or clustering-based methods. It requires additional memory for storing the graph structure, but in return provides excellent trade-offs between recall, latency, and update support.
+\end{itemize}
+
+Compared to other indexing methods such as IVF or ANNOY, HNSW tends to achieve higher recall at lower latency, especially in scenarios where index updates are frequent or low-latency responses are critical. Due to these properties, HNSW is the default index used in several vector databases such as FAISS, Milvus, and Weaviate.
+
+\subsection{Vector Similarity}
+\ref{sec:vector-similarity}
+The similarity between vectors can be computed using several distance or similarity metrics, which are also employed in later semantic evaluation tasks with metrics such as:
+
+\begin{itemize}
+    \item \textbf{Cosine similarity:} computes the cosine of the angle between two vectors. It is invariant to magnitude, making it useful when semantic meaning is encoded in direction rather than length:  
+    \[
+        \textit{cos\_sim}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\| \, \|\mathbf{v}\|}
+    \]
+    
+    \item \textbf{Euclidean distance:} computes the straight-line distance between two vectors in the embedding space. It is effective when similarity correlates with geometric closeness:  
+    \[
+        d_{\textit{euclidean}}(\mathbf{u}, \mathbf{v}) = \|\mathbf{u} - \mathbf{v}\|_2 = \sqrt{\sum_{i=1}^n (u_i - v_i)^2}
+    \]
+    
+    \item \textbf{Dot product:} measures the projection of one vector onto another, capturing both direction and magnitude. It is frequently employed in large-scale retrieval systems to approximate inner products between compressed vectors:  
+    \[
+        \textit{dot}(\mathbf{u}, \mathbf{v}) = \sum_{i=1}^n u_i v_i
+    \]
+\end{itemize}
+
+
+Vector databases exist across a spectrum of complexity. Full-featured systems such as Weaviate, Pinecone, and Milvus provide distributed storage, hybrid queries, and built-in integrations with embedding providers.
 
 \section{Text Similarity metrics}
 Since this thesis aims to enhance semantic search through Retrieval-Augmented Generation (\ac{RAG}), 
@@ -253,37 +299,70 @@ while others account for structural variation or semantic equivalence.
 Therefore, a diverse set of metrics is employed to provide a more comprehensive assessment, 
 ensuring that evaluation reflects the multifaceted nature of semantic search.
 
-\begin{table}[H]
-\centering
-\caption{Evaluation metrics and their relevance to semantic search in RAG pipelines.}
-\begin{tabular}{|p{3cm}|p{5cm}|p{7cm}|}
-\hline
-\textbf{Metric} & \textbf{What it Measures} & \textbf{Relevance to RAG} \\
-\hline
-Exact Match & Binary check for identical prediction and reference & Strict baseline for correctness; detects precise retrieval or generation \\
-\hline
-Substring Match & Whether the reference occurs as a contiguous substring of the output & Useful for cases where the gold answer is included verbatim in a longer generated passage \\
-\hline
-Token Recall & Proportion of reference tokens covered by the output & Captures coverage of essential information; valuable when retrieving partial fragments of long documents \\
-\hline
-Jaccard Similarity \cite{jaccard1901distribution} & Lexical overlap between token sets, ignoring frequency and order & Evaluates vocabulary similarity between retrieved/generated output and reference \\
-\hline
-Levenshtein Similarity \cite{levenshtein1966binary} & Normalized edit distance over tokens (insertions, deletions, substitutions) & Sensitive to word order; highlights structural differences important for coherent retrieval \\
-\hline
-ROUGE-n (F1) \cite{lin2004rouge} & n-gram overlap (unigrams for ROUGE-1, bigrams for ROUGE-2) & Balances precision and recall of content; checks both coverage and local phrase structure \\
-\hline
-BERT Cosine Similarity \cite{reimers2019sentence} & Semantic closeness of dense embeddings & Captures deep semantic equivalence, even under paraphrasing; most aligned with semantic search goals \\
-\hline
-Overlap Coefficient \cite{simpson1960similarity} & Intersection size normalized by the smaller token set & Rewards complete coverage of the reference, even if additional tokens are present \\
-\hline
-BLEU (sentence-level) \cite{papineni2002bleu} & n-gram precision with brevity penalty & Evaluates fluency and lexical faithfulness; checks whether generated answers resemble the phrasing of references \\
-\hline
-\end{tabular}
-\label{tab:metrics}
-\end{table}
+\subsection{Evaluation Metrics}
+
+Since this thesis focuses on enhancing semantic search through \ac{RAG}, the evaluation of similarity between retrieved passages, generated answers, and gold references is a critical step in evaluation. Different metrics capture complementary aspects of similarity, ranging from exact lexical overlap to semantic equivalence. Using a diverse set of metrics ensures that evaluation does not rely on a single definition of similarity, but instead reflects the multifaceted nature of semantic search.
+\subsubsection{Binary Matching}
+Exact match and substring match are both binary identification methods. Exact Match, checks if both texts are exacly the same. While substring match check if the gold reference is in the answer. These metrics are fast and simple, but are very lexically strict.
+
+\subsubsection{Token Recall} 
+Token Recall measures the proportion of reference tokens covered by the prediction:
+\[
+\text{Recall} = \frac{|A \cap G|}{|G|}
+\]
+where \(A\) and \(G\) denote the token sets of the answer and reference.  
+
+\subsubsection{Jaccard Similarity} 
+Introduced by Jaccard \cite{jaccard1901distribution}, this metric is defined as
+\[
+J(A,B) = \frac{|A \cap B|}{|A \cup B|}
+\]
+with \(A\) and \(B\) as token sets.  
+
+\subsubsection{Levenshtein Similarity} 
+Based on the edit distance proposed by Levenshtein \cite{levenshtein1966binary}, it is given by
+\[
+1 - \frac{\text{ED}(A,B)}{\max(|A|,|B|)}
+\]
+where \(\text{ED}\) is the edit distance between token sequences.  
+\footnote{Edit distance is defined as the minimum number of operations (insertions, deletions, or substitutions of tokens) required to transform one sequence into the other.(e.g., transforming “cat sat” into “the cat” requires one insertion and one deletion)}
+
+\subsubsection{ROUGE-n} 
+Introduced by Lin \cite{lin2004rouge}, ROUGE measures n-gram overlap between candidate and reference. 
+\footnote{An \emph{n-gram} is a contiguous sequence of \(n\) tokens from a text; for example, for the sentence ``the cat sat'', the unigrams (\(n=1\)) are \{the, cat, sat\}, while the bigrams (\(n=2\)) are \{the cat, cat sat\}.
+ROUGE-1 therefore evaluates unigram overlap, while ROUGE-2 evaluates bigram overlap, which captures short phrase structure in addition to individual words. }
+For n-grams of size \(n\), the metric is defined as:
+\[
+\text{Precision} = \frac{\text{overlap}}{\text{n-grams}(A)}, \quad
+\text{Recall} = \frac{\text{overlap}}{\text{n-grams}(B)}, \quad
+F1 = \frac{2PR}{P+R}
+\]
+
+\subsubsection{BERT-based Cosine Similarity.} 
+This metric employs dense sentence embeddings from \textit{SentenceTransformer all-MiniLM-L6-v2} \cite{reimers2019sentence}. 
+Similarity is computed as cosine similarity:
+\[
+\cos(\theta) = \frac{v \cdot u}{\|v\| \, \|u\|}
+\]
+
+\subsubsection{Overlap Coefficient.} 
+Also known as the Szymkiewicz--Simpson coefficient \cite{simpson1960similarity}, it is defined as
+\[
+\text{Overlap}(A,B) = \frac{|A \cap B|}{\min(|A|,|B|)}
+\]
+
+\subsubsection{BLEU.} 
+Introduced by Papineni et al. \cite{papineni2002bleu}, BLEU computes modified n-gram precision with a brevity penalty:
+\[
+\text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right)
+\]
+where \(p_n\) are modified n-gram precisions, \(w_n\) are weights, and BP is the brevity penalty.
 
 By combining these metrics, the evaluation captures complementary perspectives:  
 lexical accuracy (Exact Match, Substring, Jaccard), structural similarity (Levenshtein, ROUGE, BLEU), coverage of reference information (Token Recall, Overlap coefficient), and semantic equivalence (BERT cosine).This multidimensional evaluation approach allows for a comprehensive assessment by testing both surface-level metrics and deeper semantic understanding.
+
+\section{Key Takeaways}
+This chapter established the foundations of retrieval in modern intelligent systems. Machine learning models based on BERT-transformer \cite{bertpretrainingdeepbidirectional} arquitecture and variants surpass purely lexical methods by providing semantic understanding. Vector databases store their embeddings in efficient indexes for nearest neighbor search, enabling efficient retrieval tasks such as question answering. Similarity metrics complete the foundation by offering tools to evaluate performance, forming the basis for later experimentation with prompt engineering.
 %\subsection{Rag Variants}
 
 %\=printf("\ac{%s}", toupper(submatch(1)))rag} is a novel approach to \ac{nlp} that aims to improve the performance of \acpl{llm} on knowledge-intensive tasks. \ac{rag} overcomes limitations of existing \acpl{llm} by combining a pre-trained sequence-to-sequence (seq2seq)  model (parametric memory) with a dense vector index to a vector database acessed via a neural retriever (non-parametric memory). Parametric memory, comes from the generator component \ac{llm} itself. the non-parametric memory is part of the retrieval component,  based on a bi-encoder architecture. A document encoder produces a dense representaion of a document, and a query encoder produces a representation of the input query. The retriever is initialized using a pre-trained bi-encoder that has been trained to retrieve documents containing answers to questions. There reason why it is important to differentiate parametric memory with non-parametric memory is that they have some key differences. Non-parametric memory for can be easily updated by replacing the document index, is also more interpretable because it consists of raw text that is human readable, 
