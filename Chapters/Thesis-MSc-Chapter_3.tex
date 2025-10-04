@@ -28,17 +28,33 @@ Then use this for few-shot prompting. This is what made the paper achieve signif
 \subsubsection{Zero-Shot Chain-of-Thought (“Let’s think step by step”) \cite{chainofzero}}
 Q: [Your question here].  
 Let’s think step by step.
+
+
 The paper \cite{chainofzero} tested this prompts on the MultiArith dataset with text-davinci-002. Such prompts were such as "Let’s think about this logically" , " Before we dive into the answer", "Abrakadabra!"
 The template "Let's think step by step" got the highest score 78,7 \% , while others such as "Abrakadabra!" got a 15,5 \% which surprisingly isn't far from raw prompt template which scored 15,5 \%.
 
 \subsubsection{Conclusion}
 Form the paper \cite{chainofzero}, the chain of thought proposed in \cite{chainofthought} was tested to evaluate the actual difference of using few-shot prompt with chain of thought.
-Where the valuable mentions from the GSM8K benchmark, using PALM (540B) model.
-Zero-Shot was 12.5, Zero-Shot-CoT was 43.0, and Few-Shot-CoT \cite{chainofthought} was 56.9.
-ALl in all the Few-Shot-CoT is still better. But the fact that Zero-ShoT-CoT is much easier to implement withouth having to come up with specific domain CoT examples. It is the best solution for the thesis for universal application.
+Where the valuable mentions from the GSM8K benchmark, using PALM (540B) model \ref{tab:chainofzero}.
 
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|c|c|cc}
+        \hline
+        Method & GSM8K\\
+        \hline
+        Zero-Shot & 12,5 \\
+        \hline
+        Zero-Shot-CoT \cite{chainofzero} & 43,0 \\
+        \hline
+        Few-Shot-CoT \cite{chainofthought} & 56,9 \\
+        \hline
+    \end{tabular}
+    \caption{Experiment curated results using PALM (540B) \ac{LLM} model \cite{chainofzero}}
+    \label{tab:chainofzero}
+\end{table}
 
-
+According to the results see in the table above \ref{tab:chainofzero} in all the Few-Shot-CoT is still better. But the fact that Zero-ShoT-CoT is much easier to implement withouth having to come up with specific domain CoT examples. It is the best solution for the thesis for universal application.
 
 
 \subsection{Tree-of-Thoughts (ToT)}

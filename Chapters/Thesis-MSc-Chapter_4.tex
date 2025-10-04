@@ -1,7 +1,10 @@
 \chapter{System Arquitecture}
 \label{chapter:Methodologies}
-This chapter introduces the methodologies employed in this project. The focus will be on information extraction techniques such as OCR engines and layout models, enabling the capture of both textual content and document structure. The extracted information will be stored in vector databases to facilitate efficient organization and retrieval. The Retrieval-Augmented Generation (RAG) framework will be utilized to retrieve relevant information, employing prompt engineering techniques to enhance the consistency and accuracy of user interactions. 
-This chapter talks about
+This chapter explains the full system arquitecture employed in this project. It will talk about all implementations, and the performance evaluation of each if possible. The focus will be on information:
+
+Extracting information from unstructured data, using OCR engines and layout models.
+Storing information with proper indexation for efficient semantic retrieval.
+Employing prompt engineering techniques to enhance the consistency and accuracy of user interactions. 
 
 \section{Optical Character Recognition Engines}
 \label{sec:ocr}
@@ -33,7 +36,7 @@ In summary, this section has focused on the database perspective: defining the s
 
 \section{Weaviate MCP Server}
 
-A \ac{MCP} server was developed to interface with a Weaviate vector database, with the primary goal of ensuring interoperability. This design enables clients such as \ac{LLM}-based agents to retrieve external information from Weaviate collections in a schema-aware manner. Since Weaviate databases typically enforce a strict schema, the server provides not only query tools but also memory of the available collections and their structure. This memory is extracted from the Weaviate schema endpoint and exposed to clients in
+A \ac{MCP} \cite{mcp-architecture} server was developed to interface with a Weaviate vector database, with the primary goal of ensuring interoperability. This design enables clients such as \ac{LLM}-based agents to retrieve external information from Weaviate collections in a schema-aware manner. Since Weaviate databases typically enforce a strict schema, the server provides not only query tools but also memory of the available collections and their structure. This memory is extracted from the Weaviate schema endpoint and exposed to clients in
 MCP resources, thereby contextualizing the agent with knowledge of valid properties, (function arguments to query a certain  before querying.  
 The overall purpose of this server is to bridge structured information stored in Weaviate with powerful \ac{LLM} agents, using Anthropic’s standardized protocol for easier interoperability across different environments.
 
