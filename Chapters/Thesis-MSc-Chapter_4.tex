@@ -36,21 +36,21 @@ In summary, this section has focused on the database perspective: defining the s
 
 \section{Weaviate MCP Server}
 
-A \ac{MCP} \cite{mcp-architecture} server was developed to interface with a Weaviate vector database, with the primary goal of ensuring interoperability. This design enables clients such as \ac{LLM}-based agents to retrieve external information from Weaviate collections in a schema-aware manner. Since Weaviate databases typically enforce a strict schema, the server provides not only query tools but also memory of the available collections and their structure. This memory is extracted from the Weaviate schema endpoint and exposed to clients in
+A \glsxtrfull{MCP} \cite{mcp-architecture} server was developed to interface with a Weaviate vector database, with the primary goal of ensuring interoperability. This design enables clients such as \glsxtrfull{LLM}-based agents to retrieve external information from Weaviate collections in a schema-aware manner. Since Weaviate databases typically enforce a strict schema, the server provides not only query tools but also memory of the available collections and their structure. This memory is extracted from the Weaviate schema endpoint and exposed to clients in
 MCP resources, thereby contextualizing the agent with knowledge of valid properties, (function arguments to query a certain  before querying.  
-The overall purpose of this server is to bridge structured information stored in Weaviate with powerful \ac{LLM} agents, using Anthropic’s standardized protocol for easier interoperability across different environments.
+The overall purpose of this server is to bridge structured information stored in Weaviate with powerful \glsxtrfull{LLM} agents, using Anthropic’s standardized protocol for easier interoperability across different environments.
 
 \subsection{Server Design}
 
 The MCP server was implemented in Go and typescript, it was also implemented in Go because docker mcp-registry requires it for a pull request submission, also for it's easy reproducibility, and performance as a server because of it's concurrency capabilities. The docker mcp-registry is connected to docker. So if the pull request is accepted, MCP server will appear in official docker registry.
 
-The server acts as an intermediary between clients and the Weaviate backend. It registers the necessary tools and resources to support both querying and schema inspection. By exposing schema information as MCP resources (e.g., \texttt{weaviate://schema/Dataset}), the server enables clients to discover the available collections and their properties (such as \texttt{targetProperties}: \{\texttt{text}: string, \texttt{filepath}: string\}). This ensures that all interactions with the database are schema-aware, preventing invalid queries.  
+The server acts as an intermediary between clients and the Weaviate backend. It registers the necessary tools and resources to support both querying and schema inspection. By exposing schema information as MCP resources (e.g., \texttt{weaviate://schema/Dataset}), the server enables clients to discover the available collections and their properties (such as \texttt{targetProperties}: {\texttt{text}: string, \texttt{filepath}: string}). This ensures that all interactions with the database are schema-aware, preventing invalid queries.  
 
-Clients are typically \ac{LLM}-powered agents capable of communicating over \ac{MCP}, which allows them to seamlessly integrate external structured knowledge into their reasoning processes.
+Clients are typically \glsxtrfull{LLM}-powered agents capable of communicating over \glsxtrfull{MCP}, which allows them to seamlessly integrate external structured knowledge into their reasoning processes.
 
 \section{Weaviate MCP Server}
 
-A \ac{MCP} server was developed to interface with a Weaviate vector database, with the primary goal of ensuring interoperability. This design enables clients such as \ac{LLM}-based agents to retrieve external information from Weaviate collections in a schema-aware manner. Since Weaviate databases typically enforce a strict schema, the server provides not only query tools but also memory of the available collections and their structure. This memory is extracted from the Weaviate schema endpoint and exposed to clients as MCP resources, thereby contextualizing the agent with knowledge of valid properties before querying. The overall purpose of this server is to bridge structured information stored in Weaviate with powerful \ac{LLM} agents, using Anthropic’s standardized protocol for easier interoperability across different environments.
+A \glsxtrfull{MCP} server was developed to interface with a Weaviate vector database, with the primary goal of ensuring interoperability. This design enables clients such as \glsxtrfull{LLM}-based agents to retrieve external information from Weaviate collections in a schema-aware manner. Since Weaviate databases typically enforce a strict schema, the server provides not only query tools but also memory of the available collections and their structure. This memory is extracted from the Weaviate schema endpoint and exposed to clients as MCP resources, thereby contextualizing the agent with knowledge of valid properties before querying. The overall purpose of this server is to bridge structured information stored in Weaviate with powerful \glsxtrfull{LLM} agents, using Anthropic’s standardized protocol for easier interoperability across different environments.
 
 \subsection{Server Design}
 
@@ -58,7 +58,7 @@ The MCP server has been implemented in both Go and TypeScript. A Go implementati
 
 However, the project also includes a full TypeScript implementation. This version was refactored from the original Go codebase, with additional features made possible by the improved compatibility of the TypeScript SDK with both Weaviate and Anthropic libraries. According to the Stainless MCP SDK comparison~\cite{stainless_mcp_comparison}, automatic server generation and HTTP transport are more mature in the TypeScript SDK than in the Go SDK. While the Go version currently supports only \texttt{stdio} transport and hybrid querying, the TypeScript implementation extends functionality with stable HTTP communication and native Weaviate query generation through grouped tasks. These enhancements, along with stronger documentation and tighter integration with Weaviate’s API, make the TypeScript version a more flexible and developer-friendly option while maintaining interoperability with Go-based environments.
 
-The server acts as an intermediary between clients and the Weaviate backend. It registers the necessary tools and resources to support both querying and schema inspection. By exposing schema information as MCP resources (e.g., \texttt{weaviate://schema/Dataset}), the server enables clients to discover available collections and their properties (such as \texttt{targetProperties}: \{\texttt{text}: string, \texttt{filepath}: string\}). This ensures that all interactions with the database are schema-aware, preventing invalid queries. Clients are typically \ac{LLM}-powered agents capable of communicating over \ac{MCP}, which allows them to seamlessly integrate external structured knowledge into their reasoning processes.
+The server acts as an intermediary between clients and the Weaviate backend. It registers the necessary tools and resources to support both querying and schema inspection. By exposing schema information as MCP resources (e.g., \texttt{weaviate://schema/Dataset}), the server enables clients to discover available collections and their properties (such as \texttt{targetProperties}: {\texttt{text}: string, \texttt{filepath}: string}). This ensures that all interactions with the database are schema-aware, preventing invalid queries. Clients are typically \glsxtrfull{LLM}-powered agents capable of communicating over \glsxtrfull{MCP}, which allows them to seamlessly integrate external structured knowledge into their reasoning processes.
 
 
 \subsection{Functionality}
@@ -90,4 +90,9 @@ The server acts as an intermediary between clients and the Weaviate backend. It 
     \caption{Vertical system architecture of the MCP–Weaviate integration. The MCP server mediates queries, validates them against the Weaviate schema, and returns structured results to the client. Schema discovery is achieved dynamically through MCP resources.}
     \label{fig:system-architecture}
 \end{figure}
+
+
+
+
+
 

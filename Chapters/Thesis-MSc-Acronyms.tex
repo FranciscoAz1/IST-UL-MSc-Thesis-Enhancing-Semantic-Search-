@@ -1,41 +1,74 @@
 % #############################################################################
+% Acronym definitions loaded before the document body so that \ac commands
+% are available in front-matter (abstract, keywords, etc.).
+% #############################################################################
+\ifdefined\inputdefinitions
+\let\inputdefinitions=\undefined
+\newacronym{NLP}{NLP}{Natural Language Processing}
+\newacronym{RAG}{RAG}{Retrieval Augmented Generation}
+\newacronym[plural=LLMs]{LLM}{LLM}{Large Language Model}
+\newacronym{ML}{ML}{Machine Learning}
+\newacronym{LSTM}{LSTM}{Long Short-Term Memory Network}
+\newacronym{GRU}{GRU}{Gated Recurrent Units}
+\newacronym{RNN}{RNN}{Recurrent Neural Networks}
+\newacronym{GDPR}{GDPR}{General Data Protection Regulation}
+\newacronym{DPR}{DPR}{Dense Passage Retrieval}
+\newacronym{TF}{TF}{Term Frequency}
+\newacronym{VD}{VD}{Vector Database}
+\newacronym{QA}{QA}{Question-Answering}
+\newacronym{FAISS}{FAISS}{Facebook AI Similarity Search}
+\newacronym{ANNOY}{ANNOY}{Approximate Nearest Neighbors Oh yeah}
+\newacronym{HNSW}{HNSW}{Hierarchical Navigable Small World}
+\newacronym{HSNW}{HSNW}{Hierarchical Navigable Small World}
+\newacronym{IVF}{IVF}{Inverted File Index}
+\newacronym{OCR}{OCR}{Optical Character Recognition}
+\newacronym{CLI}{CLI}{Command Line Interface}
+\newacronym{API}{API}{Application Programming Interface}
+\newacronym{IR}{IR}{Information Retrieval}
+\newacronym{STS}{STS}{Semantic Textual Similarity}
+\newacronym{ANN}{ANN}{Approximate Nearest Neighbor}
+\newacronym{AI}{AI}{Artificial Intelligence}
+\newacronym{AAI}{AAI}{Agentic Artificial Intelligence}
+\newacronym{MCP}{MCP}{Model Context Protocol}
+\newacronym{VB}{VB}{Vector Database}
+\else
+% #############################################################################
 % This is the ACRONYMS Definition
 % !TEX root = ../main.tex
 % #############################################################################
 % Do not forget to reorder Alphabetically the ACRONYMS !!!
 % If there are special cases for Plural form see example hereunder
-\begin{acronym}[H.264/SVC]
-	% ----------------------------------------
-	% this Acronym has a special plural version
-    % ----------------------------------------
-    % My Acronyms
-    \acro{NLP}{Natural Language Processing}
-    \acro{RAG}{Retrieval Augmented Generation}
-    \acro{LLM}{Large Language Model}
-    \acro{LLMs}{Large Language Models}
-    \acro{ML}{Machine Learning}
-    \acro{LSTM}{Long Short-Term Memory Network}
-    \acro{GRU}{Gated Recurrent Units}
-    \acro{RNN}{Recurrent Neural Networks}
-    \acro{GDPR}{General Data Protection Regulation}
-    \acro{DPR}{Dense Passage Retrieval}
-    \acro{TF}{Term Frequency}
-    \acro{VD}{Vector Database}
-    \acro{QA}{Question-Answering}
-    \acro{FAISS}{Facebook AI Similarity Search}
-    \acro{ANNOY}{Approximate Nearest Neighbors Oh yeah}
-    \acro{HNSW}{Hierarchical Navigable Small World}
-    \acro{HSNW}{Hierarchical Navigable SMall World}
-    \acro{IVF}{Inverted File Index}
-    \acro{OCR}{Optical Recognition Engines}
-    \acro{CLI}{Command Line Interface}
-    \acro{API}{Application Programming Interface}
-    \acro{IR}{Information Retrieval}
-    \acro{STS}{Semantic Textual Similarity}
-    \acro{ANN}{Approximate Nearest Neighbor}
-    \acro{AI}{Artificial Intelligence}
-    \acro{AAI}{Agentic Artificial Intelligence}
-    \acro{MCP}{Model Context Protocol}
-    \acro{VB}{Vector Database}
-    
-\end{acronym}
+\begin{description}
+    \item[\glsentryshort{AAI}] \glsentrylong{AAI}
+    \item[\glsentryshort{ANN}] \glsentrylong{ANN}
+    \item[\glsentryshort{ANNOY}] \glsentrylong{ANNOY}
+    \item[\glsentryshort{API}] \glsentrylong{API}
+    \item[\glsentryshort{CLI}] \glsentrylong{CLI}
+    \item[\glsentryshort{DPR}] \glsentrylong{DPR}
+    \item[\glsentryshort{FAISS}] \glsentrylong{FAISS}
+    \item[\glsentryshort{GDPR}] \glsentrylong{GDPR}
+    \item[\glsentryshort{GRU}] \glsentrylong{GRU}
+    \item[\glsentryshort{HNSW}] \glsentrylong{HNSW}
+    \item[\glsentryshort{HSNW}] \glsentrylong{HSNW}
+    \item[\glsentryshort{IR}] \glsentrylong{IR}
+    \item[\glsentryshort{IVF}] \glsentrylong{IVF}
+    \item[\glsentryshort{LLM}] \glsentrylong{LLM}
+    \item[\glsentryshort{LSTM}] \glsentrylong{LSTM}
+    \item[\glsentryshort{MCP}] \glsentrylong{MCP}
+    \item[\glsentryshort{ML}] \glsentrylong{ML}
+    \item[\glsentryshort{NLP}] \glsentrylong{NLP}
+    \item[\glsentryshort{OCR}] \glsentrylong{OCR}
+    \item[\glsentryshort{QA}] \glsentrylong{QA}
+    \item[\glsentryshort{RAG}] \glsentrylong{RAG}
+    \item[\glsentryshort{RNN}] \glsentrylong{RNN}
+    \item[\glsentryshort{STS}] \glsentrylong{STS}
+    \item[\glsentryshort{TF}] \glsentrylong{TF}
+    \item[\glsentryshort{VB}] \glsentrylong{VB}
+    \item[\glsentryshort{VD}] \glsentrylong{VD}
+\end{description}
+\fi
+
+
+
+
+

@@ -12,11 +12,12 @@
 % -----------------------------------------------------------------------------
 % PACKAGES ucs, utf8x, babel, iflang:
 % -----------------------------------------------------------------------------
-% The 'ucs' package provides support for using UTF-8 in LaTeX documents. 
-% However in most situations it is not required.
-\usepackage{ucs}
-% The 'utf8x' package contains support for using UTF-8 as input encoding. 
-\usepackage[utf8x]{inputenc}
+% The 'ucs' package is intentionally omitted because it clashes with hyperref
+% when PDF bookmarks are created. Modern LaTeX already handles UTF-8 input.
+% The 'utf8x' inputenc option is also avoided for the same reason; stick with
+% the built-in utf8 support to keep bookmark writing stable.
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 % The 'babel' package may correct some hyphenation issues of LaTeX. 
 % Select your MAIN LANGUAGE for the Thesis with the 'main=' option.
 \usepackage[main=english,portuguese]{babel}
@@ -190,7 +191,11 @@
 % given at the first usage. 
 % IMPORTANT: do not use acronyms in titles/captions; otherwise the definition 
 % will appear on the table of contents.
-\usepackage[printonlyused]{acronym}
+%\usepackage[printonlyused]{acronym}
+% Load acronym definitions early so that front-matter can expand them.
+%\input{Chapters/Thesis-MSc-Acronym-Definitions.tex}
+% Load acronym definitions early so that front-matter can expand them.
+%\input{Chapters/Thesis-MSc-Acronym-Definitions.tex}
 %
 % -----------------------------------------------------------------------------
 % PACKAGE hyperref
@@ -239,27 +244,29 @@
 \usepackage{glossary-longragged}
 
 % Special style to print trailing dots before locations list
-\makeatletter
-\newglossarystyle{mystyle}{%
-  \setglossarystyle{altlist}%
-  \renewenvironment{theglossary}{%
-  \begin{description}[style=standard,labelindent=0pt,itemsep=5pt]%
-  }%
-  {\end{description}}
-  \renewcommand*{\glossentry}[2]{%
-    \item[\glsentryitem{##1}%
-      \glstarget{##1}{\glossentryname{##1}}]%
-      \mbox{}\par\nobreak\@afterheading
-      \glossentrydesc{##1}\glspostdescription
-      {\def\hfill{\hskip 25pt plus 3fill}\dotfill\mbox{ ##2}}%
-  }%
-  \renewcommand{\glsgroupskip}{}%
-}
-\makeatother
+%\makeatletter
+%\newglossarystyle{mystyle}{%
+%  \setglossarystyle{altlist}%
+%  \renewenvironment{theglossary}{%
+%  \begin{description}[style=standard,labelindent=0pt,itemsep=5pt]%
+%  }%
+%  {\end{description}}
+%  \renewcommand*{\glossentry}[2]{%
+%    \item[\glsentryitem{##1}%
+%      \glstarget{##1}{\glossentryname{##1}}]%
+%      \mbox{}\par\nobreak\@afterheading
+%      \glossentrydesc{##1}\glspostdescription
+%      {\def\hfill{\hskip 25pt plus 3fill}\dotfill\mbox{ ##2}}%
+%  }%
+%  \renewcommand{\glsgroupskip}{}%
+%}
+%\makeatother
 
 \makeglossaries
 % Glossary Terms and Symbols are defined in the following file:
 \input{./Chapters/Thesis-MSc-Glossary.tex}
+\def\inputdefinitions{}
+\input{Chapters/Thesis-MSc-Acronyms.tex}
 % #############################################################################
 % GLOBAL FORMATTING OF THE THESIS DOCUMENT before using FANCY stuff
 % Load Titlepage definition
@@ -428,13 +435,12 @@
 }
 % ----------------------------------------------------------------------------
 \lstdefinelanguage{Assembler}{
-	morecomment=[l];,
+	morecomment=[l]{;},
 	keywords={ADD,ADDC,SUB,SUBB,CMP,MUL,DIV,MOD,NEG,AND,OR,NOT,XOR,TEST,BIT,SET,EI,EI0,EI1,EI2,EI3,SETC,EDMA,CLR,DI,DI0,DI1,DI2,DI3,CLRC,SHR,SHL,SHRA,SHLA,ROR,ROL,RORC,ROLC,MOV,MOVB,MOVBS,MOVP,MOVL,MOVH,SWAP,PUSH,POP,JZ,JNZ,JN,JNN,JP,JNP,JC,JNC,JV,JNV,JEQ,JNE,JLT,JLE,JGT,JGE,JA,JAE,JB,JBE,JMP,CALL,CALLF,RET,RETF,SWE,RFE,NOP},
 	morekeywords={EQU,TABLE,WORD,STRING,PLACE},
 } 
 % ----------------------------------------------------------------------------
 \lstdefinestyle{coloredASM}{
-	language=Assembler,
 	extendedchars=false,
 	breaklines=true,
 	tabsize=2,
@@ -451,11 +457,10 @@
 	framexleftmargin=17pt,
 	framexrightmargin=5pt,
 	framexbottommargin=4pt,
-	commentstyle=\color{forestgreen}\upshape,
+	% commentstyle=\color{forestgreen}\upshape,
 	morestring=[b][\color{brown}]",
 	keywordstyle=\color{darkblue},
 	stringstyle=\ttfamily\color{black},
-	literate={á}{{\'a}}1 {ã}{{\~a}}1 {â}{{\^a}}1 {é}{{\'e}}1 {É}{{\'E}}1 {ê}{{\^e}}1 {õ}{{\~o}}1 {ó}{{\'o}}1 {í}{{\'i}}1 {ç}{{\c{c}}}1 {Ç}{{\c{C}}}1,
 }    
 % ----------------------------------------------------------------------------
 \lstdefinelanguage{CSS}{
@@ -589,3 +594,8 @@
 	backgroundcolor=\color{lightgray},
 	showstringspaces=false,
 }
+
+
+
+
+

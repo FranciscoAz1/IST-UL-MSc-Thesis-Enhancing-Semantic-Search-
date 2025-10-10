@@ -7,7 +7,7 @@
 \label{chap:sota-agentic-ai}
 \cleardoublepage
 
-This chapter surveys \ac{AAI}, language-model driven agents that plan, use tools, and manage memory, to improve retrieval and answer quality. We focus on methods that (i) reason and decompose tasks, (ii) call external tools and data sources, and (iii) maintain working åand long-term memory. We also connect these capabilities to \ac{RAG} pipelines that must respect organizational structure (folders, metadata) and access control.
+This chapter surveys \glsxtrfull{AAI}, language-model driven agents that plan, use tools, and manage memory, to improve retrieval and answer quality. We focus on methods that (i) reason and decompose tasks, (ii) call external tools and data sources, and (iii) maintain working åand long-term memory. We also connect these capabilities to \glsxtrfull{RAG} pipelines that must respect organizational structure (folders, metadata) and access control.
 
 \section{From Prompting to Agentic Behavior}
 \textbf{Prompt engineering.} Well-designed instructions can control output format, tone, and constraints, and can inject short domain context. History (dialog state) may be summarized and re-provided as context; however, prompting alone does not guarantee factuality or stable tool use.
@@ -50,7 +50,7 @@ Where the valuable mentions from the GSM8K benchmark, using PALM (540B) model \r
         Few-Shot-CoT \cite{chainofthought} & 56,9 \\
         \hline
     \end{tabular}
-    \caption{Experiment curated results using PALM (540B) \ac{LLM} model \cite{chainofzero}}
+    \caption{Experiment curated results using PALM (540B) \glsxtrfull{LLM} model \cite{chainofzero}}
     \label{tab:chainofzero}
 \end{table}
 
@@ -68,7 +68,7 @@ Yao et al.~\cite{react} proposed ReAct, a framework that interleaves reasoning t
 
 \textbf{API-faithful calling.} \emph{Gorilla} fine-tunes LLMs with Retrieval-Aware Training (RAT) so the agent learns to consult evolving API docs at inference and reduces hallucinated calls.
 
-\textbf{Model orchestration.} \emph{HuggingGPT} treats the LLM as a controller that plans subtasks and routes them to expert models; \emph{AutoGen} generalizes this to multi-agent conversations (LLM↔LLM↔Human↔Tools), useful for complex retrieval workflows (decomposition, retrieval, verification).
+\textbf{Model orchestration.} \emph{HuggingGPT} treats the LLM as a controller that plans subtasks and routes them to expert models; \emph{AutoGen} generalizes this to multi-agent conversations (LLM$\leftrightarrow$LLM$\leftrightarrow$Human$\leftrightarrow$Tools), useful for complex retrieval workflows (decomposition, retrieval, verification).
 
 \section{Memory for Agents}
 \textbf{Working vs.\ long-term memory.} Practical agents separate short context (scratchpad), episodic logs (events, prior answers), and semantic memory (facts, entities). \emph{MemGPT} formalizes tiered memory management beyond context windows.
@@ -87,7 +87,7 @@ Yao et al.~\cite{react} proposed ReAct, a framework that interleaves reasoning t
     %\item \textbf{Robustness and safety:} resistance to prompt/indirect-prompt injection and unsafe actions (see below).
 %\end{itemize}
 \section{Takeaways for This Thesis}
-For enterprise semantic search, \ac{AAI} adds:
+For enterprise semantic search, \glsxtrfull{AAI} adds:
 (i) \textbf{planning} to decompose queries and choose retrieval tools;
 (ii) \textbf{hierarchical, metadata-aware retrieval} aligned with folders and ACLs;
 (iii) \textbf{reflection} to re-query when evidence is weak;
@@ -113,3 +113,8 @@ MCP follows a \textit{client--server model}. The \textit{host} (AI application) 
 \end{itemize}
 
 MCP contributes to the shift toward \textit{agentic LLMs}, where models not only generate text but also plan, act, and learn via external capabilities. Its main benefits include standardization, by providing a unified interface across backends; reproducibility, through versioned prompts and schemas; extensibility, since new tools and resources can be added without redesign; and safety, as schema validation and scoped access reduce errors \cite{mcp-spec}.
+
+
+
+
+
