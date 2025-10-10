@@ -4,7 +4,7 @@
 % #############################################################################
 % Change the Name of the Chapter i the following line
 \fancychapter{State of the Art}
-\label{chap:sota-agentic-ai}
+\label{chap:State_of_Art}
 \cleardoublepage
 
 This chapter surveys \ac{AAI}, language-model driven agents that plan, use tools, and manage memory, to improve retrieval and answer quality. We focus on methods that (i) reason and decompose tasks, (ii) call external tools and data sources, and (iii) maintain working åand long-term memory. We also connect these capabilities to \ac{RAG} pipelines that must respect organizational structure (folders, metadata) and access control.
@@ -70,29 +70,49 @@ Yao et al.~\cite{react} proposed ReAct, a framework that interleaves reasoning t
 
 \textbf{Model orchestration.} \emph{HuggingGPT} treats the LLM as a controller that plans subtasks and routes them to expert models; \emph{AutoGen} generalizes this to multi-agent conversations (LLM↔LLM↔Human↔Tools), useful for complex retrieval workflows (decomposition, retrieval, verification).
 
-\section{Memory for Agents}
-\textbf{Working vs.\ long-term memory.} Practical agents separate short context (scratchpad), episodic logs (events, prior answers), and semantic memory (facts, entities). \emph{MemGPT} formalizes tiered memory management beyond context windows.
+\section{Tool Use and Orchestration}
 
-\textbf{Reflective control.} \emph{Reflexion} adds a feedback loop: the agent critiques past trials and stores distilled lessons in memory, improving subsequent decisions without weight updates.
+While ReAct already integrates tool use within its action step, this section focuses on how such capabilities can be made more accurate.  
+Tool-use frameworks aim to improve how language models discover, select, and call external tools, reducing hallucinations and execution errors.  
 
-\section{Agentic RAG for Enterprise Retrieval}
-\textbf{Problem.} Enterprise content lives in nested folders with metadata and ACLs. Pure dense retrieval over flat chunks ignores hierarchy, provenance, and permissions.
+For example, consider a WebCommerce chatbot that interfaces with an e-commerce database, allowing customers to place new orders, check delivery status, or request refunds directly through conversation.
+Each of these actions depends on precise tool calls to backend APIs—such as \texttt{createOrder()}, \texttt{getOrderStatus()}, or \texttt{updatePayment()}—where incorrect parameters or schema mismatches could lead to failed transactions or inconsistent records, emphasizing the need for accurate and validated orchestration. 
 
-%\section{Evaluation}
-%Agent performance should be measured beyond answer text:
-%\begin{itemize}\itemsep2pt
-    %\item \textbf{Task success on interactive environments:} \emph{AgentBench}, \emph{WebArena}, \emph{Mind2Web}, \emph{OSWorld}, and \emph{BrowserGym} cover planning, tool use, and real web/computer operations.
-    %\item \textbf{Retrieval quality:} precision/recall@k, MRR/nDCG on document IDs (folder-aware); groundedness/faithfulness (LLM- or rule-based); citation accuracy to specific file paths and versions.
-    %\item \textbf{Latency and cost:} hops, tool calls, tokens.
-    %\item \textbf{Robustness and safety:} resistance to prompt/indirect-prompt injection and unsafe actions (see below).
-%\end{itemize}
-\section{Takeaways for This Thesis}
-For enterprise semantic search, \ac{AAI} adds:
-(i) \textbf{planning} to decompose queries and choose retrieval tools;
-(ii) \textbf{hierarchical, metadata-aware retrieval} aligned with folders and ACLs;
-(iii) \textbf{reflection} to re-query when evidence is weak;
-(iv) \textbf{grounded generation} with verifiable citations. 
-These capabilities directly target recall and precision in scattered document stores while preserving security and governance.
+In such a setting, tool calls must be precise. Incorrect or misunderstood parameters can result in failed transactions or inconsistent order data—highlighting the importance of reliable tool use and orchestration.
+
+\textbf{Toolformer}~\cite{schick2023toolformer} introduced the concept of \emph{self-taught tool use}.  
+It fine-tunes a language model (based on GPT-J) using a self-annotation loop: during training, the model is prompted to insert possible API calls into text, these calls are executed, and their returned outputs are evaluated by measuring whether they reduce the model’s prediction loss on masked tokens.  
+If an API’s result helps the model predict the next token more accurately, that example is kept as supervision.  
+This process allows the model to learn when a tool should be invoked and how to integrate its output into natural language responses.  
+
+Although Toolformer improved factual accuracy by roughly 60\% on arithmetic and translation tasks.
+
+\textbf{Gorilla}~\cite{patil2023gorilla} advanced this idea with \emph{Retrieval-Aware Training (RAT)}.  
+Instead of memorizing tool usage, Gorilla embeds both API documentation (function signatures, parameter types, examples) and natural-language queries into a joint vector space using \emph{contrastive learning}. A method that pushes matching pairs (query ↔ correct API) closer together while pushing unrelated pairs apart.  
+At inference time, the model retrieves the most semantically similar API specification and conditions its text generation on that retrieved context, producing syntactically valid function calls through templated generation constrained by the retrieved schema.  
+On the \textit{APIBench} benchmark, Gorilla achieved \textbf{90–92\% API-call correctness} and reduced hallucinated calls by over \textbf{40\%} compared to Toolformer.  
+However, like Toolformer,  it still requires re-training when entirely new APIs are introduced, limiting adaptability.
+
+\textbf{HuggingGPT}~\cite{shen2023hugginggpt} reframed orchestration as \emph{model routing}.  
+It treats the LLM as a planner that decomposes complex user requests into subtasks and, for each subtask, queries a catalog of expert models hosted on the Hugging Face hub.  
+Although this demonstrated cross-modal reasoning across text, vision, and audio tasks, the approach introduced limited methodological novelty beyond Gorilla’s retrieval step.  
+Its evaluation was conducted through human assessment on 130 user requests, where the best-performing model (GPT-3.5) achieved a model-selection passing rate of \textbf{93.89\%}, a rationality score of \textbf{84.29\%}, and a final-response success rate of \textbf{63\%}.
+
+
+
+\textbf{AutoGen}~\cite{wu2023autogen} generalized orchestration into a \emph{multi-agent dialogue framework}.  
+In this paradigm, multiple LLMs and tools interact conversationally, exchanging natural-language messages that represent plans, results, or verifications.  
+Each agent can reason (\emph{Chain-of-Thought}), act (\emph{ReAct}), or delegate subtasks to others, enabling cooperative problem-solving.  
+Benchmarks on reasoning environments such as \textit{ALFWorld} and \textit{HotpotQA} reported up to \textbf{+17\% higher task success rates} than single-agent baselines, confirming that collaboration and verification loops improve reliability.  
+Nonetheless, AutoGen is computationally expensive and often unstable: extended conversation loops between agents can lead to significant inefficiency or even infinite exchanges without task resolution.  
+Moreover, it lacks a standardized interface for connecting to external systems, making integration with enterprise infrastructures or databases cumbersome.
+
+\textbf{Model Context Protocol (MCP)} introduces a standardized framework for connecting LLMs with external systems through explicit, typed interfaces.  
+Unlike previous approaches that relied on learned behavior or conversational coordination, MCP formalizes tool interaction by exposing capabilities through structured \texttt{tools}, \texttt{resources}, and \texttt{prompts}.  
+Each is defined by a JSON schema that specifies valid inputs and outputs, allowing clients to discover available operations and invoke them via JSON-RPC calls.  
+This replaces informal prompt-based conventions with deterministic, schema-validated communication, ensuring consistency and interoperability across agents and environments.  
+The following section describes MCP’s architecture in detail and how it was applied in this thesis to integrate Weaviate with LLM agents.
+
 
 \section{Model Context Protocol (MCP)}
 
@@ -112,4 +132,10 @@ MCP follows a \textit{client--server model}. The \textit{host} (AI application) 
   \item \textbf{Memory} --- structured persistence of state, supporting short-term caches and long-term profiles.
 \end{itemize}
 
-MCP contributes to the shift toward \textit{agentic LLMs}, where models not only generate text but also plan, act, and learn via external capabilities. Its main benefits include standardization, by providing a unified interface across backends; reproducibility, through versioned prompts and schemas; extensibility, since new tools and resources can be added without redesign; and safety, as schema validation and scoped access reduce errors \cite{mcp-spec}.
+MCP contributes to the shift toward \textit{agentic LLMs}, where models not only generate text but also plan, act, and learn through external capabilities.  
+It has rapidly become a key standard for connecting AI applications to external systems, already implemented as an MCP client in platforms such as Docker, Claude Desktop, and VS Code, and supported by multiple servers including MongoDB, Google Workspace, and LangChain.  
+Additional open-source implementations include the \texttt{docker/mcp-toolkit}, \texttt{anthropic/mcp}, and \texttt{mongodb-js/mcp-server}.  
+One of these servers—the \textbf{Weaviate MCP server}—was developed as part of this thesis to expose Weaviate’s schema and query interface as callable MCP \texttt{tools}.  
+
+MCP’s main advantages are its \textbf{standardization}, by providing a unified protocol across heterogeneous backends; \textbf{reproducibility}, through versioned prompts and schema-defined tools; \textbf{extensibility}, since new capabilities can be added without architectural changes. \cite{mcp-spec}.  
+In this thesis, MCP serves as the interoperability layer between Weaviate and LLM agents, enabling schema-aware retrieval and controlled reasoning over enterprise information in a reproducible and standardized way.

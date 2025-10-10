@@ -63,14 +63,16 @@ Originally developed for machine translation, BLEU is highly sensitive to exact 
 \subsection{Summary}
 The experiments further show that GraphRAG is computationally too heavy for the modest gains it provides. 
 Even its optimized variants, LightRAG and MiniRAG, remain relatively expensive and yielded weaker results compared to a direct sentence embedding retriever, which is both cheaper and more efficient. 
-With stronger embedding models, this efficiency gap only widens, reinforcing the conclusion that knowledge-graph–based retrieval is not the most effective path. 
+With stronger embedding models, this efficiency gap only widens, reinforcing the conclusion that knowledge-graph–based retrieval is not the most effective method for making a reliable and scalable search engine. 
 Instead, a more promising direction is \emph{Agentic RAG}, explored later in this work, where retrieval is guided dynamically by agent reasoning rather than static graph structures.
 
 \section{Experiment: Naive vs.\ Agentic RAG with Company Information}
 
 For this experiment, a set of 20 questions was constructed using a generative model (specify model). Each question was designed to be answerable only through the content of a specific company file, ensuring that success required both correct retrieval and grounded reasoning.  
 
-The baseline (naive RAG) simply retrieved top-ranked passages and generated an answer from them. In contrast, the agentic setup employed RAG with an MCP Weaviate server as the retrieval backend. The agent explicitly planned its approach before answering, dividing the task into structured steps:  
+The baseline (naive RAG) simply retrieved top-ranked passages and generated an answer from them.
+Then a CoT template was used on top of the baseline naive RAG.
+In contrast, the agentic setup employed RAG with an MCP Weaviate server as the retrieval backend. The agent explicitly planned its approach before answering, dividing the task into structured steps:  
 \begin{enumerate}
   \item Identify candidate documents by querying the Weaviate server for relevant information.  
   \item Select the file most likely to contain the correct answer.  
@@ -125,6 +127,11 @@ This setup highlights the difference between direct retrieval and generation ver
 \caption{Semantic equivalence metric. Variance shown in parentheses.}
 \end{table}
 
+\subsection{CoT RAG results}
+Have results but still thinking how to put them
+\subsection{Agentic RAG}
+Have results but still thinking how to put them
+
 %\begin{figure}[h!]
 %    \centering
 %    \includegraphics[width=0.75\linewidth]{Figures/Agentic_Semantic_Score_Hallucination.png}
@@ -139,9 +146,17 @@ This setup highlights the difference between direct retrieval and generation ver
 %    \label{fig:placeholder}
 %\end{figure}
 
+%\begin{figure}
+%    \centering
+%    \includegraphics[width=0.75\linewidth]{Naive Rag vs Agentic Rag.png}
+%    \caption{Total}
+%    \label{fig:placeholder}
+%\end{figure}
+
+\subsection{Overall Results}
 \begin{figure}
     \centering
-    \includegraphics[width=0.75\linewidth]{Naive Rag vs Agentic Rag.png}
-    \caption{Total}
+    \includegraphics[width=1\linewidth]{Figures/Company Generated Documents.png}
+    \caption{Enter Caption}
     \label{fig:placeholder}
 \end{figure}

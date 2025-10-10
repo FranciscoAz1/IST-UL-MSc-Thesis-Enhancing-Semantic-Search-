@@ -1,5 +1,5 @@
 \chapter{System Arquitecture}
-\label{chapter:Methodologies}
+\label{chapter:System_Arquitecture}
 This chapter explains the full system arquitecture employed in this project. It will talk about all implementations, and the performance evaluation of each if possible. The focus will be on information:
 
 Extracting information from unstructured data, using OCR engines and layout models.
@@ -34,60 +34,120 @@ Weaviate natively supports multiple collections in the same instance, and this f
 
 In summary, this section has focused on the database perspective: defining the schema, refining it through embedded fields, and placing it in the context of multi-tenant storage. The next section shifts attention to Agentic AI, where the challenge is not schema design but orchestrating retrieval with agents. This transition reflects the broader research landscape, where developments such as Weaviate’s Query Agent \cite{weaviate} exemplify the move toward automated reasoning layers capable of multi-step retrieval and problem solving.
 
-\section{Weaviate MCP Server}
+\section{Metadata Extraction with \ac{LLM} Profiling and Graph Structure}
 
-A \ac{MCP} \cite{mcp-architecture} server was developed to interface with a Weaviate vector database, with the primary goal of ensuring interoperability. This design enables clients such as \ac{LLM}-based agents to retrieve external information from Weaviate collections in a schema-aware manner. Since Weaviate databases typically enforce a strict schema, the server provides not only query tools but also memory of the available collections and their structure. This memory is extracted from the Weaviate schema endpoint and exposed to clients in
-MCP resources, thereby contextualizing the agent with knowledge of valid properties, (function arguments to query a certain  before querying.  
-The overall purpose of this server is to bridge structured information stored in Weaviate with powerful \ac{LLM} agents, using Anthropic’s standardized protocol for easier interoperability across different environments.
+The system implemented for metadata extraction builds upon the MiniRAG framework, adapting its core components to the task of extracting and structuring metadata from company documents. 
 
-\subsection{Server Design}
+The system follows a retrieval-augmented processing pipeline that integrates vector storage and graph-based knowledge representation.  
+Documents are ingested, segmented, and processed to extract metadata, which is subsequently stored in a heterogeneous knowledge graph.  
+This design enables search and reasoning based on generated metadata (entities and relationships), rather than relying solely on lexical or semantic similarity.
 
-The MCP server was implemented in Go and typescript, it was also implemented in Go because docker mcp-registry requires it for a pull request submission, also for it's easy reproducibility, and performance as a server because of it's concurrency capabilities. The docker mcp-registry is connected to docker. So if the pull request is accepted, MCP server will appear in official docker registry.
+The architecture is composed of two main pipelines:  
+(1) Document ingestion and metadata extraction, and  
+(2) Knowledge graph construction and querying.
 
-The server acts as an intermediary between clients and the Weaviate backend. It registers the necessary tools and resources to support both querying and schema inspection. By exposing schema information as MCP resources (e.g., \texttt{weaviate://schema/Dataset}), the server enables clients to discover the available collections and their properties (such as \texttt{targetProperties}: \{\texttt{text}: string, \texttt{filepath}: string\}). This ensures that all interactions with the database are schema-aware, preventing invalid queries.  
+\subsection{Document Ingestion and Metadata Extraction}
 
-Clients are typically \ac{LLM}-powered agents capable of communicating over \ac{MCP}, which allows them to seamlessly integrate external structured knowledge into their reasoning processes.
-
-\section{Weaviate MCP Server}
-
-A \ac{MCP} server was developed to interface with a Weaviate vector database, with the primary goal of ensuring interoperability. This design enables clients such as \ac{LLM}-based agents to retrieve external information from Weaviate collections in a schema-aware manner. Since Weaviate databases typically enforce a strict schema, the server provides not only query tools but also memory of the available collections and their structure. This memory is extracted from the Weaviate schema endpoint and exposed to clients as MCP resources, thereby contextualizing the agent with knowledge of valid properties before querying. The overall purpose of this server is to bridge structured information stored in Weaviate with powerful \ac{LLM} agents, using Anthropic’s standardized protocol for easier interoperability across different environments.
-
-\subsection{Server Design}
-
-The MCP server has been implemented in both Go and TypeScript. A Go implementation was necessary because the \texttt{mcp-registry} accepts pull requests only for Go servers; Go also offers excellent concurrency and produces lightweight binaries that can be containerised easily. If accepted, the Go version will appear in the official Docker registry, making deployment straightforward.
-
-However, the project also includes a full TypeScript implementation. This version was refactored from the original Go codebase, with additional features made possible by the improved compatibility of the TypeScript SDK with both Weaviate and Anthropic libraries. According to the Stainless MCP SDK comparison~\cite{stainless_mcp_comparison}, automatic server generation and HTTP transport are more mature in the TypeScript SDK than in the Go SDK. While the Go version currently supports only \texttt{stdio} transport and hybrid querying, the TypeScript implementation extends functionality with stable HTTP communication and native Weaviate query generation through grouped tasks. These enhancements, along with stronger documentation and tighter integration with Weaviate’s API, make the TypeScript version a more flexible and developer-friendly option while maintaining interoperability with Go-based environments.
-
-The server acts as an intermediary between clients and the Weaviate backend. It registers the necessary tools and resources to support both querying and schema inspection. By exposing schema information as MCP resources (e.g., \texttt{weaviate://schema/Dataset}), the server enables clients to discover available collections and their properties (such as \texttt{targetProperties}: \{\texttt{text}: string, \texttt{filepath}: string\}). This ensures that all interactions with the database are schema-aware, preventing invalid queries. Clients are typically \ac{LLM}-powered agents capable of communicating over \ac{MCP}, which allows them to seamlessly integrate external structured knowledge into their reasoning processes.
-
-
-\subsection{Functionality}
-\begin{figure}[h]
+\begin{itemize}
+    \item \textbf{Chunking:} Documents are segmented into overlapping text chunks using sentence tokenization, ensuring that each chunk contains complete sentences and controlled overlap. This segmentation improves context preservation for downstream interactions.
+    
+    \item \textbf{Entity Extraction:} Using a \ac{LLM} guided by a few-shot prompt, the system identifies named entities within each chunk. Entities may represent \textit{projects, contracts, clients, departments, or financial elements}, depending on the examples and domain specificity of the few-shot configuration. Extracted entities are normalized and linked to their originating document.
+    
+    \item \textbf{Relationship Identification:} The system analyses co-occurrences and contextual dependencies between entities to infer semantic relationships. Relationships are derived from embedding-based proximity in the vector space.
+    
+    \item \textbf{Metadata Storage:} The resulting entities and relationships are stored across three complementary databases:
+    \begin{itemize}
+        \item a \textbf{Key-Value store} to hold raw document metadata (e.g., file path, document ID, author, date);
+        \item a \textbf{Vector database} (e.g., Weaviate or NanoVector) to index embeddings of text chunks and entity descriptions;
+        \item a \textbf{Knowledge graph} to capture structured relationships among entities and support relational reasoning.
+    \end{itemize}
+    This modular storage design allows both semantic retrieval and structured graph reasoning over the same dataset.
+\end{itemize}
+\begin{figure}
     \centering
-    \begin{tikzpicture}[node distance=2.2cm, >=latex, thick]
+    \includegraphics[width=1\linewidth]{Images/Fluxograma_Data_Processing_Pipeline.jpeg}
+    \caption{Data Processing Pipeline}
+    \label{fig:placeholder}
+\end{figure}
 
-        % Nodes
-        \node[draw, rounded corners, fill=blue!10, minimum width=4cm, minimum height=1cm, align=center] (client) {Client / LLM Agent};
+\subsection{Knowledge Graph Construction}
+The extracted metadata is organized into a heterogeneous graph that unifies textual, semantic, and relational information.
 
-        \node[draw, rounded corners, fill=green!10, minimum width=5cm, minimum height=1cm, below=of client, align=center] (mcp) {MCP Server \\ (Schema-aware middleware)};
+\begin{itemize}
+    \item \textbf{Nodes} represent entities, document chunks, and other metadata fields.
+    \item \textbf{Edges} represent relationships such as references, contextual links, or semantic similarity between entities.
+\end{itemize}
 
-        \node[draw, rounded corners, fill=orange!15, minimum width=5cm, minimum height=1cm, below=of mcp, align=center] (weaviate) {Weaviate Database \\ (Collections + Vectors)};
+The graph enables cross-document linking, allowing, for example, all documents referring to the same project or supplier to be discovered through relational traversal.  
+It also serves as a metadata index for future retrieval tasks or RAG-based agents, grounding responses in verifiable document sources.
 
-        % Arrows main flow
-        \draw[->] (client) -- node[midway, right, text width=3.5cm, align=left] {Tool call (e.g. \texttt{weaviate-query})} (mcp);
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Images/graph_visualisation_big.png}
+    \caption{Knowledge graph from a thesis document about semantic retrieval}
+    \label{fig:placeholder}
+\end{figure}
 
-        \draw[->] (mcp) -- node[midway, right, text width=3.8cm, align=left] {Validated request \\ (query + properties)} (weaviate);
+\subsection{Querying}
 
-        \draw[<-] (mcp) -- node[midway, left, text width=3.8cm, align=right] {Search results \\ (objects + properties)} (weaviate);
+The system supports multiple query modes (\textit{mini}, \textit{light}, \textit{naive}, \textit{doc}, \textit{meta}, \textit{BM25}, and \textit{bypass}), each offering a different retrieval strategy:
+\begin{itemize}
+    \item \textbf{Mini} and \textbf{Light} modes use the knowledge graph to identify entities and relationships relevant to the query, enabling context-aware retrieval.
+    \item \textbf{Naive} mode performs semantic search directly over entity embeddings stored in the vector database.
+    \item \textbf{Doc} mode mirrors the naive retrieval but returns the list of relevant documents instead of generating a final answer.
+    \item \textbf{Meta} mode performs keyword-based search over metadata fields, implemented with autocomplete support for strict metadata queries.
+    \item \textbf{BM25} mode builds a BM25 index over all chunks and retrieves text via tokenised keyword matching.
+\end{itemize}
+\subsection{Mini Query}
 
-        \draw[<-] (client) -- node[midway, left, text width=3.5cm, align=right] {Structured MCP response \\ (ready for reasoning)} (mcp);
+The \textit{Mini Query} mode performs multi-step reasoning over the knowledge graph to generate the most contextually accurate answer.  
+It integrates keyword extraction, contextual retrieval, and answer generation into a single retrieval-augmented loop.
 
-        % Schema discovery (dashed arrows)
-        \draw[dashed, <->] (mcp.east) .. controls +(3,0) and +(3,0) .. (weaviate.east)
-            node[midway, right, text width=4cm, align=center] {Schema discovery \\ (collections + fields \\ exposed as \\ \texttt{weaviate://schema/...})};
+\begin{enumerate}
+    \item \textbf{Keyword Extraction:}  
+    An \ac{LLM} extracts answer-type keywords and entities from the user query using a predefined prompt (\texttt{PROMPTS["minirag\_query2kwd"]}).  
+    The extraction process is guided by the schema information available in the knowledge graph—specifically, the types and entities stored within it—to ensure semantic alignment between query terms and graph concepts.
+    
+    \item \textbf{Context Construction:}  
+    Using the extracted entities and answer types, the system retrieves the corresponding nodes and relationships from the knowledge graph, as well as matching embeddings from the \ac{VD}.  
+    These elements are then compiled into a structured context composed of entity descriptions, related text chunks, and document snippets, forming the evidence base for the response.
+    
+    \item \textbf{Answer Generation:}  
+    The compiled context is inserted into a response prompt (\texttt{PROMPTS["rag\_response"]}), which is passed to the \ac{LLM}.  
+    The model synthesizes the final answer based on the retrieved contextual evidence, ensuring that generation remains grounded in verified document content.
+\end{enumerate}
 
-    \end{tikzpicture}
-    \caption{Vertical system architecture of the MCP–Weaviate integration. The MCP server mediates queries, validates them against the Weaviate schema, and returns structured results to the client. Schema discovery is achieved dynamically through MCP resources.}
-    \label{fig:system-architecture}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{Images/Fluxograma_Mini_Query.jpeg}
+    \caption{Mini Query Flux}
+    \label{fig:placeholder}
+\end{figure}
+\subsection{Summary}
+
+In summary, the implemented system transforms unstructured corporate documents into context rich knowledge graphs by combining entity extraction, relationship identification, and graph-based storage.  
+By leveraging MiniRAG’s modular retrieval and storage design, it provides a semantic layer that enriches document repositories with explicit relational metadata.  
+This metadata not only supports accurate information retrieval but also enables graph-based visualization and discovery of meaningful relationships between documents, entities, and organizational processes.
+
+\section{Weaviate MCP Server}
+
+A \ac{MCP} server was developed to interface with a Weaviate vector database, with the primary goal of enabling interoperability. The MCP server enables clients such as \ac{LLM}-based agents to retrieve external information from Weaviate collections in a schema-aware manner. Since Weaviate databases typically enforce a strict schema, the server provides not only query tools but also memory of the available collections and their structure. This memory is extracted from the Weaviate schema endpoint and exposed to clients as MCP resources, thereby contextualizing the agent with knowledge of valid properties before querying. When a client issues an invalid query, the server responds with an informative error listing the available fields, allowing the agent to self-correct its request automatically. The overall purpose of this server is to bridge information stored in Weaviate databases despite it's dynamic, complext and strict schemas, with powerful \ac{LLM} agents.
+
+\subsection{Server Design}
+
+The MCP server has been implemented in both Go and TypeScript. A Go implementation was necessary because the \texttt{mcp-registry} accepts pull requests only for Go servers; Go also offers excellent concurrency and produces lightweight binaries that can be containerized easily. If accepted, the Go version will appear in the official Docker registry, making deployment straightforward.
+%% Add here a diagram showing Go server
+
+However, the project also includes a full TypeScript implementation. This version was refactored from the original Go codebase, with additional features made possible by the improved compatibility with both the Weaviate and Anthropic SDKs \cite{stainless_mcp_comparison}. While the Go version currently supports only \texttt{stdio} transport and hybrid querying, the TypeScript implementation extends functionality with HTTP transport and native Weaviate query generation through grouped tasks. These enhancements, along with stronger documentation and tighter integration with Weaviate’s API, make the TypeScript version a more flexible and developer-friendly option while Go can be containerized easily giving better compatibilty with current \ac{MCP} registries.
+%% Add here a diagram showing typescript Server
+\subsection{Functionality}
+The server acts as an intermediary between clients and the Weaviate backend. It registers the necessary tools and resources to support both querying and schema inspection. By exposing schema information as MCP resources (e.g., \texttt{weaviate://schema/Dataset}), the server enables clients to discover available collections and their properties (such as \texttt{targetProperties}: \{\texttt{text}: string, \texttt{filepath}: string\}). This ensures that all interactions with the database are schema-aware and self-correcting, as invalid queries are met with descriptive feedback rather than silent failures (e.g. corrective validation logic shown in figure \ref{fig:sequence-diagram-weaviate-query}). Clients are typically \ac{LLM}-powered agents capable of communicating over \ac{MCP}, allowing them to seamlessly integrate external structured knowledge into their reasoning processes.
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Images/Sequence-diagram-Weaviate-Query.png}
+   \caption{Sequence diagram of the \texttt{weaviate-query} tool illustrating the schema-aware approach used by the MCP Server to interface with an active Weaviate database. The same validation logic applies to other Weaviate schema elements that interface with the MCP Server.}
+    \label{fig:sequence-diagram-weaviate-query}
 \end{figure}
 
