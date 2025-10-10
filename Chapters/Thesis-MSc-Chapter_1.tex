@@ -26,21 +26,25 @@ The Transformer revolutionized the field by introducing advanced self-attention 
 The combined use of \glsxtrfull{RAG} and \glsxtrfull{LLM} represents a promising solution to overcome these challenges. Models like ChatGPT and LLama which can be embedded with \glsxtrfull{RAG} have demonstrated high performance in the contextualized retrieval of information and responding to complex queries. However, implementing these models in a corporate context requires a customized approach that respects information privacy and confidentiality, integration with existing organized information, and is scalable to meet the specific needs of each client. Additionally, it is necessary to ensure that the models can operate efficiently in local environments, ensuring that security and compliance with regulations, such as \glsxtrfull{GDPR}, are fully met.
 
 \section{Objectives}
-This thesis aims to design and implement a lightweight yet functional architecture for semantic document search in enterprise environments. The proposed system integrates a set of components and services with the following main objectives:
+This thesis aims to design and implement a lightweight yet functional architecture for improving search and organization of information in company environments. The proposed system integrates a set of components and services with the following main objectives:
 \begin{itemize}
-\item \textbf{API Service for Decentralized Semantic Search:} Develop a modular API that enables decentralized semantic search across multiple nodes, eliminating the need for a centralized server while ensuring accessibility and scalability.
-\item \textbf{Retrieval-Augmented Generation (RAG) Pipeline:} Implement a complete RAG pipeline capable of processing and indexing documents. This pipeline will extract and store document embeddings and metadata, enabling efficient retrieval of relevant content through semantic queries.
+\item \textbf{Decentralized Semantic Search:} Develop a system that enables decentralized semantic search across multiple databases of information, ensuring accessibility and scalability.
+\item \textbf{Retrieval-Augmented Generation (RAG) Pipeline:} Implement a complete RAG pipeline capable of processing and indexing documents. This pipeline will extract and store document metadata, and semantic embeddings enabling semantic retrieval efficiently.
 \item \textbf{Metadata Extraction and Organization Suggestions:} Automatically extract metadata from documents to improve search accuracy and suggest organizational structures for better document management.
-\item \textbf{Hybrid Search System:} Combine semantic search (using dense vector embeddings) with metadata-based filtering and keyword-based ranking, providing users with more accurate and context-aware results.
-\item \textbf{Integration with External LLM and Embedding APIs:} Utilize external models such as OpenAI’s API for embedding generation and language understanding, with mechanisms to log usage and cost, ensuring budget-aware operation.
 \item \textbf{Internet-Aware Search Capabilities:} Explore the integration of external sources and databases over the internet to enable the system to retrieve information beyond the local knowledge base, when appropriate.
+\item \textbf{Agentic Search System:} Implement a chatbot interface for document search, that is capable of easily connecting to external sources of information. Enabling conversational search of documents.
 \end{itemize}
-Together, these objectives form the basis of a robust, scalable, and cost-efficient information retrieval system tailored for use in dynamic and distributed enterprise environments.
+Together, these objectives form the basis of a robust, scalable, and cost-efficient information retrieval system tailored for use in dynamic and distributed company environments.
 % #############################################################################
 \section{Organization of the Document}
-This thesis is is organized as follows: \Cref{chap:intro} 
+
+\Cref{chap:back} presents the theoretical background required to understand the developed work, including fundamental concepts of information retrieval, vector representations, and large language models. 
+
+\Cref{chap:State_of_Art} reviews the state of the art in agentic artificial intelligence, highlighting reasoning frameworks and tool-use paradigms that inspired the proposed architecture. 
 
 
+In \Cref{chapter:System_Arquitecture}, the overall system architecture is detailed, describing how document processing, schema design, and retrieval components integrate into a unified solution.
 
+\Cref{chapter:Results} reports the experimental setup, performance evaluation, and discussion of the obtained results, comparing different retrieval strategies and assessing their effectiveness. 
 
-
+Finally, \Cref{chap:conclusion} concludes the dissertation by summarizing the main contributions, identifying system limitations, and outlining future research directions.
