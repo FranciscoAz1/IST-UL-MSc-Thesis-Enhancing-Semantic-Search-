@@ -7,7 +7,7 @@
 \label{chap:State_of_Art}
 \cleardoublepage
 
-This chapter surveys \glsxtrfull{AAI}, language-model driven agents that plan, use tools, and manage memory, to improve retrieval and answer quality. We focus on methods that (i) reason and decompose tasks, (ii) call external tools and data sources, and (iii) maintain working åand long-term memory. We also connect these capabilities to \glsxtrfull{RAG} pipelines that must respect organizational structure (folders, metadata) and access control.
+This chapter surveys \gls{AAI}, language-model driven agents that plan, use tools, and manage memory, to improve retrieval and answer quality. We focus on methods that (i) reason and decompose tasks, (ii) call external tools and data sources, and (iii) maintain working åand long-term memory. We also connect these capabilities to \gls{RAG} pipelines that must respect organizational structure (folders, metadata) and access control.
 
 \section{From Prompting to Agentic Behavior}
 \textbf{Prompt engineering.} Well-designed instructions can control output format, tone, and constraints, and can inject short domain context. History (dialog state) may be summarized and re-provided as context; however, prompting alone does not guarantee factuality or stable tool use.
@@ -20,15 +20,15 @@ CoT prompting was introduced by Wei et al.~\cite{chainofthought} to improve reas
 In benchmarks such as GSM8K and MultiArith, CoT significantly increased accuracy when compared to direct prompting. A refinement, \emph{Self-Consistency CoT} (CoT-SC), samples multiple reasoning chains and returns the most consistent answer, achieving further gains (e.g., PaLM 540B improved from 55\% $\to$ 74\% on GSM8K). However, CoT remains linear: each chain is generated without exploring alternatives.
 
 \subsubsection{Few-Shot Chain-of-Thought \cite{chainofthought}}
-Handcraft 8 examples with this fields:
-Q: [Your question]
-A: [Step-by-step reasoning]. The answer is [final answer].
+Handcraft 8 examples with these fields:
+
+\texttt{Q: [Your question]}\\
+\texttt{A: [Step-by-step reasoning]. The answer is [final answer].}
 Then use this for few-shot prompting. This is what made the paper achieve significantly increased accuracy.
 
 \subsubsection{Zero-Shot Chain-of-Thought (“Let’s think step by step”) \cite{chainofzero}}
-Q: [Your question here].  
-Let’s think step by step.
-
+\texttt{Q: [Your question here].}\\
+\texttt{Let’s think step by step.}
 
 The paper \cite{chainofzero} tested this prompts on the MultiArith dataset with text-davinci-002. Such prompts were such as "Let’s think about this logically" , " Before we dive into the answer", "Abrakadabra!"
 The template "Let's think step by step" got the highest score 78,7 \% , while others such as "Abrakadabra!" got a 15,5 \% which surprisingly isn't far from raw prompt template which scored 15,5 \%.
@@ -50,7 +50,7 @@ Where the valuable mentions from the GSM8K benchmark, using PALM (540B) model \r
         Few-Shot-CoT \cite{chainofthought} & 56,9 \\
         \hline
     \end{tabular}
-    \caption{Experiment curated results using PALM (540B) \glsxtrfull{LLM} model \cite{chainofzero}}
+    \caption{Experiment curated results using PALM (540B) \gls{LLM} model \cite{chainofzero}}
     \label{tab:chainofzero}
 \end{table}
 
@@ -62,13 +62,6 @@ Yao et al.~\cite{treeofthought} extended CoT by introducing branching reasoning.
 
 \subsection{Reasoning \emph{and} Acting (ReAct)}
 Yao et al.~\cite{react} proposed ReAct, a framework that interleaves reasoning traces with external actions (e.g., database queries, web search, or calculator calls) and observations. Unlike CoT, which is limited to internal reasoning, ReAct closes the loop between planning and evidence gathering, allowing the model to ground its reasoning in retrieved information. On knowledge-intensive QA tasks such as HotpotQA and FEVER, ReAct improved factual accuracy and significantly reduced hallucinations (e.g., from 14\% to 6\%). It also achieved strong performance on interactive environments like ALFWorld, where reasoning must be combined with sequential decision-making. The main trade-off is higher latency and token cost, since each step requires both reasoning tokens and tool interactions, but the gains in groundedness and reliability are substantial for retrieval-augmented applications.
-
-\section{Tool Use and Orchestration}
-\textbf{Self-taught tool use.} \emph{Toolformer} trains models to decide when and how to call APIs, improving arithmetic, lookup, and translation without heavy supervision.
-
-\textbf{API-faithful calling.} \emph{Gorilla} fine-tunes LLMs with Retrieval-Aware Training (RAT) so the agent learns to consult evolving API docs at inference and reduces hallucinated calls.
-
-\textbf{Model orchestration.} \emph{HuggingGPT} treats the LLM as a controller that plans subtasks and routes them to expert models; \emph{AutoGen} generalizes this to multi-agent conversations (LLM$\leftrightarrow$LLM$\leftrightarrow$Human$\leftrightarrow$Tools), useful for complex retrieval workflows (decomposition, retrieval, verification).
 
 \section{Tool Use and Orchestration}
 
@@ -88,7 +81,7 @@ This process allows the model to learn when a tool should be invoked and how to 
 Although Toolformer improved factual accuracy by roughly 60\% on arithmetic and translation tasks.
 
 \textbf{Gorilla}~\cite{patil2023gorilla} advanced this idea with \emph{Retrieval-Aware Training (RAT)}.  
-Instead of memorizing tool usage, Gorilla embeds both API documentation (function signatures, parameter types, examples) and natural-language queries into a joint vector space using \emph{contrastive learning}. A method that pushes matching pairs (query ↔ correct API) closer together while pushing unrelated pairs apart.  
+Instead of memorizing tool usage, Gorilla embeds both API documentation (function signatures, parameter types, examples) and natural-language queries into a joint vector space using \emph{contrastive learning}. A method that pushes matching pairs (query $\leftrightarrow$ correct API) closer together while pushing unrelated pairs apart.  
 At inference time, the model retrieves the most semantically similar API specification and conditions its text generation on that retrieved context, producing syntactically valid function calls through templated generation constrained by the retrieved schema.  
 On the \textit{APIBench} benchmark, Gorilla achieved \textbf{90–92\% API-call correctness} and reduced hallucinated calls by over \textbf{40\%} compared to Toolformer.  
 However, like Toolformer,  it still requires re-training when entirely new APIs are introduced, limiting adaptability.

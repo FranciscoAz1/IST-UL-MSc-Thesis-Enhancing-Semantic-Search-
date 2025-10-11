@@ -7,7 +7,7 @@
 % The following line allows to ref this chapter
 \label{chap:back}
 
-This chapter introduces the fundamental concepts of \glsxtrfull{IR}, while \glsxtrfull{NLP} will be addressed in the following state-of-the-art chapter. \glsxtrfull{IR} has evolved from lexical to semantic search, and understanding these approaches is essential to contextualize how \glsxtrfull{NLP} later enables agents to reason over retrieved information to provide more intelligent responses. The following section presents these \glsxtrfull{IR} approaches and the optimizations that have evolved from them.
+This chapter introduces the fundamental concepts of \glsxtrfull{IR}, while \glsxtrfull{NLP} will be addressed in the following state-of-the-art chapter. \gls{IR} has evolved from lexical to semantic search, and understanding these approaches is essential to contextualize how \gls{NLP} later enables agents to reason over retrieved information to provide more intelligent responses. The following section presents these \gls{IR} approaches and the optimizations that have evolved from them.
 \section{Background on Transformers} 
 \label{sec:transformer}
 \subsection{The Transition from Sequential to Attention-Based Models}  
@@ -58,7 +58,7 @@ In 2017, Vaswani et al. introduced the Transformer architecture, marking a signi
 
 \subsection{Performance and Impact}  
 The Transformer architecture achieved top results in machine translation tasks, such as on the WMT 2014 English-German and English-French datasets, with significantly shorter training times compared to previous models. For example, the model achieved a BLEU score of 28.4 on English-to-German translation, outperforming previous architectures by more than 2 BLEU points \cite{vaswani2017attention}.  
-The Transformer architecture has had a transformative impact on \glsxtrfull{NLP} . It serves as the basis for \glsxtrfull{LLM} models such as BERT, GPT and others, which are based on the core principles of self-attention and scalability.
+The Transformer architecture has had a transformative impact on \gls{NLP} . It serves as the basis for \glsxtrfull{LLM} models such as BERT, GPT and others, which are based on the core principles of self-attention and scalability.
 
 \section{Large Language Models (LLMs)}
 \label{sec:llm}
@@ -74,24 +74,24 @@ Strong empirical evidence supports this choice:
   \item In another Portuguese medical benchmark, ChatGPT-4o significantly outperformed ChatGPT-3.5 (median score: 127 vs.\ 106) and ranked in the top 1\% of human candidates \cite{amp2025gpt4o}.
 \end{itemize}
 
-Given these performance advantages, even performing well in the Portuguese language, along with cost-effectiveness and scalability, OpenAI \glsxtrfull{LLM}s are adopted in this thesis as the principal agents for reasoning and summarization.
+Given these performance advantages, even performing well in the Portuguese language, along with cost-effectiveness and scalability, OpenAI \gls{LLM}s are adopted in this thesis as the principal agents for reasoning and summarization.
 
 
 \section{\glsxtrfull{RAG}}
 \label{sec:rag}
 
-Retrieval-Augmented Generation (\glsxtrfull{RAG}) is a framework designed to improve performance on knowledge-intensive \glsxtrfull{NLP} tasks. It combines \textit{parametric knowledge}, implicitly stored in the parameters of a pre-trained \glsxtrfull{LLM}, with \textit{non-parametric knowledge}, retrieved from external sources such as document collections or databases. Instead of relying solely on the static internal knowledge of the model, RAG enhances generation with dynamically retrieved and contextually relevant information.
+Retrieval-Augmented Generation (\glsxtrfull{RAG}) is a framework designed to improve performance on knowledge-intensive \gls{NLP} tasks. It combines \textit{parametric knowledge}, implicitly stored in the parameters of a pre-trained \glsxtrfull{LLM}, with \textit{non-parametric knowledge}, retrieved from external sources such as document collections or databases. Instead of relying solely on the static internal knowledge of the model, RAG enhances generation with dynamically retrieved and contextually relevant information.
 
 \subsection{Parametric and Non-Parametric Knowledge}
 Traditional \glsxtrfullpl{LLM} encode knowledge implicitly in their parameters, known as parametric knowledge. Although powerful, this knowledge is static, cannot be updated without retraining, and may become outdated.  
-\glsxtrfull{RAG} mitigates this limitation by introducing a retrieval component that accesses external, explicit, and up-to-date information, known as non-parametric knowledge. So to use AI for semantic search, it is essential to use \glsxtrfull{RAG} for up to date information.
+\gls{RAG} mitigates this limitation by introducing a retrieval component that accesses external, explicit, and up-to-date information, known as non-parametric knowledge. So to use AI for semantic search, it is essential to use \gls{RAG} for up to date information.
 
 \subsection{The Three Stages of RAG}
 A typical RAG pipeline operates in three sequential stages:
 \begin{enumerate}
     \item \textbf{Retrieval:} Given an input query, the system searches an external knowledge base (e.g., a vector database) to retrieve the most relevant documents or passages.  
-    \item \textbf{Augmentation:} The retrieved documents/chunks of text are then combined with the query to form an enriched prompt, providing the \glsxtrfull{LLM} with additional context.  
-    \item \textbf{Generation:} The \glsxtrfull{LLM} conditions its output on both the query and the retrieved context, producing responses from known sources. 
+    \item \textbf{Augmentation:} The retrieved documents/chunks of text are then combined with the query to form an enriched prompt, providing the \gls{LLM} with additional context.  
+    \item \textbf{Generation:} The \gls{LLM} conditions its output on both the query and the retrieved context, producing responses from known sources. 
 \end{enumerate}
 
 \subsection{Sparse Retrieval Methods}
@@ -159,10 +159,10 @@ where:
 
 Retrieval of a relevant document from a large collection, based on a user query, was traditionally implemented using TF-IDF or BM25 \cite{bm25}. These are sparse vector space models that match keywords efficiently via an inverted index. Under such methods, both queries and documents are represented as high-dimensional, sparse vectors with term-based weighting. While these models are often effective for keyword-based matches, they struggle when queries and relevant documents use synonyms or paraphrases that do not share surface-level terms.
 
-Recent advancements in \glsxtrfull{LLM}, particularly transformer-based models like BERT \cite{bertpretrainingdeepbidirectional}, have led to dense retrieval systems. In dense retrieval, queries and documents are represented as low-dimensional vectors that better capture semantic similarity. However, dense methods often require large training datasets (i.e., labeled question–passage pairs) to surpass classical methods such as TF-IDF/BM25. Modern pre-trained language models help mitigate this requirement by providing robust initial embeddings that can be fine-tuned on relatively smaller sets of question–context examples. This opens the door for dense retrieval methods to outperform traditional sparse approaches in many open-domain QA tasks.
+Recent advancements in \gls{LLM}, particularly transformer-based models like BERT \cite{bertpretrainingdeepbidirectional}, have led to dense retrieval systems. In dense retrieval, queries and documents are represented as low-dimensional vectors that better capture semantic similarity. However, dense methods often require large training datasets (i.e., labeled question–passage pairs) to surpass classical methods such as TF-IDF/BM25. Modern pre-trained language models help mitigate this requirement by providing robust initial embeddings that can be fine-tuned on relatively smaller sets of question–context examples. This opens the door for dense retrieval methods to outperform traditional sparse approaches in many open-domain QA tasks.
 \subsubsection{Dense Passage Retrieval (DPR)}
 \label{par:dpr}
-Dense Passage Retrieval (DPR), introduced by Karpukhin et al.~\cite{densepassageretrievalopendomainkarpukhin2020}, is a \textit{dense retrieval} method designed specifically for \textit{open-domain question answering}. Unlike conventional approaches that rely on \textit{purely lexical} matches (e.g., TF-IDF and BM25), DPR employs BERT-based encoders to map questions and passages into a shared, dense embedding space, enabling \textit{semantic} rather than strictly \textit{keyword-based} retrieval. By leveraging modern \glsxtrfull{LLM} such as BERT~\cite{bertpretrainingdeepbidirectional} and LLaMA, which come with strong pre-trained representations, DPR can be fine-tuned with comparatively fewer labeled samples. This allows the system to capture semantic relationships between questions and passages, thereby mitigating the shortcomings of traditional methods that rely solely on term overlap.
+Dense Passage Retrieval (DPR), introduced by Karpukhin et al.~\cite{densepassageretrievalopendomainkarpukhin2020}, is a \textit{dense retrieval} method designed specifically for \textit{open-domain question answering}. Unlike conventional approaches that rely on \textit{purely lexical} matches (e.g., TF-IDF and BM25), DPR employs BERT-based encoders to map questions and passages into a shared, dense embedding space, enabling \textit{semantic} rather than strictly \textit{keyword-based} retrieval. By leveraging modern \gls{LLM} such as BERT~\cite{bertpretrainingdeepbidirectional} and LLaMA, which come with strong pre-trained representations, DPR can be fine-tuned with comparatively fewer labeled samples. This allows the system to capture semantic relationships between questions and passages, thereby mitigating the shortcomings of traditional methods that rely solely on term overlap.
 
 The DPR architecture is based on a dual-encoder architecture~\cite{dualencoderarchitecture}. Specifically, in Karpukhin et al.'s formulation~\cite{densepassageretrievalopendomainkarpukhin2020}, both encoders are initialized from the same pre-trained BERT model but are then fine-tuned separately for their respective tasks. A Question Encoder \(E_Q\) takes a question as input and produces a single vector embedding \(q_i\), while a Passage Encoder \(E_P\) processes a passage to produce a single vector embedding \(p_j\). Once encoded, each question and passage becomes a fixed-dimensional vector (e.g., 768 dimensions). To measure the similarity between a question \((q)\) and a passage \((p)\), the dot product of their embeddings is computed:
 \begin{equation}
@@ -188,9 +188,9 @@ Triplet networks extend this idea by processing three inputs simultaneously: an 
     \centering
     \includegraphics[width=1\linewidth]{Images/sentence_transformer.png}
     \caption{Sentence Transformer Architecture explained in\cite{reimers2019sentencebertsentenceembeddingsusing}}
-    \label{fig:placeholder}
+    \label{fig:sentence-transformer-architecture}
 \end{figure}
-Since BERT outputs contextual embeddings for individual tokens, an additional pooling layer is required to derive a single sentence vector, as shown in Figure~\ref{fig:Sentence_embedding}. In \cite{reimers2019sentencebertsentenceembeddingsusing}, the preferred pooling method for \glsxtrfull{STS} tasks is mean pooling, which turns multiple token embeddings into a single sentence embedding.\footnote{Other pooling strategies, such as using the \texttt{[CLS]} token or max pooling, were also evaluated but performed worse for semantic similarity tasks.}
+Since BERT outputs contextual embeddings for individual tokens, an additional pooling layer is required to derive a single sentence vector, as shown in Figure~\ref{fig:Sentence_embedding}. In \cite{reimers2019sentencebertsentenceembeddingsusing}, the preferred pooling method for \gls{STS} tasks is mean pooling, which turns multiple token embeddings into a single sentence embedding.\footnote{Other pooling strategies, such as using the \texttt{[CLS]} token or max pooling, were also evaluated but performed worse for semantic similarity tasks.}
 
 \begin{figure}[h!]
     \centering
@@ -201,9 +201,9 @@ Since BERT outputs contextual embeddings for individual tokens, an additional po
 
 To ensure that these embeddings capture sentence-level meaning, SBERT is fine-tuned on tasks such as Natural Language Inference (NLI), Semantic Textual Similarity (STS), and triplet training. 
 
-When trained on NLI data with a classification objective, SBERT further compares pairs of sentence embeddings by constructing a combined feature vector $(u, v, |u-v|)$, where $u$ and $v$ are the pooled embeddings of the two sentences. This representation proved effective in downstream tasks such as the Semantic Textual Similarity benchmark (STS-b).
+When trained on NLI data with a classification objective, SBERT further compares pairs of sentence embeddings by constructing a combined feature vector $(u, v, |u-v|)$, where $u$ and $v$ are the pooled embeddings of the two sentences. This representation proved effective in downstream tasks such as the Semantic Textual Similarity benchmark (\gls{STS}-b).
 
-The quality of a Sentence Transformer is ultimately reflected in the accuracy and robustness of the embeddings it produces. Recent research has extended these methods to Portuguese, with the current state-of-the-art being the \textit{Serafim 900M IR} model \cite{gomes2024opensentenceembeddingsportuguese}, which has been specifically trained and benchmarked for \glsxtrfull{STS} and \glsxtrfull{IR} tasks.
+The quality of a Sentence Transformer is ultimately reflected in the accuracy and robustness of the embeddings it produces. Recent research has extended these methods to Portuguese, with the current state-of-the-art being the \textit{Serafim 900M IR} model \cite{gomes2024opensentenceembeddingsportuguese}, which has been specifically trained and benchmarked for \gls{STS} and \gls{IR} tasks.
 
 \section{Vector Databases}
 \label{sec:vector-store}
@@ -220,7 +220,7 @@ A vector database stores these embeddings and supports efficient similarity sear
 During inference, vector databases enable fast retrieval of relevant embeddings using Approximate Nearest Neighbor (\glsxtrfull{ANN}) search. 
 Indexing algorithms such as \glsxtrfull{HNSW}, IVF, Product Quantization (PQ), or ANNOY are commonly employed. 
 These methods differ in how they organize the search space: 
-\glsxtrfull{HNSW} constructs a hierarchical graph, which supports dynamic insertion of new vectors and logarithmic-time search, making it suitable for continuously growing datasets. 
+\gls{HNSW} constructs a hierarchical graph, which supports dynamic insertion of new vectors and logarithmic-time search, making it suitable for continuously growing datasets. 
 ANNOY (Approximate Nearest Neighbors Oh Yeah) builds static random-projection trees that are optimized for read-heavy workloads, but generally require index rebuilding when new vectors are added. 
 IVF (Inverted File Index) partitions the vector space into clusters and restricts search to the most relevant clusters, which reduces query time at the cost of some recall. 
 PQ (Product Quantization) compresses vectors into smaller codewords, drastically reducing memory consumption while enabling efficient approximate similarity computations. 
@@ -255,7 +255,7 @@ Figure~\ref{fig:semantic-search-pipeline} illustrates the flow from raw data to 
 
 \subsection{HNSW: Hierarchical Navigable Small World Graph}
 
-\glsxtrfull{HNSW}~\cite{malkov2018efficient} is a graph-based indexing algorithm widely used in vector databases for approximate nearest neighbor (\glsxtrfull{ANN}) search. It is based on the principle of small-world networks, where most nodes can be reached in a small number of steps, despite the overall network being large.
+\glsxtrfull{HNSW}~\cite{malkov2018efficient} is a graph-based indexing algorithm widely used in vector databases for approximate nearest neighbor (\gls{ANN}) search. It is based on the principle of small-world networks, where most nodes can be reached in a small number of steps, despite the overall network being large.
 
 \begin{itemize}
     \item \textbf{Graph Construction.} HNSW builds a multi-layer graph where each layer is a proximity graph: nodes (vectors) are connected to their closest neighbors according to a similarity metric (e.g., cosine similarity or Euclidean distance). The top layers have fewer nodes and longer links, forming a hierarchical structure. New vectors are inserted from the top layer down to the bottom, gradually establishing local connections at each level.
@@ -292,7 +292,7 @@ The similarity between vectors can be computed using several distance or similar
 Vector databases exist across a spectrum of complexity. Full-featured systems such as Weaviate, Pinecone, and Milvus provide distributed storage, hybrid queries, and built-in integrations with embedding providers.
 
 \section{Text Similarity metrics}
-Since this thesis aims to enhance semantic search through Retrieval-Augmented Generation (\glsxtrfull{RAG}), 
+Since this thesis aims to enhance semantic search through Retrieval-Augmented Generation (\gls{RAG}), 
 evaluating similarity between texts becomes a critical component for evaluating the model and methodology. 
 No single metric fully captures the notion of similarity: some emphasize exact lexical overlap, 
 while others account for structural variation or semantic equivalence. 
@@ -301,7 +301,7 @@ ensuring that evaluation reflects the multifaceted nature of semantic search.
 
 \subsection{Evaluation Metrics}
 
-Since this thesis focuses on enhancing semantic search through \glsxtrfull{RAG}, the evaluation of similarity between retrieved passages, generated answers, and gold references is a critical step in evaluation. Different metrics capture complementary aspects of similarity, ranging from exact lexical overlap to semantic equivalence. Using a diverse set of metrics ensures that evaluation does not rely on a single definition of similarity, but instead reflects the multifaceted nature of semantic search.
+Since this thesis focuses on enhancing semantic search through \gls{RAG}, the evaluation of similarity between retrieved passages, generated answers, and gold references is a critical step in evaluation. Different metrics capture complementary aspects of similarity, ranging from exact lexical overlap to semantic equivalence. Using a diverse set of metrics ensures that evaluation does not rely on a single definition of similarity, but instead reflects the multifaceted nature of semantic search.
 \subsubsection{Binary Matching}
 Exact match and substring match are both binary identification methods. Exact Match, checks if both texts are exacly the same. While substring match check if the gold reference is in the answer. These metrics are fast and simple, but are very lexically strict.
 
