@@ -23,7 +23,7 @@ In benchmarks such as GSM8K and MultiArith, CoT significantly increased accuracy
 Handcraft 8 examples with these fields:
 
 \texttt{Q: [Your question]}\\
-\texttt{A: [Step-by-step reasoning]. The answer is [final answer].}
+\texttt{A: [Step-by-step reasoning]. The answer is [final answer].}\\
 Then use this for few-shot prompting. This is what made the paper achieve significantly increased accuracy.
 
 \subsubsection{Zero-Shot Chain-of-Thought (“Let’s think step by step”) \cite{chainofzero}}
@@ -63,6 +63,31 @@ Yao et al.~\cite{treeofthought} extended CoT by introducing branching reasoning.
 \subsection{Reasoning \emph{and} Acting (ReAct)}
 Yao et al.~\cite{react} proposed ReAct, a framework that interleaves reasoning traces with external actions (e.g., database queries, web search, or calculator calls) and observations. Unlike CoT, which is limited to internal reasoning, ReAct closes the loop between planning and evidence gathering, allowing the model to ground its reasoning in retrieved information. On knowledge-intensive QA tasks such as HotpotQA and FEVER, ReAct improved factual accuracy and significantly reduced hallucinations (e.g., from 14\% to 6\%). It also achieved strong performance on interactive environments like ALFWorld, where reasoning must be combined with sequential decision-making. The main trade-off is higher latency and token cost, since each step requires both reasoning tokens and tool interactions, but the gains in groundedness and reliability are substantial for retrieval-augmented applications.
 
+\subsubsection{Example}
+ReAct interleaves reasoning traces with external actions and observations. The framework follows this pattern:
+
+\texttt{Thought: [Reasoning about what to do next]}\\
+\texttt{Action: [Specific action to take, e.g., search, calculate, query]}\\
+\texttt{Observation: [Result of the action]}\\
+\texttt{Thought: [Next reasoning step based on observation]}\\
+\texttt{...}
+
+For example, to answer "What is the population of Paris and how does it compare to London?":
+
+\texttt{Q: What is the population of Paris and how does it compare to London?}\\
+\texttt{Thought: I need to find the current population of both cities to make a comparison. I'll start by searching for Paris's population.}\\
+\texttt{Action: Search[Paris population 2023]}\\
+\texttt{Observation: Paris has approximately 2.16 million inhabitants in the city proper (2023 estimate).}\\
+\texttt{Thought: Now I need London's population for comparison.}\\
+\texttt{Action: Search[London population 2023]}\\
+\texttt{Observation: London has approximately 8.98 million inhabitants (2023 estimate).}\\
+\texttt{Thought: Paris has about 2.16 million people while London has 8.98 million, so London is roughly 4 times larger.}\\
+\texttt{Action: Calculate[8.98 / 2.16]}\\
+\texttt{Observation: 8.98 $\div$ 2.16 $\approx$ 4.16}\\
+\texttt{Thought: The calculation confirms London is about 4.16 times larger than Paris.}\\
+\texttt{Final Answer: Paris has approximately 2.16 million inhabitants, while London has 8.98 million, making London about 4.16 times larger than Paris.}
+
+This interleaving of reasoning (Thought) with external actions (Action) and observations allows ReAct to ground its responses in retrieved information rather than relying solely on parametric knowledge (stored in model weights), significantly reducing hallucinations while improving factual accuracy.
 \section{Tool Use and Orchestration}
 
 While ReAct already integrates tool use within its action step, this section focuses on how such capabilities can be made more accurate.  
