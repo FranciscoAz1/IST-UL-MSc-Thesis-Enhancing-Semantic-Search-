@@ -66,6 +66,7 @@ Yao et al.~\cite{react} proposed ReAct, a framework that interleaves reasoning t
 \subsubsection{Example}
 ReAct interleaves reasoning traces with external actions and observations. The framework follows this pattern:
 
+\begin{lstlisting}
 \texttt{Thought: [Reasoning about what to do next]}\\
 \texttt{Action: [Specific action to take, e.g., search, calculate, query]}\\
 \texttt{Observation: [Result of the action]}\\
@@ -86,6 +87,7 @@ For example, to answer "What is the population of Paris and how does it compare 
 \texttt{Observation: 8.98 $\div$ 2.16 $\approx$ 4.16}\\
 \texttt{Thought: The calculation confirms London is about 4.16 times larger than Paris.}\\
 \texttt{Final Answer: Paris has approximately 2.16 million inhabitants, while London has 8.98 million, making London about 4.16 times larger than Paris.}
+\end{lstlisting}
 
 This interleaving of reasoning (Thought) with external actions (Action) and observations allows ReAct to ground its responses in retrieved information rather than relying solely on parametric knowledge (stored in model weights), significantly reducing hallucinations while improving factual accuracy.
 \section{Tool Use and Orchestration}
