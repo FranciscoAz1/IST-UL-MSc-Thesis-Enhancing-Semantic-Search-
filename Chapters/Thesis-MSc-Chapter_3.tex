@@ -22,15 +22,20 @@ In benchmarks such as GSM8K and MultiArith, CoT significantly increased accuracy
 \subsubsection{Few-Shot Chain-of-Thought \cite{chainofthought}}
 Handcraft 8 examples with these fields:
 
-\texttt{Q: [Your question]}\\
-\texttt{A: [Step-by-step reasoning]. The answer is [final answer].}\\
+\begin{lstlisting}[language={},basicstyle=\ttfamily\footnotesize,caption={Few-Shot Chain-of-Thought Prompt Template}]
+Q: [Your question]\\
+A: [Step-by-step reasoning]. The answer is [final answer].
+\end{lstlisting}
+
 Then use this for few-shot prompting. This is what made the paper achieve significantly increased accuracy.
 
-\subsubsection{Zero-Shot Chain-of-Thought (“Let’s think step by step”) \cite{chainofzero}}
-\texttt{Q: [Your question here].}\\
-\texttt{Let’s think step by step.}
+\subsubsection{Zero-Shot Chain-of-Thought ("Let's think step by step") \cite{chainofzero}}
+\begin{lstlisting}[language={},basicstyle=\ttfamily\footnotesize,caption={Zero-Shot Chain-of-Thought Prompt Template}]
+Q: [Your question here].\\
+Let's think step by step.
+\end{lstlisting}
 
-The paper \cite{chainofzero} tested this prompts on the MultiArith dataset with text-davinci-002. Such prompts were such as "Let’s think about this logically" , " Before we dive into the answer", "Abrakadabra!"
+The paper \cite{chainofzero} tested this prompts on the MultiArith dataset with text-davinci-002. Such prompts were such as "Let's think about this logically" , " Before we dive into the answer", "Abrakadabra!"
 The template "Let's think step by step" got the highest score 78,7 \% , while others such as "Abrakadabra!" got a 15,5 \% which surprisingly isn't far from raw prompt template which scored 15,5 \%.
 
 \subsubsection{Conclusion}
@@ -66,27 +71,32 @@ Yao et al.~\cite{react} proposed ReAct, a framework that interleaves reasoning t
 \subsubsection{Example}
 ReAct interleaves reasoning traces with external actions and observations. The framework follows this pattern:
 
-\begin{lstlisting}
-\texttt{Thought: [Reasoning about what to do next]}\\
-\texttt{Action: [Specific action to take, e.g., search, calculate, query]}\\
-\texttt{Observation: [Result of the action]}\\
-\texttt{Thought: [Next reasoning step based on observation]}\\
-\texttt{...}
+\begin{lstlisting}[language={},basicstyle=\ttfamily\footnotesize,caption={ReAct Framework Pattern}]
+Thought: [Reasoning about what to do next]\\
+Action: [Specific action to take, e.g., search, calculate, query]\\
+Observation: [Result of the action]\\
+Thought: [Next reasoning step based on observation]\\
+...
+\end{lstlisting}
 
 For example, to answer "What is the population of Paris and how does it compare to London?":
 
-\texttt{Q: What is the population of Paris and how does it compare to London?}\\
-\texttt{Thought: I need to find the current population of both cities to make a comparison. I'll start by searching for Paris's population.}\\
-\texttt{Action: Search[Paris population 2023]}\\
-\texttt{Observation: Paris has approximately 2.16 million inhabitants in the city proper (2023 estimate).}\\
-\texttt{Thought: Now I need London's population for comparison.}\\
-\texttt{Action: Search[London population 2023]}\\
-\texttt{Observation: London has approximately 8.98 million inhabitants (2023 estimate).}\\
-\texttt{Thought: Paris has about 2.16 million people while London has 8.98 million, so London is roughly 4 times larger.}\\
-\texttt{Action: Calculate[8.98 / 2.16]}\\
-\texttt{Observation: 8.98 $\div$ 2.16 $\approx$ 4.16}\\
-\texttt{Thought: The calculation confirms London is about 4.16 times larger than Paris.}\\
-\texttt{Final Answer: Paris has approximately 2.16 million inhabitants, while London has 8.98 million, making London about 4.16 times larger than Paris.}
+\begin{lstlisting}[language={},basicstyle=\ttfamily\footnotesize,caption={ReAct Example: Population Comparison Query}]
+Q: What is the population of Paris and how does it compare to London?
+Thought: I need to find the current population of both cities to make a comparison. I'll start by 
+searching for Paris's population.\\
+Action: Search[Paris population 2023]\\
+Observation: Paris has approximately 2.16 million inhabitants in the city proper (2023 estimate).\\
+Thought: Now I need London's population for comparison.\\
+Action: Search[London population 2023]\\
+Observation: London has approximately 8.98 million inhabitants (2023 estimate).\\
+Thought: Paris has about 2.16 million people while London has 8.98 million, so London is roughly 4 
+times larger.\\
+Action: Calculate[8.98 / 2.16]\\
+Observation: 8.98 $\div$ 2.16 $\approx$ 4.16\\
+Thought: The calculation confirms London is about 4.16 times larger than Paris.\\
+Final Answer: Paris has approximately 2.16 million inhabitants, while London has 8.98 million, 
+making London about 4.16 times larger than Paris.
 \end{lstlisting}
 
 This interleaving of reasoning (Thought) with external actions (Action) and observations allows ReAct to ground its responses in retrieved information rather than relying solely on parametric knowledge (stored in model weights), significantly reducing hallucinations while improving factual accuracy.
