@@ -19,7 +19,7 @@ In this thesis, Nougat is used as it is open-source and outputs Markdown, the pr
 \section{Designing the Retrieval-Oriented Weaviate Schema in Edoclink}
 \label{sec:schema}
 
-The first step was the definition of a semantic data layer using Weaviate, integrated into the Edoclink platform. The goal was to capture the organizational logic of business documents—workflows, stages, entities, folders, and files—within a structure that supports semantic search and generative reasoning. To this end, six core classes were defined (Fluxo, Etapa, Entidade, Pasta, Ficheiro, Metadados), reflecting Edoclink’s information model. These were initially connected through cross-references, ensuring that workflows could be linked to their stages, entities to their folders, and files to their associated metadata.
+This section introduces the architectural motivation for using a retrieval-oriented schema in Edoclink, built on Weaviate. The core aim is to enable semantic search that is aware of the organizational structure—workflows, stages, entities, folders, and files—rather than treating documents as isolated items. The schema is designed to reflect real business logic, supporting queries that traverse relationships and return results grounded in context.
 
 \begin{figure}[h!]
     \centering
@@ -28,13 +28,11 @@ The first step was the definition of a semantic data layer using Weaviate, integ
     \label{fig:weaviate_class}
 \end{figure}
 
-As the research progressed, the schema was refined by embedding \textit{entities}, \textit{file paths}, and \textit{metadata} directly into the object representation. This ensured that objects became self-contained, enabling consistent deletion cascades and reducing reliance on cross-reference traversal for retrieval. The UML diagram in Figure~\ref{fig:weaviate_class} illustrates this abstract model, which was investigated as a candidate for efficient implementation. In practice, the real deployment within Edoclink is more complex, but this abstraction served as a foundation for evaluating design choices and guiding the development of scalable semantic retrieval. The results presented here should therefore be interpreted as a conceptual example rather than a one-to-one description of the production system.
-
-Weaviate natively supports multiple collections in the same instance, and this functionality is employed in Edoclink to store independent datasets under a shared schema, with each instance exposed through web hooks. While not a methodological focus of this work, this results in a decentralized-like architecture, as data is distributed across multiple instances. This design increases the complexity of retrieval, since agents must identify and query the appropriate web hooks when traversing datasets.  
-
-In summary, this section has focused on the database perspective: defining the schema, refining it through embedded fields, and placing it in the context of multi-tenant storage. The next section shifts attention to Agentic AI, where the challenge is not schema design but orchestrating retrieval with agents. This transition reflects the broader research landscape, where developments such as Weaviate’s Query Agent \cite{weaviate} exemplify the move toward automated reasoning layers capable of multi-step retrieval and problem solving.
+Studying this schema is essential for two reasons: (1) it provides a foundation for advanced, structure-aware semantic retrieval in company environments, and (2) it enables the evaluation of how well semantic search can leverage organizational context for more relevant and explainable results. The study of this schema will be revisited in section~\ref{sec:schema_example_study}.
 
 \section{Metadata Extraction with \gls{LLM} Profiling and Graph Structure}
+\label{sec:metadata_extraction}
+Automatic knowledge graph generation from documents or document chunks enables the identification of entities, relationships, and metadata that correspond to the classes and links in the Weaviate UML schema. This process allows for the automated mapping and insertion of extracted information—such as workflows, stages, entities, folders, files, and their metadata—directly into the Weaviate database, ensuring that the organizational structure is populated and kept up to date as new documents are processed.
 The system implemented for metadata extraction builds upon the MiniRAG framework, adapting its core components to the task of extracting and structuring metadata from company documents.
 
 The system follows a retrieval-augmented processing pipeline that integrates vector storage and graph-based knowledge representation.  
@@ -66,7 +64,7 @@ The architecture is composed of two main pipelines:
     \centering
     \includegraphics[width=1\linewidth]{Images/Fluxograma_Data_Processing_Pipeline.jpeg}
     \caption{Data Processing Pipeline}
-    \label{fig:placeholder}
+    \label{fig:data-pipeline}
 \end{figure}
 
 \subsection{Knowledge Graph Construction}
@@ -84,7 +82,7 @@ It also serves as a metadata index for future retrieval tasks or RAG-based agent
     \centering
     \includegraphics[width=0.5\linewidth]{Images/graph_visualisation_big.png}
     \caption{Knowledge graph from a thesis document about semantic retrieval}
-    \label{fig:placeholder}
+    \label{fig:knowledge-graph}
 \end{figure}
 
 \subsection{Querying}
@@ -120,7 +118,7 @@ It integrates keyword extraction, contextual retrieval, and answer generation in
     \centering
     \includegraphics[width=0.75\linewidth]{Images/Fluxograma_Mini_Query.jpeg}
     \caption{Mini Query Flux}
-    \label{fig:placeholder}
+    \label{fig:mini-query-flux}
 \end{figure}
 \subsection{Summary}
 
@@ -129,8 +127,8 @@ By leveraging MiniRAG’s modular retrieval and storage design, it provides a se
 This metadata not only supports accurate information retrieval but also enables graph-based visualization and discovery of meaningful relationships between documents, entities, and organizational processes.
 
 \section{Weaviate MCP Server}
-
-A \glsxtrfull{MCP} server was developed to interface with a Weaviate vector database, with the primary goal of enabling interoperability. The MCP server enables clients such as \gls{LLM}-based agents to retrieve external information from Weaviate collections in a schema-aware manner. Since Weaviate databases typically enforce a strict schema, the server provides not only query tools but also memory of the available collections and their structure. This memory is extracted from the Weaviate schema endpoint and exposed to clients as MCP resources, thereby contextualizing the agent with knowledge of valid properties before querying. When a client issues an invalid query, the server responds with an informative error listing the available fields, allowing the agent to self-correct its request automatically. The overall purpose of this server is to bridge information stored in Weaviate databases despite it's dynamic, complext and strict schemas, with powerful \gls{LLM} agents.
+\label{sec:weaviate-mcp-server}
+A \glsxtrfull{MCP} server was developed to interface with a Weaviate vector database, with the primary goal of enabling interoperability. The MCP server enables clients such as \gls{LLM}-based agents to retrieve external information from Weaviate collections in a schema-aware manner. Since Weaviate databases typically enforce a strict schema, the server provides not only query tools but also memory of the available collections and their structure. This memory is extracted from the Weaviate schema endpoint and exposed to clients as MCP resources, thereby contextualizing the agent with knowledge of valid properties before querying. When a client issues an invalid query, the server responds with an informative error listing the available fields, allowing the agent to self-correct its request automatically. The overall purpose of this server is to bridge information stored in Weaviate databases despite it's dynamic, complex and strict schemas, with powerful \gls{LLM} agents that reason with clients requests/queries.
 
 \subsection{Server Design}
 

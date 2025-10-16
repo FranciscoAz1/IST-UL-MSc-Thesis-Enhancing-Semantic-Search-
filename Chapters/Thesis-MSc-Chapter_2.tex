@@ -292,6 +292,7 @@ The similarity between vectors can be computed using several distance or similar
 Vector databases exist across a spectrum of complexity. Full-featured systems such as Weaviate, Pinecone, and Milvus provide distributed storage, hybrid queries, and built-in integrations with embedding providers.
 
 \section{Text Similarity metrics}
+\label{sec:text-similarity-metrics}
 Since this thesis aims to enhance semantic search through Retrieval-Augmented Generation (\gls{RAG}), 
 evaluating similarity between texts becomes a critical component for evaluating the model and methodology. 
 No single metric fully captures the notion of similarity: some emphasize exact lexical overlap, 
@@ -361,6 +362,25 @@ where \(p_n\) are modified n-gram precisions, \(w_n\) are weights, and BP is the
 By combining these metrics, the evaluation captures complementary perspectives:  
 lexical accuracy (Exact Match, Substring, Jaccard), structural similarity (Levenshtein, ROUGE, BLEU), coverage of reference information (Token Recall, Overlap coefficient), and semantic equivalence (BERT cosine).This multidimensional evaluation approach allows for a comprehensive assessment by testing both surface-level metrics and deeper semantic understanding.
 
+\section{Youden's J Statistics}
+\label{sec:youden}
+Youden's J statistic, also known as Youden's index, is a summary measure of the performance of a binary classification test\cite{youden1950index}. It is defined as:
+\[
+J = \text{Sensitivity} + \text{Specificity} - 1
+\]
+where:
+\begin{itemize}
+    \item \textbf{Sensitivity} (True Positive Rate) is the proportion of actual positives correctly identified.
+    \item \textbf{Specificity} (True Negative Rate) is the proportion of actual negatives correctly identified.
+\end{itemize}
+Youden's J statistic ranges from -1 to 1, where:
+\begin{itemize}
+    \item A value of 1 indicates a perfect test with no false positives or false negatives.
+    \item A value of 0 indicates a test that performs no better than random chance.
+    \item A negative value indicates a test that performs worse than random chance.
+\end{itemize}
+Youden's J statistic is particularly useful for evaluating diagnostic tests and classifiers, as it provides a single metric that balances sensitivity and specificity. It is often used to determine the optimal cutoff point for a test, where the sum of sensitivity and specificity is maximized\cite{fluss2005youden}.
+In the context of this thesis, Youden's J statistic is employed to evaluate the performance of retrieval-augmented generation systems, particularly in scenarios where both false positives and false negatives have significant implications. By maximizing Youden's J, the system can achieve a balance between correctly retrieving relevant information and minimizing the retrieval of irrelevant data.
 \section{Key Takeaways}
 This chapter established the foundations of retrieval in modern intelligent systems. Machine learning models based on BERT-transformer \cite{bertpretrainingdeepbidirectional} arquitecture and variants surpass purely lexical methods by providing semantic understanding. Vector databases store their embeddings in efficient indexes for nearest neighbor search, enabling efficient retrieval tasks such as question answering. Similarity metrics complete the foundation by offering tools to evaluate performance, forming the basis for later experimentation with prompt engineering.
 %\subsection{Rag Variants}

@@ -81,20 +81,20 @@ Thought: [Next reasoning step based on observation]\\
 
 For example, to answer "What is the population of Paris and how does it compare to London?":
 
-\begin{lstlisting}[language={},basicstyle=\ttfamily\footnotesize,caption={ReAct Example: Population Comparison Query}]
+\begin{lstlisting}[language={},breaklines=true,basicstyle=\ttfamily\footnotesize,caption={ReAct Example: Population Comparison Query}]
 Q: What is the population of Paris and how does it compare to London?
 Thought: I need to find the current population of both cities to make a comparison. I'll start by 
-searching for Paris's population.\\
-Action: Search[Paris population 2023]\\
-Observation: Paris has approximately 2.16 million inhabitants in the city proper (2023 estimate).\\
-Thought: Now I need London's population for comparison.\\
-Action: Search[London population 2023]\\
-Observation: London has approximately 8.98 million inhabitants (2023 estimate).\\
+searching for Paris's population.
+Action: Search[Paris population 2023]
+Observation: Paris has approximately 2.16 million inhabitants in the city proper (2023 estimate).
+Thought: Now I need London's population for comparison.
+Action: Search[London population 2023]
+Observation: London has approximately 8.98 million inhabitants (2023 estimate).
 Thought: Paris has about 2.16 million people while London has 8.98 million, so London is roughly 4 
-times larger.\\
-Action: Calculate[8.98 / 2.16]\\
-Observation: 8.98 $\div$ 2.16 $\approx$ 4.16\\
-Thought: The calculation confirms London is about 4.16 times larger than Paris.\\
+times larger.
+Action: Calculate[8.98 / 2.16]
+Observation: 8.98 $\div$ 2.16 $\approx$ 4.16
+Thought: The calculation confirms London is about 4.16 times larger than Paris.
 Final Answer: Paris has approximately 2.16 million inhabitants, while London has 8.98 million, 
 making London about 4.16 times larger than Paris.
 \end{lstlisting}

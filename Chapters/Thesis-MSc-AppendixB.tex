@@ -2,123 +2,248 @@
 % This is Appendix B
 % !TEX root = ../main.tex
 % #############################################################################
-\chapter{A Large Table}
+% Plain text listings style (no syntax highlighting)
+\lstdefinelanguage{plaintext}{}
+\lstset{
+  language=plaintext,
+  breaklines=true,
+  basicstyle=\ttfamily\small,
+  columns=fullflexible,
+  keepspaces=true,
+  breakatwhitespace=true,
+  showstringspaces=false,
+  keywordstyle=,
+  commentstyle=,
+  stringstyle=,
+  % Color brace-delimited placeholders and keep braces visible
+  moredelim=**[s][\color{blue}]{\{}{\}}
+}
+\chapter{Prompts}
 \label{chapter:appendixB}
 
-Aliquam et nisl vel ligula consectetuer suscipit. Morbi euismod enim eget neque. Donec sagittis massa. Vestibulum quis augue sit amet ipsum laoreet pretium. Nulla facilisi. Duis tincidunt, felis et luctus placerat, ipsum libero vestibulum sem, vitae elementum wisi ipsum a metus. Nulla a enim sed dui hendrerit lobortis. Donec lacinia vulputate magna. Vivamus suscipit lectus at quam. In lectus est, viverra a, ultricies ut, pulvinar vitae, tellus. Donec et lectus et sem rutrum sodales. Morbi cursus. Aliquam a odio. Sed tortor velit, convallis eget, porta interdum, convallis sed, tortor. Phasellus ac libero a lorem auctor mattis. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+This appendix contains the prompts used in the various stages of the project, including metadata extraction, question generation, and agent interaction. Each prompt is designed to guide the \gls{LLM} in performing specific tasks effectively.
 
-Nunc auctor bibendum eros. Maecenas porta accumsan mauris. Etiam enim enim, elementum sed, bibendum quis, rhoncus non, metus. Fusce neque dolor, adipiscing sed, consectetuer et, lacinia sit amet, quam. Suspendisse wisi quam, consectetuer in, blandit sed, suscipit eu, eros. Etiam ligula enim, tempor ut, blandit nec, mollis eu, lectus. Nam cursus. Vivamus iaculis. Aenean risus purus, pharetra in, blandit quis, gravida a, turpis. Donec nisl. Aenean eget mi. Fusce mattis est id diam. Phasellus faucibus interdum sapien. Duis quis nunc. Sed enim.
-Nunc auctor bibendum eros. Maecenas porta accumsan mauris. Etiam enim enim, elementum sed, bibendum quis, rhoncus non, metus. Fusce neque dolor, adipiscing sed, consectetuer et, lacinia sit amet, quam.
+\section{Metadata Extraction Prompt}\label{sec:metadata-extraction-prompt}\label{prompt:metadata-extraction}
+\subsection{Prompt Constants}
+\begin{itemize}
+    \item \texttt{DEFAULT\_TUPLE\_DELIMITER}: <|>
+    \item \texttt{DEFAULT\_RECORD\_DELIMITER}: \#\#
+    \item \texttt{DEFAULT\_COMPLETION\_DELIMITER}: <|COMPLETE|>
+    \item \texttt{DEFAULT\_ENTITY\_TYPES}: organization, person, location, event
+\end{itemize}
 
-\input{./tables_and_code/table_example.tex}
+\subsection{Entity Extraction Prompt}\label{prompt:entity-extraction}
+\begin{lstlisting}
+Goal-
+Given a text document that is potentially relevant to this activity and a list of entity types, identify all entities of those types from the text and all relationships among the identified entities.
 
-\textcolor{violet}{As \Cref{table:table1} shows, the data can be inserted from a file, in the case of a somehow complex structure. Notice the Table footnotes.}	
+-Steps-
+1. Identify all entities. For each identified entity, extract the following information:
+- entity_name: Name of the entity, use same language as input text. If English, capitalized the name.
+- entity_type: One of the following types: [{entity_types}]
+- entity_description: Comprehensive description of the entity's attributes and activities
+Format each entity as ("entity"{tuple_delimiter}<entity_name>{tuple_delimiter}<entity_type>{tuple_delimiter}<entity_description>
 
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi commodo, ipsum sed pharetra gravida, orci magna rhoncus neque, id pulvinar odio lorem non turpis. Nullam sit amet enim. Suspendisse id velit vitae ligula volutpat condimentum. Aliquam erat volutpat. Sed quis velit. Nulla facilisi. Nulla libero. Vivamus pharetra posuere sapien. Nam consectetuer. Sed aliquam, nunc eget euismod ullamcorper, lectus nunc ullamcorper orci, fermentum bibendum enim nibh eget ipsum. Donec porttitor ligula eu dolor. Maecenas vitae nulla consequat libero cursus venenatis. Nam magna enim, accumsan eu, blandit sed, blandit a, eros. 
+2. From the entities identified in step 1, identify all pairs of (source_entity, target_entity) that are *clearly related* to each other.
+For each pair of related entities, extract the following information:
+- source_entity: name of the source entity, as identified in step 1
+- target_entity: name of the target entity, as identified in step 1
+- relationship_description: explanation as to why you think the source entity and the target entity are related to each other
+- relationship_strength: a numeric score indicating strength of the relationship between the source entity and target entity
+- relationship_keywords: one or more high-level key words that summarize the overarching nature of the relationship, focusing on concepts or themes rather than specific details
+Format each relationship as ("relationship"{tuple_delimiter}<source_entity>{tuple_delimiter}<target_entity>{tuple_delimiter}<relationship_description>{tuple_delimiter}<relationship_keywords>{tuple_delimiter}<relationship_strength>
 
-\textcolor{violet}{And now an example (\Cref{tab:lon_table}) of a table that extends to more than one page. Notice the repetition of the Caption (with indication that is continued) and of the Header, as well as the continuation text at the bottom.}
+3. Identify high-level key words that summarize the main concepts, themes, or topics of the entire text. These should capture the overarching ideas present in the document.
+Format the content-level key words as ("content_keywords"{tuple_delimiter}<high_level_keywords>)
 
-\begin{center}
-\begin{longtable}{|l|l|l|}
-\caption[Example of a very long table spreading in several pages]{Example of a very long table spreading in several pages} \label{tab:lon_table} \\
+4. Return output in English as a single list of all the entities and relationships identified in steps 1 and 2. Use **{record_delimiter}** as the list delimiter.
 
-\hline \multicolumn{1}{|c|}{\textbf{Time (s)}} & \multicolumn{1}{c|}{\textbf{Triple chosen}} & \multicolumn{1}{c|}{\textbf{Other feasible triples}} \\ \hline 
-\endfirsthead
+5. When finished, output {completion_delimiter}
 
-\multicolumn{3}{c}%
-{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
-\hline \multicolumn{1}{|c|}{\textbf{Time (s)}} &
-\multicolumn{1}{c|}{\textbf{Triple chosen}} &
-\multicolumn{1}{c|}{\textbf{Other feasible triples}} \\ \hline 
-\endhead
+###################### 
+-Examples-
+###################### 
+Entity_types: [type1, type2, ...]
+Text:
+<example input text>
+################
+Output:
+("entity"<|>"Name"<|>"Type"<|>"Description")##
+("relationship"<|>"Source"<|>"Target"<|>"Description"<|>"Keywords"<|>Strength)##
+("content_keywords"<|>"keywords"){completion_delimiter}
 
-\hline \multicolumn{3}{|r|}{{Continued on next page}} \\ \hline
-\endfoot
+-Real Data-
+###################### 
+Entity_types: {entity_types} 
+Text: {input_text} 
+###################### 
+Output:
+\end{lstlisting}
 
-\hline \hline
-\endlastfoot
-0 & (1, 11, 13725) & (1, 12, 10980), (1, 13, 8235), (2, 2, 0), (3, 1, 0) \\
-2745 & (1, 12, 10980) & (1, 13, 8235), (2, 2, 0), (2, 3, 0), (3, 1, 0) \\
-5490 & (1, 12, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-8235 & (1, 12, 16470) & (1, 13, 13725), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-10980 & (1, 12, 16470) & (1, 13, 13725), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-13725 & (1, 12, 16470) & (1, 13, 13725), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-16470 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-19215 & (1, 12, 16470) & (1, 13, 13725), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-21960 & (1, 12, 16470) & (1, 13, 13725), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-24705 & (1, 12, 16470) & (1, 13, 13725), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-27450 & (1, 12, 16470) & (1, 13, 13725), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-30195 & (2, 2, 2745) & (2, 3, 0), (3, 1, 0) \\
-32940 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-35685 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-38430 & (1, 13, 10980) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-41175 & (1, 12, 13725) & (1, 13, 10980), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-43920 & (1, 13, 10980) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-46665 & (2, 2, 2745) & (2, 3, 0), (3, 1, 0) \\
-49410 & (2, 2, 2745) & (2, 3, 0), (3, 1, 0) \\
-52155 & (1, 12, 16470) & (1, 13, 13725), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-54900 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-57645 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-60390 & (1, 12, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-63135 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-65880 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-68625 & (2, 2, 2745) & (2, 3, 0), (3, 1, 0) \\
-71370 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-74115 & (1, 12, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-76860 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-79605 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-82350 & (1, 12, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-85095 & (1, 12, 13725) & (1, 13, 10980), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-87840 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-90585 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-93330 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-96075 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-98820 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-101565 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-104310 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-107055 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-109800 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-112545 & (1, 12, 16470) & (1, 13, 13725), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-115290 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-118035 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-120780 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-123525 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-126270 & (1, 12, 16470) & (1, 13, 13725), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-129015 & (2, 2, 2745) & (2, 3, 0), (3, 1, 0) \\
-131760 & (2, 2, 2745) & (2, 3, 0), (3, 1, 0) \\
-134505 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-137250 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-139995 & (2, 2, 2745) & (2, 3, 0), (3, 1, 0) \\
-142740 & (2, 2, 2745) & (2, 3, 0), (3, 1, 0) \\
-145485 & (1, 12, 16470) & (1, 13, 13725), (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-148230 & (2, 2, 2745) & (2, 3, 0), (3, 1, 0) \\
-150975 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-153720 & (1, 12, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-156465 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-159210 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-161955 & (1, 13, 16470) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-164700 & (1, 13, 13725) & (2, 2, 2745), (2, 3, 0), (3, 1, 0) \\
-\end{longtable}
-\end{center}
+\subsection{Summarize Entity Descriptions Prompt}\label{prompt:summarize-entity-descriptions}
+\begin{lstlisting}
+You are a helpful assistant responsible for generating a comprehensive summary of the data provided below.
+Given one or two entities, and a list of descriptions, all related to the same entity or group of entities.
+Please concatenate all of these into a single, comprehensive description. Make sure to include information collected from all the descriptions.
+If the provided descriptions are contradictory, please resolve the contradictions and provide a single, coherent summary.
+Make sure it is written in third person, and include the entity names so we the have full context.
 
-An example of a large Table that autofits the size to the page margins is illustrated in \Cref{tab:very-widetab}. Please notice the text size that is shrunken in order fot the table to adjust to the page:
+#######
+Entities: {entity_name}
+Description List: {description_list}
+#######
+Output:
+\end{lstlisting}
 
-\begin{table}[htbp]
-\caption{Sample Table.}\label{tab:very-widetab}
-\resizebox{\columnwidth}{!}{\begin{tabular}{|l|l|l|l|l|l|}
-\hline
-URL &  First Time Visit & Last Time Visit & URL Counts & Value & Reference\\
-\hline
-https://web.facebook.com/ & 1521241972 & 1522351859 & 177 & 56640 & [facebook-2021]\\
-http://localhost/phpmyadmin/ & 1518413861 & 1522075694 & 24 & 39312 & database-management\\
-https://mail.google.com/mail/u/ & 1516596003 & 1522352010 & 36 & 33264 & Google-Gmail-2021\\
-https://github.com/shawon100& 1517215489 & 1522352266 & 37 & 27528 & Code-Repository\\
-https://www.youtube.com/ & 1517229227 & 1521978502 & 24 & 14792 & Youtube-video-2021\\
-\hline
-\end{tabular}}
-\end{table}
+\subsection{Missing entities detection}\label{prompt:missing-entities}
+\begin{lstlisting}
+     It appears some entities may have still been missed.  Answer YES | NO if there are still entities that need to be added.
+\end{lstlisting}
+
+\subsection{Continue Extraction Prompts}\label{prompt:continue-extraction}
+\begin{lstlisting}
+MANY entities were missed in the last extraction.
+After summarizing with all the information previously extracted, compared to the original text, it was noticed that the following information was mainly omitted:
+{omit}
+
+The types of entities that need to be added can be obtained from Entity_types,
+or you can add them yourself.
+
+Entity_types: {entity_types}
+
+Add them below using the same format:
+\end{lstlisting}
+
+\subsection{If Loop Extraction Prompt}\label{prompt:if-loop-extraction}
+\begin{lstlisting}
+It appears some entities may have still been missed.  Answer YES | NO if there are still entities that need to be added.
+\end{lstlisting}
+
+\subsection{MiniRAG Query to Keyword Prompt}\label{prompt:minirag-query-keyword}
+\begin{lstlisting}
+---Role---
+
+You are a helpful assistant tasked with identifying both answer-type and low-level keywords in the user's query.
+
+---Goal---
+
+Given the query, list both answer-type and low-level keywords.
+answer_type_keywords focus on the type of the answer to the certain query, while low-level keywords focus on specific entities, details, or concrete terms.
+The answer_type_keywords must be selected from Answer type pool.
+This pool is in the form of a dictionary, where the key represents the Type you should choose from and the value represents the example samples.
+
+---Instructions---
+
+- Output the keywords in JSON format.
+- The JSON should have three keys:
+  - "answer_type_keywords" for the types of the answer. In this list, the types with the highest likelihood should be placed at the forefront. No more than 3.
+  - "entities_from_query" for specific entities or details. It must be extracted from the query.
+######################
+-Examples-
+######################
+[Example structure omitted for brevity.]
+-Real Data-
+######################
+Query: {query}
+Answer type pool:{TYPE_POOL}
+######################
+Output:
+\end{lstlisting}
+\subsubsection{Example structure:}
+\begin{lstlisting}
+######################
+-Examples-
+######################
+Query: <example query>
+Answer type pool: { ... }
+################
+Output:
+{
+  "answer_type_keywords": ["TYPE1", "TYPE2"],
+  "entities_from_query": ["Entity1", "Entity2"]
+}
+\end{lstlisting}
+
+\subsection{Fail Response Prompt}\label{prompt:fail-response}
+\begin{lstlisting}
+Sorry, I'm not able to provide an answer to that question.
+\end{lstlisting}
+
+\subsection{RAG Response Prompt}\label{prompt:rag-response}
+\begin{lstlisting}
+
+You are a helpful assistant responding to questions about data in the tables provided.
 
 
+Generate a response of the target length and format that responds to the user's question, summarizing all information in the input data tables appropriate for the response length and format, and incorporating any relevant general knowledge.
+If you don't know the answer, just say so. Do not make anything up.
+Do not include information where the supporting evidence for it is not provided.
 
 
+{response_type}
 
+
+{context_data}
+
+Add sections and commentary to the response as appropriate for the length and format. Style the response in markdown.
+\end{lstlisting}
+
+\section{Agent Instruction Prompt}\label{sec:agent-instruction-prompt}\label{prompt:agent-instruction}
+\begin{lstlisting}
+You are a helpful assistant with access to a Weaviate database via tools.
+
+Goal:
+
+Instructions:
+\end{lstlisting}
+\begin{lstlisting}
+You are a helpful assistant with access to a Weaviate database via tools.
+
+Goal:
+- Retrieve relevant information and provide direct, concise answers in Portuguese.
+- Always ground answers in retrieved content and cite source file paths; include a short quote when helpful.
+
+Instructions:
+- When you need data, request the 'weaviate-query' tool.
+- Do not ask for clarification; do your best with the information available.
+- Parse tool results to extract the key text and file_path.
+- When you know the final answer, prefix it exactly with: "FINAL ANSWER: "
+\end{lstlisting}
+
+\section{Algorithm: Naive Weaviate Hybrid + grouped\_task RAG}\label{alg:naive-weaviate-hybrid}
+\begin{algorithm}[H]
+  \DontPrintSemicolon
+  \SetKwInOut{Input}{Input}
+  \SetKwInOut{Output}{Output}
+  \Input{\begin{tabular}{@{}l@{}}
+    User query $q$; Weaviate collection $rag$ (e.g., ``Dataset'');\\
+    Hybrid weight $\alpha=0.7$; top-$k=3$; target\_vector~=~\texttt{"text\_vector"};\\
+    Portuguese prefix $P$ = ``Responda de forma breve e objetiva em português (pt-PT): ''
+  \end{tabular}}
+  \Output{\begin{tabular}{@{}l@{}}
+    Answer text $a$; retrieved list $R$ of tuples (\texttt{file\_path}, distance)
+  \end{tabular}}
+  \BlankLine
+  $grouped\_task \leftarrow P \Vert q$ \tcp*{Enforce pt-PT and brevity}
+  $result \leftarrow rag.generate.hybrid($
+    $query{=}q,$ $alpha{=}\alpha,$ $limit{=}k,$\\
+    $target\_vector{=}$\texttt{"text\_vector"}, $grouped\_task{=}grouped\_task,$\\
+    $return\_metadata{=}$\texttt{MetadataQuery(distance=True)}$)$
+  	cp*{Hybrid retrieval + grouped generation}
+  \BlankLine
+  	cp{Extract grouped answer; if empty, fallback to concatenated retrieved texts}
+  $gen \leftarrow result.generative$; $a \leftarrow$ \texttt{None}\;
+  \If{$gen \neq \varnothing$ \textbf{and} $gen.text$ exists}{
+    $a \leftarrow gen.text$
+  }
+  \Else{
+    $T \leftarrow$ first 2 retrieved object texts from $result.objects$ (truncate as needed)\;
+    $a \leftarrow$ join($T$, ``\textbackslash n---\textbackslash n'')\; 
+  }
+  \BlankLine
+  	cp{Collect provenance and scores}
+  $R \leftarrow [\; (obj.properties[\texttt{"file\_path"}], obj.metadata.distance) \;\mid\; obj \in result.objects\; ]$\;
+  \BlankLine
+  \Return $a, R$\;
+  \caption{Naive RAG over Weaviate using Hybrid($\alpha{=}0.7$) retrieval and grouped\_task generation}
+\end{algorithm}

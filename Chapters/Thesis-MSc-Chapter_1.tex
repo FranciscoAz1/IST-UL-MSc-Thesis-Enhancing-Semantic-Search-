@@ -17,24 +17,39 @@ Due to confidentiality constraints, the specific clients using Edoclink cannot b
 % #############################################################################
 \section{Motivation}
 
-In recent years, the development of \glsxtrfull{LLM}, such as ChatGPT, LLama, Gemini, etc., has marked a significant milestone in the evolution of \gls{NLP}. These models stand out for their ability to understand and generate text in natural language with high precision and context scale. These advancements were made possible by the introduction of the Transformer architecture \cite{vaswani2017attention}.
+Enterprises still struggle to find the right information quickly and safely. Keyword search over heterogeneous repositories yields brittle results; users either get too little or too much, and answers are not grounded in the right documents. Recent progress in \glsxtrfull{LLM}s enables more semantic, context-aware retrieval and answering, but naïvely applying them in corporate settings collides with constraints on privacy, structure, and cost.
 
-The Transformer revolutionized the field by introducing advanced self-attention mechanisms and scalability, enabled by its highly parallelizable structure. Unlike previous architectures such as \glsxtrfull{RNN} and \glsxtrfull{LSTM}, which rely on sequential processing, the Transformer uses multi-head attention and parallel operations to capture long-range dependencies in large datasets more efficiently. This innovation is the technological foundation of modern \gls{LLM} like ChatGPT, LLama, Gemini, etc., allowing them to handle much more complex, diverse, and large-scale contexts than sequential types.
+Modern models build on the Transformer architecture~\cite{vaswani2017attention}, which scales attention to capture long-range dependencies far beyond earlier \glsxtrfull{RNN}/\glsxtrfull{LSTM} approaches. Combined with retrieval-augmented generation (\gls{RAG})—where embeddings index content and retrieved passages ground responses—LLMs can unlock far better enterprise search experiences.
 
-\gls{LLM} excel not only in their ability to understand and generate text with high accuracy but also in their ability to process large volumes of information, with complex \gls{RAG} systems. That use embeddings to process text in to vectors better indexed with \gls{RAG}, making them indispensable tools for organizations looking to transform large amount of information into useful knowledge. Their implementation enables more efficient and contextualized interactions with organizational data, offering precise responses to complex queries and optimizing decision-making processes based on information.
+However, straightforward \gls{RAG} often falls short in practice: heterogeneous sources (mixed-quality PDFs, scans without text, inconsistent metadata) degrade indexing and recall; structure-awareness is required because many queries depend on organizational context (entity, folder, workflow), not just local text; privacy and compliance demand local data handling with auditable access aligned to \glsxtrfull{GDPR}; latency and cost constraints favor efficient local components for predictable performance; and answer quality suffers when models drift or hallucinate without strong grounding and planning.
 
-The combined use of \gls{RAG} and \gls{LLM} represents a promising solution to overcome these challenges. Models like ChatGPT and LLama which can be embedded with \gls{RAG} have demonstrated high performance in the contextualized retrieval of information and responding to complex queries. However, implementing these models in a corporate context requires a customized approach that respects information privacy and confidentiality, integration with existing organized information, and is scalable to meet the specific needs of each client. Additionally, it is necessary to ensure that the models can operate efficiently in local environments, ensuring that security and compliance with regulations, such as \glsxtrfull{GDPR}, are fully met.
+This thesis is motivated by building a lightweight, structure-aware, and privacy-preserving \gls{RAG} stack that integrates with existing systems (e.g., Edoclink) and improves end-to-end retrieval quality with minimal operational overhead.
+
+\subsubsection{Motivating Use Case: Procurement Delivery Acceptance}
+\label{subsec:motivation-usecase}% chktex 24
+Consider procurement delivery acceptance reports: routine documents that confirm receipt and acceptance of goods or services and typically include dates, quantities, and conditions. Below is a minimal vignette that illustrates the kind of precise, document-grounded answer this thesis targets.
+
+\paragraph{Document (example).}
+
+\begin{lstlisting}[breaklines=true]
+Delivery Acceptance Report: Ergonomic Chairs (PO-4821).
+Supplier: LusOffice, Lda.
+Delivery note: DN-2024-146; delivery date: 2024-03-28; destination: Operations, Floor 3, Dock B.
+Items: 60 ergonomic chairs (model ErgoFlex-300); one unit damaged on arrival and replaced on-site by the carrier.
+Inspection: Facilities (Maria Santos, Facilities Manager).
+Final acceptance recorded on 2024-03-31 after facilities sign-off.
+\end{lstlisting}
+
+\paragraph{Question.} I am looking for the ergonomic chairs delivery to Operations; did we officially accept it, when was it signed off, and by whom?
+
+\paragraph{Gold answer.} Accepted on 2024-03-31 after facilities sign-off (Maria Santos). Source: \textit{Delivery Acceptance Report: Ergonomic Chairs (PO-4821)}
+
+This example illustrates realistic user behavior and the kind of precise, document-grounded answer this thesis targets. It also highlights key challenges: the answer is not a verbatim excerpt but requires reasoning over multiple fields (item type, location, acceptance status, date, signatory); users may not know exact terms or document locations, so retrieval needs to be semantic and context-aware; and the answer must remain auditable and grounded in source content for compliance.
+
+This motivates systems that intuitively retrieve the right information fast, ground answers in source content, and keep results auditable. While keyword search and structure-based navigation exist, they often depend on exact terms and prior knowledge of where content resides; a semantic, context-aware approach reduces this burden by surfacing relevant sources and grounding answers in them. This is especially helpful for non-expert users who need quick, accurate information without deep familiarity with document locations or terminology, and for users working with highly dynamic document repositories where manual organization is impractical.
 
 \section{Objectives}
-This thesis aims to design and implement a lightweight yet functional architecture for improving search and organization of information in company environments. The proposed system integrates a set of components and services with the following main objectives:
-\begin{itemize}
-\item \textbf{Decentralized Semantic Search:} Develop a system that enables decentralized semantic search across multiple databases of information, ensuring accessibility and scalability.
-\item \textbf{Retrieval-Augmented Generation (RAG) Pipeline:} Implement a complete RAG pipeline capable of processing and indexing documents. This pipeline will extract and store document metadata, and semantic embeddings enabling semantic retrieval efficiently.
-\item \textbf{Metadata Extraction and Organization Suggestions:} Automatically extract metadata from documents to improve search accuracy and suggest organizational structures for better document management.
-\item \textbf{Internet-Aware Search Capabilities:} Explore the integration of external sources and databases over the internet to enable the system to retrieve information beyond the local knowledge base, when appropriate.
-\item \textbf{Agentic Search System:} Implement a chatbot interface for document search, that is capable of easily connecting to external sources of information. Enabling conversational search of documents.
-\end{itemize}
-Together, these objectives form the basis of a robust, scalable, and cost-efficient information retrieval system tailored for use in dynamic and distributed company environments.
+This thesis aims to design and implement a lightweight yet functional architecture for improving search and organization of information in company environments. Concretely, it targets: (i) decentralized semantic search across multiple information stores for accessibility and scalability; (ii) a complete retrieval-augmented generation (\gls{RAG}) pipeline to process and index documents, extract and persist metadata, and compute embeddings for efficient semantic retrieval; (iii) automatic metadata extraction and organization suggestions to boost search accuracy and encourage better document management; (iv) optional internet-aware search to enrich results with external sources when appropriate; and (v) an agentic, conversational search interface (chatbot) that can connect to external tools and data sources. Together, these objectives form the basis of an intuitive, robust, scalable, and cost-efficient information retrieval system tailored for dynamic distributed company environments.
 % #############################################################################
 \section{Organization of the Document}
 
