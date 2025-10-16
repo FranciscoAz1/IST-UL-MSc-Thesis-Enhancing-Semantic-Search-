@@ -19,7 +19,7 @@ In this thesis, Nougat is used as it is open-source and outputs Markdown, the pr
 \section{Designing the Retrieval-Oriented Weaviate Schema in Edoclink}
 \label{sec:schema}
 
-This section introduces the architectural motivation for using a retrieval-oriented schema in Edoclink, built on Weaviate. The core aim is to enable semantic search that is aware of the organizational structure—workflows, stages, entities, folders, and files—rather than treating documents as isolated items. The schema is designed to reflect real business logic, supporting queries that traverse relationships and return results grounded in context.
+The first step was the definition of a semantic data layer using Weaviate, integrated into the Edoclink platform. The goal was to capture the organizational logic of business documents (workflows, stages, entities, folders, and files) within a structure that supports semantic search and generative reasoning. To this end, six core classes were defined (Fluxo, Etapa, Entidade, Pasta, Ficheiro, Metadados), reflecting Edoclink’s information model. These were initially connected through cross-references, ensuring that workflows could be linked to their stages, entities to their folders, and files to their associated metadata. 
 
 \begin{figure}[h!]
     \centering
@@ -28,7 +28,14 @@ This section introduces the architectural motivation for using a retrieval-orien
     \label{fig:weaviate_class}
 \end{figure}
 
-Studying this schema is essential for two reasons: (1) it provides a foundation for advanced, structure-aware semantic retrieval in company environments, and (2) it enables the evaluation of how well semantic search can leverage organizational context for more relevant and explainable results. The study of this schema will be revisited in section~\ref{sec:schema_example_study}.
+The purpose for this research is to prove the possibility of semantic querying by organizational structure. A few examples were tested to a synthetically populated weaviate database with this schema, entities, stages, fluxes.
+
+As the research progressed, the schema was refined by embedding \textit{entities}, \textit{file paths}, and \textit{metadata} directly into the object representation. This ensured that objects became self-contained, enabling consistent deletion cascades and reducing reliance on cross-reference traversal for retrieval. The UML diagram in Figure~\ref{fig:weaviate_class} illustrates this abstract model, which was investigated as a candidate for efficient implementation. 
+In practice, the real deployment within Edoclink is more complex, but this abstraction served as a foundation for evaluating design choices and guiding the development of scalable semantic retrieval. The results presented here should therefore be interpreted as a conceptual example rather than a one-to-one description of the production system.
+
+Weaviate natively supports multiple collections in the same instance, and this functionality is employed in Edoclink to store independent datasets under a shared schema, with each instance exposed through web hooks. While not a methodological focus of this work, this results in a decentralized-like architecture, as data is distributed across multiple instances. This design increases the complexity of retrieval, since agents must identify and query the appropriate web hooks when traversing datasets.  
+
+In summary, this section has focused on the database perspective: defining the schema, refining it through embedded fields, and placing it in the context of multi-tenant storage. The next section shifts attention to Agentic AI, where the challenge is not schema design but orchestrating retrieval with agents. This transition reflects the broader research landscape, where developments such as Weaviate’s Query Agent \cite{weaviate} exemplify the move toward automated reasoning layers capable of multi-step retrieval and problem solving.
 
 \section{Metadata Extraction with \gls{LLM} Profiling and Graph Structure}
 \label{sec:metadata_extraction}
