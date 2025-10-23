@@ -4,10 +4,10 @@
 % #############################################################################
 % Change the Name of the Chapter i the following line
 \fancychapter{State of the Art}
-\label{chap:State_of_Art}
+\label{chap:stateofart}
 \cleardoublepage
 
-This chapter surveys \gls{AAI}, language-model driven agents that plan, use tools, and manage memory, to improve retrieval and answer quality. We focus on methods that (i) reason and decompose tasks, (ii) call external tools and data sources, and (iii) maintain working åand long-term memory. We also connect these capabilities to \gls{RAG} pipelines that must respect organizational structure (folders, metadata) and access control.
+Building on the foundational retrieval methods introduced in Chapter~\ref{chap:back}, this chapter surveys \gls{AAI}—language-model driven agents that plan, use tools, and manage memory to improve retrieval and answer quality. We focus on methods that (i) reason and decompose tasks, (ii) call external tools and data sources, and (iii) maintain working memory and long-term context. These agentic capabilities address the challenges enterprises face with semantic search (Chapter~\ref{chap:intro}) by adding planning and reasoning to retrieval-augmented generation (\gls{RAG}) pipelines that must respect organizational structure (folders, metadata) and access control.
 
 \section{From Prompting to Agentic Behavior}
 \textbf{Prompt engineering.} Well-designed instructions can control output format, tone, and constraints, and can inject short domain context. History (dialog state) may be summarized and re-provided as context; however, prompting alone does not guarantee factuality or stable tool use.
@@ -39,7 +39,7 @@ The paper \cite{chainofzero} tested this prompts on the MultiArith dataset with 
 The template "Let's think step by step" got the highest score 78,7 \% , while others such as "Abrakadabra!" got a 15,5 \% which surprisingly isn't far from raw prompt template which scored 15,5 \%.
 
 \subsubsection{Conclusion}
-Form the paper \cite{chainofzero}, the chain of thought proposed in \cite{chainofthought} was tested to evaluate the actual difference of using few-shot prompt with chain of thought.
+From the paper \cite{chainofzero}, the chain of thought proposed in \cite{chainofthought} was tested to evaluate the actual difference of using few-shot prompt with chain of thought.
 Where the valuable mentions from the GSM8K benchmark, using PALM (540B) model \ref{tab:chainofzero}.
 
 \begin{table}[h!]
@@ -55,7 +55,7 @@ Where the valuable mentions from the GSM8K benchmark, using PALM (540B) model \r
         Few-Shot-CoT \cite{chainofthought} & 56,9 \\
         \hline
     \end{tabular}
-    \caption{Experiment curated results using PALM (540B) \gls{LLM} model \cite{chainofzero}}
+    \caption{Selected experimental results using PALM (540B) \gls{LLM} model \cite{chainofzero}}
     \label{tab:chainofzero}
 \end{table}
 
@@ -63,7 +63,7 @@ According to the results see in the table above \ref{tab:chainofzero} in all the
 
 
 \subsection{Tree-of-Thoughts (ToT)}
-Yao et al.~\cite{treeofthought} extended CoT by introducing branching reasoning. Each intermediate step (a ``thought'') forms part of a search tree, where multiple candidate continuations can be generated, evaluated, and backtracked. This enables deliberate problem solving under uncertainty. On tasks such as the Game of 24, Mini Crosswords, and constrained story generation, ToT substantially outperformed both standard prompting and CoT (e.g., GPT-4 with ToT achieved 74\% accuracy on Game of 24, versus 19\% with CoT). The main trade-off is computational cost: ToT requires generating and evaluating many reasoning branches, making it slower and more resource-intensive.
+Yao et al.~\cite{treeofthought} extended CoT by introducing branching reasoning. Each intermediate step (a ``thought'') forms part of a search tree, where multiple candidate continuations can be generated, evaluated, and backtracked. This enables deliberate problem solving under uncertainty. On tasks such as the Game of 24, Mini Crosswords, and constrained story generation, ToT substantially outperformed both standard prompting and CoT (e.g., \gls{GPT}-4 with ToT achieved 74\% accuracy on Game of 24, versus 19\% with CoT). The main trade-off is computational cost: ToT requires generating and evaluating many reasoning branches, making it slower and more resource-intensive.
 
 \subsection{Reasoning \emph{and} Acting (ReAct)}
 Yao et al.~\cite{react} proposed ReAct, a framework that interleaves reasoning traces with external actions (e.g., database queries, web search, or calculator calls) and observations. Unlike CoT, which is limited to internal reasoning, ReAct closes the loop between planning and evidence gathering, allowing the model to ground its reasoning in retrieved information. On knowledge-intensive QA tasks such as HotpotQA and FEVER, ReAct improved factual accuracy and significantly reduced hallucinations (e.g., from 14\% to 6\%). It also achieved strong performance on interactive environments like ALFWorld, where reasoning must be combined with sequential decision-making. The main trade-off is higher latency and token cost, since each step requires both reasoning tokens and tool interactions, but the gains in groundedness and reliability are substantial for retrieval-augmented applications.
@@ -111,7 +111,7 @@ Each of these actions depends on precise tool calls to backend APIs—such as \t
 In such a setting, tool calls must be precise. Incorrect or misunderstood parameters can result in failed transactions or inconsistent order data—highlighting the importance of reliable tool use and orchestration.
 
 \textbf{Toolformer}~\cite{schick2023toolformer} introduced the concept of \emph{self-taught tool use}.  
-It fine-tunes a language model (based on GPT-J) using a self-annotation loop: during training, the model is prompted to insert possible API calls into text, these calls are executed, and their returned outputs are evaluated by measuring whether they reduce the model’s prediction loss on masked tokens.  
+It fine-tunes a language model (based on \gls{GPT}-J) using a self-annotation loop: during training, the model is prompted to insert possible API calls into text, these calls are executed, and their returned outputs are evaluated by measuring whether they reduce the model's prediction loss on masked tokens.
 If an API’s result helps the model predict the next token more accurately, that example is kept as supervision.  
 This process allows the model to learn when a tool should be invoked and how to integrate its output into natural language responses.  
 
@@ -126,7 +126,7 @@ However, like Toolformer,  it still requires re-training when entirely new APIs 
 \textbf{HuggingGPT}~\cite{shen2023hugginggpt} reframed orchestration as \emph{model routing}.  
 It treats the LLM as a planner that decomposes complex user requests into subtasks and, for each subtask, queries a catalog of expert models hosted on the Hugging Face hub.  
 Although this demonstrated cross-modal reasoning across text, vision, and audio tasks, the approach introduced limited methodological novelty beyond Gorilla’s retrieval step.  
-Its evaluation was conducted through human assessment on 130 user requests, where the best-performing model (GPT-3.5) achieved a model-selection passing rate of \textbf{93.89\%}, a rationality score of \textbf{84.29\%}, and a final-response success rate of \textbf{63\%}.
+Its evaluation was conducted through human assessment on 130 user requests, where the best-performing model (\gls{GPT}-3.5) achieved a model-selection passing rate of \textbf{93.89\%}, a rationality score of \textbf{84.29\%}, and a final-response success rate of \textbf{63\%}.
 
 
 

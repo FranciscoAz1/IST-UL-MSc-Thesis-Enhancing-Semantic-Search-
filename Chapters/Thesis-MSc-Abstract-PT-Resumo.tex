@@ -5,6 +5,14 @@
 % use \noindent in firts paragraph
 % reset acronyms
 \glsresetall
+\noindent
+Esta tese concebe e implementa um sistema de pesquisa semântica com recuperação aumentada e baseado em agentes para gestão de documentos corporativos, desenvolvido com a Edoclink. Os repositórios corporativos contêm metadados ricos e fluxos de trabalho que ultrapassam a pesquisa por palavras‑chave. Por exemplo, em verificações de conformidade regulamentar, ao redigir um novo contrato o sistema recupera os regulamentos mais recentes e raciocina sobre eles para sugerir se o rascunho cumpre e que cláusulas podem requerer revisão, com citações para as passagens de origem.
+
+Aproveitamos avanços em \gls{NLP}, centrando em \gls{RAG} e na sua extensão para \gls{AAI}. O pipeline do sistema (i) ingere e normaliza documentos heterogéneos, (ii) indexa o conteúdo numa \gls{VD} com esquemas sensíveis a metadados, e (iii) utiliza \glspl{LLM} orquestrados via \gls{PE} para fundamentar as respostas em evidência recuperada. Estudamos a recuperação de forma isolada—segmentação estrutural/hierárquica, filtragem por metadados e pesquisa híbrida esparsa+densa—e depois implementamos \gls{ARAG}, onde agentes especializados realizam análise da pergunta, seleção de coleções, recuperação iterativa, uso de ferramentas e síntese com citação através de fontes distribuídas.
+
+Validamos em conjuntos de dados e tarefas empresariais representativos, alinhados com os casos de uso da Edoclink, documentando o desenho e a avaliação (qualidade da resposta, rastreabilidade, latência e custo) e fornecendo um guia implementável para contextos empresariais.
+
+Sob limiares otimizados por Youden num benchmark \gls{QA} sintético de 300 questões sobre uma empresa, a métrica Token Recall classificou 61\% das respostas como corretas para o sistema agentic, face a 12–19\% nos baselines ingénuos.
 
 
 

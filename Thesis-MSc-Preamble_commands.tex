@@ -198,25 +198,33 @@
 %\input{Chapters/Thesis-MSc-Acronym-Definitions.tex}
 %
 % -----------------------------------------------------------------------------
-% PACKAGE hyperref
+% PACKAGE microtype (improves hyphenation and protrusion; reduces over/underfull boxes)
 % -----------------------------------------------------------------------------
-% Set links for references and citations in document
+\usepackage{microtype}
+
+% Improve URL breaking: load hyperref with url option tweaks and use xurl for flexible breaks
+% -----------------------------------------------------------------------------
+% Ensure hyperref sees hyphen handling options for URLs
+\PassOptionsToPackage{hyphens}{url}
 \usepackage{hyperref}
-% pre-configuration of hyperref
+% Use xurl to allow line breaks at more characters in \url and \href
+\usepackage{xurl}
+% hyperref configuration
 \hypersetup{ colorlinks=true,
-             citecolor=cyan,
-             linkcolor=darkgray,
-             urlcolor=teal,
-             breaklinks=true,
-             bookmarksnumbered=true,
-             bookmarksopen=true,
+			 citecolor=cyan,
+			 linkcolor=darkgray,
+			 urlcolor=teal,
+			 breaklinks=true,
+			 bookmarksnumbered=true,
+			 bookmarksopen=true,
 }
 %
+% (Retain url package if needed by other packages; xurl supersedes it for breaking.)
+%\usepackage{url}
+
+% Provide gentle global fallback to avoid overfull lines without harming layout
 % -----------------------------------------------------------------------------
-% PACKAGE url:
-% -----------------------------------------------------------------------------
-% Provides better support for handling and breaking URLs.
-\usepackage{url} 
+\setlength{\emergencystretch}{2em}
 %
 % -----------------------------------------------------------------------------
 % PACKAGE Cleveref:
