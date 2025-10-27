@@ -8,26 +8,26 @@
 % The following line allows to ref this chapter
 \label{chap:intro}
 \section{Contextual Background}
-The topic of this thesis arises from the context of Edoclink, a cloud-based business management platform developed by Link Consulting.\footnote{\url{https://linkconsulting.com/what-we-do/products/edoclink-v8/}} Edoclink is designed to support organizations in managing their information in an effective, autonomous, and scalable manner, through the integration of advanced artificial intelligence techniques. The platform offers a broad range of functionalities for document management, workflow automation, and general information governance, making it increasingly feature-rich and adaptable to diverse operational needs.
+The topic of this thesis arises from the context of Edoclink—a cloud-based business management platform developed by Link Consulting.\footnote{\url{https://linkconsulting.com/what-we-do/products/edoclink-v8/}} Edoclink is designed to support organizations in managing their information in an effective, autonomous, and scalable manner, through the integration of advanced artificial intelligence techniques. The platform offers a wide range of functionalities for document management, workflow automation, and general information governance, making it increasingly feature rich and adaptable to diverse operational needs.
 
-The recent advancements in natural language processing (\gls{NLP}), particularly with the emergence of (\glsxtrfullpl{LLM}), have introduced new paradigms in document processing by enabling contextually rich, semantically meaningful outputs from unstructured data. This unlocks a new class of intelligent information systems that surpass traditional keyword-based approaches, offering enhanced information extraction, retrieval, and summarization capabilities.
+The recent advancements in natural language processing (\gls{NLP}), particularly with the emergence of large language models\glsxtrfullpl{LLM}, have introduced new paradigms in document processing by enabling contextually rich, semantically meaningful outputs from unstructured data. This has unlocked a new class of intelligent information systems that surpass traditional keyword-based approaches, offering enhanced information extraction, retrieval, and summarization capabilities.
 
-Due to confidentiality constraints, specific Edoclink clients cannot be disclosed. However, the work addresses typical challenges in enterprise information management, prioritizing scalability in dynamic environments and high interoperability with existing systems and standards.
+Due to confidentiality constraints, the identities of specific Edoclink clients cannot be disclosed. However, the work addresses typical challenges in enterprise information management, prioritizing scalability in dynamic environments and ensuring high interoperability with existing systems and standards.
 
 % #############################################################################
 \section{Motivation}
 
-Enterprises still struggle to find the right information quickly and safely. Keyword search over heterogeneous repositories yields brittle results; users either get too little or too much, and answers are not grounded in the right documents. Recent progress in \glsxtrfull{LLM}s enables more semantic, context-aware retrieval and answering, but naïvely applying them in corporate settings collides with constraints on privacy, structure, and cost.
+Enterprises still struggle to find the right information quickly and safely. Keyword search over heterogeneous repositories yields brittle results; users either get too little or too much, and answers are not grounded in the right documents. Recent progress in \glsxtrfullpl{LLM} enables more semantic, context-aware retrieval and response, but naively applying them in corporate settings collides with constraints on privacy, structure, and cost.
 
 Modern \gls{ML} models build on the Transformer architecture~\cite{vaswani2017attention}, which scales attention to capture long-range dependencies far beyond earlier \glsxtrfull{RNN}/\glsxtrfull{LSTM} approaches. Combined with retrieval-augmented generation (\gls{RAG})—where embeddings index content and retrieved passages ground responses—\glspl{LLM} can unlock far better enterprise search experiences.
 
-However, straightforward \gls{RAG} often falls short in practice: heterogeneous sources (mixed-quality PDFs, scans without text, inconsistent metadata) degrade indexing and recall; structure-awareness is required because many queries depend on organizational context (entity, folder, workflow), not just local text; privacy and compliance demand local data handling with auditable access aligned to \glsxtrfull{GDPR}; latency and cost constraints favor efficient local components for predictable performance; and answer quality suffers when models drift or hallucinate without strong grounding and planning.
+However, straightforward \gls{RAG} often falls short in practice: heterogeneous sources (mixed-quality PDFs, scans without text, inconsistent metadata) degrade indexing and recall; structure-awareness is required because many queries depend on organizational context (such as entity, folder, workflow), not just local text; privacy and compliance demand local data handling with auditable access aligned with \glsxtrfull{GDPR}; latency and cost constraints favor efficient local components for predictable performance, and answer quality suffers when models drift or hallucinate without strong grounding and planning.
 
-This thesis is motivated by building a lightweight, structure-aware, and privacy-preserving \gls{RAG} stack that integrates with existing systems (e.g., Edoclink) and improves end-to-end retrieval quality with minimal operational overhead.
+This thesis is motivated by the goal of developing an efficient, structure-aware, and privacy-preserving \gls{RAG} stack that integrates with existing systems (e.g., Edoclink) and improves end-to-end retrieval quality with minimal operational overhead.
 
 \subsection{Motivating Use Case: Procurement Delivery Acceptance}
 \label{subsec:motivation-usecase}% chktex 24
-Consider procurement delivery acceptance reports: routine documents that confirm receipt and acceptance of goods or services and typically include dates, quantities, and conditions. Below is a minimal vignette that illustrates the kind of precise, document-grounded answer this thesis targets.
+Consider procurement delivery acceptance reports — routine documents that confirm the receipt and acceptance of goods or services and typically include dates, quantities, and conditions. The following example illustrates the type of precise, document-grounded answer this thesis aims to produce.
 
 \paragraph{Document (example).}\mbox{}\par
 \begin{lstlisting}[breaklines=true]
@@ -39,43 +39,45 @@ Inspection: Facilities (Maria Santos, Facilities Manager).
 Final acceptance recorded on 2024-03-31 after facilities sign-off.
 \end{lstlisting}
 
-\paragraph{Question.} I am looking for the ergonomic chairs delivery to Operations; did we officially accept it, when was it signed off, and by whom?
+\paragraph{Question.} I am looking for the ergonomic chairs delivery to Operations. Did we officially accept it? When was it signed off, and by whom?
 
 \paragraph{Gold answer.} Accepted on 2024-03-31 after facilities sign-off (Maria Santos). Source: \textit{Delivery Acceptance Report: Ergonomic Chairs (PO-4821)}
 
-This example illustrates realistic user behavior and the kind of precise, document-grounded answer this thesis targets. It also highlights key challenges: the answer is not a verbatim excerpt but requires reasoning over multiple fields (item type, location, acceptance status, date, signatory); users may not know exact terms or document locations, so retrieval needs to be semantic and context-aware; and the answer must remain auditable and grounded in source content for compliance.
+This example illustrates realistic user behavior and the kind of precise, document-grounded answer this thesis aims to produce. It also highlights key challenges: the answer is not a verbatim excerpt but requires reasoning across multiple fields (item type, location, acceptance status, date, signatory). Users may not know exact terms or document locations, so retrieval needs to be semantic and context-aware; and the answer must remain auditable and grounded in source content for compliance.
+In this thesis we will go deeper than this example in the actual procurement of the document from a corporate structure schema.
 
-This motivates systems that intuitively retrieve the right information fast, ground answers in source content, and keep results auditable. While keyword search and structure-based navigation exist, they often depend on exact terms and prior knowledge of where content resides; a semantic, context-aware approach reduces this burden by surfacing relevant sources and grounding answers in them. This is especially helpful for non-expert users who need quick, accurate information without deep familiarity with document locations or terminology, and for users working with highly dynamic document repositories where manual organization is impractical.
+This motivates systems that intuitively retrieve the right information quickly, ground answers in source content, and keep results auditable. Although keyword search and structure-based navigation exist, they often depend on exact terms and prior knowledge of where content resides. A semantic, context-aware approach reduces this burden by surfacing relevant sources and grounding answers in them. 
+This is especially helpful for non-expert users who need quick, accurate information without extensive familiarity with document locations or terminology, and for users with highly dynamic document repositories, where manual structuring is impractical.
 
 \section{Objectives}
-This thesis aims to design and implement a lightweight yet functional architecture for improving search and organization of information in company environments. Concretely, it targets: (i) decentralized semantic search across multiple information stores for accessibility and scalability; (ii) a complete retrieval-augmented generation (\gls{RAG}) pipeline to process and index documents, extract and persist metadata, and compute embeddings for efficient semantic retrieval; (iii) automatic metadata extraction and organization suggestions to boost search accuracy and encourage better document management; and (iv) an agentic, reasoning-driven retrieval framework that outperforms naive \gls{RAG} by planning and reflecting over retrieved documents. Together, these objectives form the basis of an intuitive, robust, scalable, and cost-efficient information retrieval system tailored for dynamic distributed company environments.
+This thesis aims to design and implement a lightweight yet functional architecture for improving the search and organization of information in corporate environments. Concretely, it targets: (i) decentralized semantic search across multiple information stores,  improving accessibility and scalability; (ii) a complete retrieval-augmented generation \gls{RAG} pipeline to process and index documents, extract and persist metadata, and compute embeddings for efficient semantic retrieval; (iii) automatic metadata extraction and organization suggestions to boost search accuracy and encourage better document management; and (iv) an agentic and reasoning-driven retrieval framework that outperforms naive \gls{RAG} by planning and reflecting over retrieved documents. Together, these objectives form the basis of an intuitive, robust, scalable, and cost-efficient \gls{IR} system tailored for dynamic, distributed company environments.
 
-\textit{Note:} Internet-aware search and a fully-featured chatbot interface are considered extensions for future work, as the current scope focuses on internal document retrieval within company systems.
+\textit{Note:} Web-integrated search and a fully-featured chatbot interface are considered extensions for future work, as the current scope focuses on internal document retrieval within corporate systems.
 
 \section{Contributions}
-The thesis delivers a cohesive, open-source stack for structure-aware semantic search and agentic retrieval. The main code contributions are:
+The thesis delivers a cohesive open-source stack for structure-aware semantic search and agentic retrieval. The main code contributions are as follows:
 
 \begin{itemize}
-	\item \textbf{Weaviate schema and cross-references for organizational context} — The developed schema and implementation of cross-references to structure documents by entity, folder, workflow, and metadata, enabling traversal and schema-aware retrieval in company settings. Includes Docker Compose to run a local Weaviate instance. Repository: \url{https://github.com/FranciscoAz1/weaviate}.
+	\item \textbf{Weaviate schema and cross-references for organizational context} — The schema developed and the implementation of cross-references to structure documents by entity, folder, workflow, and metadata, enabling traversal and schema-aware retrieval in company settings. Includes Docker Compose to run a local Weaviate instance. Repository: \url{https://github.com/FranciscoAz1/weaviate}.
 
 	\item \textbf{Weaviate MCP Servers (standardization for AI agents)} — Two \gls{MCP} server implementations that expose Weaviate as typed tools and resources for LLM agents: (i) a Docker-compatible Go version for registry inclusion and easy containerization, and (ii) a more feature-rich TypeScript version with HTTP transport and grouped query tasks. Repositories: \url{https://github.com/FranciscoAz1/mcp-server-weaviate} (Go) and \url{https://github.com/FranciscoAz1/mcp-server-weaviate-ts} (TypeScript).
 
 	\item \textbf{MiniRAG: retrieval pipeline with query modes and optimizations} — A modular RAG pipeline with additional query modes for different use cases and a Weaviate integration that respects cross-references. Includes optimization techniques such as BART and LexRank summarization, plus notebooks and guidance to implement the system effectively using asynchronous functions (asyncio). Repository: \url{https://github.com/FranciscoAz1/MiniRAG}.
 
-	\item \textbf{Agentic system, benchmark, and evaluation} — An agentic retrieval framework with planning and reflection, evaluation notebooks, and comparative analysis across retrieval strategies (naive vs.\ agentic, single vs.\ multi-collection). Built to operate with Weaviate backends. Repository: \url{https://github.com/FranciscoAz1/AgenticChatbot}.
+	\item \textbf{Agentic system, benchmark, and evaluation} — An agentic retrieval framework with planning and reflection capabilities, evaluation notebooks, and comparative analysis across retrieval strategies (naive vs.\ agentic, single vs.\ multi-collection). Built to operate with Weaviate backends. Repository: \url{https://github.com/FranciscoAz1/AgenticChatbot}.
 \end{itemize}
 
 
 % #############################################################################
 \section{Thesis Organization}
 
-\Cref{chap:back} presents the theoretical background required to understand the developed work, including fundamental concepts of information retrieval, vector representations, and large language models. 
+\Cref{chap:back} presents the theoretical background required to understand the work developed in this thesis , including fundamental concepts of information retrieval, vector representations, and large language models. 
 
-\Cref{chap:stateofart} reviews the state of the art in \glsxtrfull{AAI}, highlighting reasoning frameworks and tool-use paradigms that inspired the proposed architecture. 
+\Cref{chap:stateofart} reviews the state of the art in \gls{AAI}, highlighting reasoning frameworks and tool use paradigms that inspired the proposed architecture. 
 
 
-In \Cref{chap:systemarch}, the overall system architecture is detailed, describing how document processing, schema design, and retrieval components integrate into a unified solution.
+In \Cref{chap:systemarch}, the overall system architecture is detailed, outlining how document processing, schema design, and retrieval components are integrate into a unified solution.
 
-\Cref{chap:results} reports the experimental setup, performance evaluation, and discussion of the obtained results, comparing different retrieval strategies and assessing their effectiveness. 
+\Cref{chap:results} reports on experimental setup, performance evaluation, and discussion of the results, comparing different retrieval strategies and assessing their effectiveness. 
 
-Finally, \Cref{chap:conclusion} concludes the dissertation by summarizing the main contributions, identifying system limitations, and outlining future research directions.
+Finally, \Cref{chap:conclusion} concludes the dissertation, summarizing the main contributions, identifying system limitations, and outlining future research directions.

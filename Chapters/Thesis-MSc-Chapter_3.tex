@@ -10,16 +10,17 @@
 Building on the foundational retrieval methods introduced in Chapter~\ref{chap:back}, this chapter surveys \gls{AAI}—language-model driven agents that plan, use tools, and manage memory to improve retrieval and answer quality. We focus on methods that (i) reason and decompose tasks, (ii) call external tools and data sources, and (iii) maintain working memory and long-term context. These agentic capabilities address the challenges enterprises face with semantic search (Chapter~\ref{chap:intro}) by adding planning and reasoning to retrieval-augmented generation (\gls{RAG}) pipelines that must respect organizational structure (folders, metadata) and access control.
 
 \section{From Prompting to Agentic Behavior}
-\textbf{Prompt engineering.} Well-designed instructions can control output format, tone, and constraints, and can inject short domain context. History (dialog state) may be summarized and re-provided as context; however, prompting alone does not guarantee factuality or stable tool use.
+\textbf{Prompt engineering.} Well-designed instructions can control output format, tone, and constraints, and can inject short domain context.  The dialog history may be summarized and re-provided as context; however, prompting alone does not guarantee factuality or stable tool use.
 
-\textbf{In-context learning vs.\ fine-tuning.} Few-shot prompts adapt behavior without training, at the cost of input tokens and brittle generalization. Fine-tuning bakes patterns into model weights, reducing prompt length and latency, but requires curated data, cost, and re-deployment.
+\textbf{In-context learning vs.\ fine-tuning.} Few-shot prompts adapt behavior without training, at the cost of increased input token usage and brittle generalization. Fine-tuning bakes patterns into model weights, reducing prompt length and latency, but requires curated data, cost, and re-deployment.
 
 \section{Reasoning and Planning}
 \subsection{Chain of Thought (CoT)}
 CoT prompting was introduced by Wei et al.~\cite{chainofthought} to improve reasoning tasks where the input–output mapping is non-trivial (e.g., math problem $\to$ numerical answer). The method adds intermediate reasoning steps in natural language, which bridge the gap between question and solution.
-In benchmarks such as GSM8K and MultiArith, CoT significantly increased accuracy when compared to direct prompting. A refinement, \emph{Self-Consistency CoT} (CoT-SC), samples multiple reasoning chains and returns the most consistent answer, achieving further gains (e.g., PaLM 540B improved from 55\% $\to$ 74\% on GSM8K). However, CoT remains linear: each chain is generated without exploring alternatives.
+In benchmarks such as GSM8K and MultiArith, CoT significantly increased accuracy when compared to direct prompting. A refinement, \emph{Self-Consistency CoT} (CoT-SC), samples multiple reasoning chains and returns the most consistent answer, achieving further gains (e.g., PaLM 540B improved from 55\% $\to$ 74\% on GSM8K). However, CoT remains linear. as each reasoning chain is generated sequentially without exploring alternatives.
 
 \subsubsection{Few-Shot Chain-of-Thought \cite{chainofthought}}
+\label{subsec:Few-ShotCoT}
 Handcraft 8 examples with these fields:
 
 \begin{lstlisting}[language={},basicstyle=\ttfamily\footnotesize,caption={Few-Shot Chain-of-Thought Prompt Template}]
@@ -39,8 +40,8 @@ The paper \cite{chainofzero} tested this prompts on the MultiArith dataset with 
 The template "Let's think step by step" got the highest score 78,7 \% , while others such as "Abrakadabra!" got a 15,5 \% which surprisingly isn't far from raw prompt template which scored 15,5 \%.
 
 \subsubsection{Conclusion}
-From the paper \cite{chainofzero}, the chain of thought proposed in \cite{chainofthought} was tested to evaluate the actual difference of using few-shot prompt with chain of thought.
-Where the valuable mentions from the GSM8K benchmark, using PALM (540B) model \ref{tab:chainofzero}.
+From the paper \cite{chainofzero}, the chain of thought method proposed in \cite{chainofthought} was tested to evaluate the actual difference when using few-shot prompt with chain of thought.
+The results, from the GSM8K benchmark, using PALM (540B) model \ref{tab:chainofzero}.
 
 \begin{table}[h!]
     \centering
@@ -59,14 +60,31 @@ Where the valuable mentions from the GSM8K benchmark, using PALM (540B) model \r
     \label{tab:chainofzero}
 \end{table}
 
-According to the results see in the table above \ref{tab:chainofzero} in all the Few-Shot-CoT is still better. But the fact that Zero-ShoT-CoT is much easier to implement withouth having to come up with specific domain CoT examples. It is the best solution for the thesis for universal application.
+According to the results see in the table above \ref{tab:chainofzero} in all the Few-Shot-CoT is still better. However, Zero-ShoT-CoT is much easier to implement withouth having to come up with specific domain CoT examples. This make it the preferred approach for the thesis, providing a universally applicable solution.
 
 
 \subsection{Tree-of-Thoughts (ToT)}
 Yao et al.~\cite{treeofthought} extended CoT by introducing branching reasoning. Each intermediate step (a ``thought'') forms part of a search tree, where multiple candidate continuations can be generated, evaluated, and backtracked. This enables deliberate problem solving under uncertainty. On tasks such as the Game of 24, Mini Crosswords, and constrained story generation, ToT substantially outperformed both standard prompting and CoT (e.g., \gls{GPT}-4 with ToT achieved 74\% accuracy on Game of 24, versus 19\% with CoT). The main trade-off is computational cost: ToT requires generating and evaluating many reasoning branches, making it slower and more resource-intensive.
 
+The tree in ToT is made up of nodes, which represent states ($s=[x, z_{1...i}]$), that are partial solutions to the problem, with input the thoughts thus far. To generate states, it takes four steps. \textbf{Thought Decomposition}: a thought can be a a line of equation (Game of 24), a couple of words (crosswords),  a full paragraph of a writing plan (Creative Writing), or a class in a structured organizational folder (corporate structural search). Which is composed to a certain length so that a \glspl{LLM} can process it. \textbf{Thought Generator}, given a state ($s=[x, z_{1...i}]$), the model generates the next thoughts ($G(p_\theta,s,k)$. The paper ToT mentions two strategies:
+\begin{itemize}
+    \item Sample thoughts from a CoT prompt \ref{subsec:Few-ShotCoT}. This strategy works better for diverse and creative writing tasks,  where the thoughts take the form of full paragraphs.
+\begin{equation}
+    z^{j}  \sim p_\theta^{CoT}(z_{i+1}|s) = p_\theta^{CoT}(z_{i+1}|x, z_{1,...i})(j = 1 ...k)
+\end{equation}
+    \item  Propose thoughts sequentially using a "propose prompt". This works better when the thought space is constrained, when the thoughts are just a word or a line.
+\begin{equation}
+[z_{i+1}^{(1)}, \dots, z_{i+1}^{(k)}] \sim p_\theta^{\text{propose}}(z_{i+1}^{(1:k)} \mid x, z_1, \dots, z_i)
+\end{equation}
+\end{itemize}
+
+The next component is the \textbf{state evaluator} $V(p_\theta,S)$, which heuristically assesses whether a state has reached the goal. Which then determines if it is valuable to keep exploring this chain of thought. ToT \cite{chainofthought} uses a \gls{LLM} to evaluate.
+Then to further the tree ToT uses simple search algorithms in the tree structure such as Breadth-first search (BFS) and Depth-first search (DFS).
+
+The contribution of this paper to the thesis lies in demostrating  how an \gls{LLM} can be orchestrated to navigate the organizational structure in a semantically aware manner.
+
 \subsection{Reasoning \emph{and} Acting (ReAct)}
-Yao et al.~\cite{react} proposed ReAct, a framework that interleaves reasoning traces with external actions (e.g., database queries, web search, or calculator calls) and observations. Unlike CoT, which is limited to internal reasoning, ReAct closes the loop between planning and evidence gathering, allowing the model to ground its reasoning in retrieved information. On knowledge-intensive QA tasks such as HotpotQA and FEVER, ReAct improved factual accuracy and significantly reduced hallucinations (e.g., from 14\% to 6\%). It also achieved strong performance on interactive environments like ALFWorld, where reasoning must be combined with sequential decision-making. The main trade-off is higher latency and token cost, since each step requires both reasoning tokens and tool interactions, but the gains in groundedness and reliability are substantial for retrieval-augmented applications.
+Yao et al.~\cite{react} proposed the ReAct framework, which interleaves reasoning traces with external actions (e.g., database queries, web search, or calculator calls) and corresponding observations. Unlike CoT, which is limited to internal reasoning, ReAct closes the loop between planning and evidence gathering, enabling the model to ground its reasoning in retrieved information. In knowledge-intensive QA tasks such as \textbf{\textit{HotpotQA}} and \textbf{\textit{FEVER}}, ReAct improved factual accuracy and significantly reduced hallucinations (e.g., from 14\% to 6\%). It also achieved strong performance in interactive environments such as ALFWorld, where reasoning must be combined with sequential decision-making. The main trade-off lies is increased latency and token cost, since each step requires both reasoning tokens and tool interactions. However, the gains in groundedness and reliability are substantial for retrieval-augmented applications.
 
 \subsubsection{Example}
 ReAct interleaves reasoning traces with external actions and observations. The framework follows this pattern:
@@ -99,47 +117,47 @@ Final Answer: Paris has approximately 2.16 million inhabitants, while London has
 making London about 4.16 times larger than Paris.
 \end{lstlisting}
 
-This interleaving of reasoning (Thought) with external actions (Action) and observations allows ReAct to ground its responses in retrieved information rather than relying solely on parametric knowledge (stored in model weights), significantly reducing hallucinations while improving factual accuracy.
+This interleaving of reasoning (Thought) with external actions (Action) and observations allows ReAct to ground its responses in retrieved information, rather than relying solely on parametric knowledgestored in model weights, thereby significantly reducing hallucinations while improving factual accuracy.
 \section{Tool Use and Orchestration}
 
-While ReAct already integrates tool use within its action step, this section focuses on how such capabilities can be made more accurate.  
-Tool-use frameworks aim to improve how language models discover, select, and call external tools, reducing hallucinations and execution errors.  
+While ReAct already integrates tool use within its action step, this section focuses on how such capabilities can be further optimized for accuracy.  
+Tool-use frameworks aim to improve how language models identify, select, and execute external tools, thereby reducing hallucinations and minimizing execution errors.  
 
-For example, consider a WebCommerce chatbot that interfaces with an e-commerce database, allowing customers to place new orders, check delivery status, or request refunds directly through conversation.
-Each of these actions depends on precise tool calls to backend APIs—such as \texttt{createOrder()}, \texttt{getOrderStatus()}, or \texttt{updatePayment()}—where incorrect parameters or schema mismatches could lead to failed transactions or inconsistent records, emphasizing the need for accurate and validated orchestration. 
+For instance, consider a WebCommerce assistant that interfaces with an e-commerce database, enabling customers to place new orders, track deliveries, or request refunds directly through conversation.
+Each of these actions relies on precise and validated tool calls to backend APIs—such as \texttt{createOrder()}, \texttt{getOrderStatus()}, or \texttt{updatePayment()}—where incorrect parameters or schema mismatches can lead to failed transactions or inconsistent records, emphasizing the importance of accurate and validated orchestration. 
 
-In such a setting, tool calls must be precise. Incorrect or misunderstood parameters can result in failed transactions or inconsistent order data—highlighting the importance of reliable tool use and orchestration.
+In such a setting, precision in tool call is crucial: misunderstood or malformed parameters can cause transactions failures or data inconsistencies—highlighting the necessity of reliable tool intefration  mechanisms.
 
 \textbf{Toolformer}~\cite{schick2023toolformer} introduced the concept of \emph{self-taught tool use}.  
-It fine-tunes a language model (based on \gls{GPT}-J) using a self-annotation loop: during training, the model is prompted to insert possible API calls into text, these calls are executed, and their returned outputs are evaluated by measuring whether they reduce the model's prediction loss on masked tokens.
+It fine-tunes a language model (based on \gls{GPT}-J)through a self-annotation loop: during training, the model is prompted to insert possible API calls into text, these calls are executed, the returned outputs are evaluated based on whether they reduce the model's prediction loss over masked tokens.
 If an API’s result helps the model predict the next token more accurately, that example is kept as supervision.  
 This process allows the model to learn when a tool should be invoked and how to integrate its output into natural language responses.  
 
 Although Toolformer improved factual accuracy by roughly 60\% on arithmetic and translation tasks.
 
-\textbf{Gorilla}~\cite{patil2023gorilla} advanced this idea with \emph{Retrieval-Aware Training (RAT)}.  
-Instead of memorizing tool usage, Gorilla embeds both API documentation (function signatures, parameter types, examples) and natural-language queries into a joint vector space using \emph{contrastive learning}. A method that pushes matching pairs (query $\leftrightarrow$ correct API) closer together while pushing unrelated pairs apart.  
-At inference time, the model retrieves the most semantically similar API specification and conditions its text generation on that retrieved context, producing syntactically valid function calls through templated generation constrained by the retrieved schema.  
+\textbf{Gorilla}~\cite{patil2023gorilla} expanded on this idea with \emph{Retrieval-Aware Training (RAT)}.  
+Instead of memorizing tool usage, Gorilla embeds both API documentation (function signatures, parameter types, examples) and natural-language queries into a joint vector space using \emph{contrastive learning}. This method pushes matching pairs (query $\leftrightarrow$ correct API) closer together while pushing unrelated pairs apart.  
+During inference time, the model retrieves the most semantically similar API specification and conditions its text generation on that retrieved context, producing syntactically valid function calls through templated generation constrained by the retrieved schema.  
 On the \textit{APIBench} benchmark, Gorilla achieved \textbf{90–92\% API-call correctness} and reduced hallucinated calls by over \textbf{40\%} compared to Toolformer.  
-However, like Toolformer,  it still requires re-training when entirely new APIs are introduced, limiting adaptability.
+However, like Toolformer,  it still requires re-training when entirely new APIs are introduced, which limits adaptability.
 
-\textbf{HuggingGPT}~\cite{shen2023hugginggpt} reframed orchestration as \emph{model routing}.  
+\textbf{HuggingGPT}~\cite{shen2023hugginggpt} reframed the orchestration as \emph{model routing}.  
 It treats the LLM as a planner that decomposes complex user requests into subtasks and, for each subtask, queries a catalog of expert models hosted on the Hugging Face hub.  
 Although this demonstrated cross-modal reasoning across text, vision, and audio tasks, the approach introduced limited methodological novelty beyond Gorilla’s retrieval step.  
-Its evaluation was conducted through human assessment on 130 user requests, where the best-performing model (\gls{GPT}-3.5) achieved a model-selection passing rate of \textbf{93.89\%}, a rationality score of \textbf{84.29\%}, and a final-response success rate of \textbf{63\%}.
+The evaluation was conducted via human assessment on 130 user requests, where the best-performing model (\gls{GPT}-3.5) achieved a model-selection passing rate of \textbf{93.89\%}, a rationality score of \textbf{84.29\%}, and a final-response success rate of \textbf{63\%}.
 
 
 
-\textbf{AutoGen}~\cite{wu2023autogen} generalized orchestration into a \emph{multi-agent dialogue framework}.  
+\textbf{AutoGen}~\cite{wu2023autogen} generalized the orchestration into a \emph{multi-agent dialogue framework}.  
 In this paradigm, multiple LLMs and tools interact conversationally, exchanging natural-language messages that represent plans, results, or verifications.  
 Each agent can reason (\emph{Chain-of-Thought}), act (\emph{ReAct}), or delegate subtasks to others, enabling cooperative problem-solving.  
-Benchmarks on reasoning environments such as \textit{ALFWorld} and \textit{HotpotQA} reported up to \textbf{+17\% higher task success rates} than single-agent baselines, confirming that collaboration and verification loops improve reliability.  
+Benchmarking on reasoning environments such as \textit{ALFWorld} and \textit{HotpotQA} reported up to \textbf{17\% higher task success rates} than single-agent baselines, confirming that collaboration and verification loops improve reliability.  
 Nonetheless, AutoGen is computationally expensive and often unstable: extended conversation loops between agents can lead to significant inefficiency or even infinite exchanges without task resolution.  
 Moreover, it lacks a standardized interface for connecting to external systems, making integration with enterprise infrastructures or databases cumbersome.
 
-\textbf{Model Context Protocol (MCP)} introduces a standardized framework for connecting LLMs with external systems through explicit, typed interfaces.  
+\textbf{Model Context Protocol (MCP)} introduces a standardized framework for connecting LLMs with external systems through explicit typed interfaces.  
 Unlike previous approaches that relied on learned behavior or conversational coordination, MCP formalizes tool interaction by exposing capabilities through structured \texttt{tools}, \texttt{resources}, and \texttt{prompts}.  
-Each is defined by a JSON schema that specifies valid inputs and outputs, allowing clients to discover available operations and invoke them via JSON-RPC calls.  
+Each is defined by a JSON schema that specifies valid inputs and outputs, allowing clients to discover available operations and invoke them using JSON-RPC calls.  
 This replaces informal prompt-based conventions with deterministic, schema-validated communication, ensuring consistency and interoperability across agents and environments.  
 The following section describes MCP’s architecture in detail and how it was applied in this thesis to integrate Weaviate with LLM agents.
 
@@ -149,7 +167,7 @@ The following section describes MCP’s architecture in detail and how it was ap
 The \textbf{Model Context Protocol (MCP)} is an open standard introduced by Anthropic to connect large language models with external systems in a modular and reproducible way. It provides a universal interface---often described as a ``USB-C port for AI applications''---to integrate tools, data sources, and prompt templates without ad-hoc engineering \cite{mcp-intro}.
 
 \subsection{Architecture} 
-MCP follows a \textit{client--server model}. The \textit{host} (AI application) communicates through an MCP \textit{client} with one or more \textit{servers} that expose capabilities. Communication is structured in two layers:
+MCP follows a \textit{client--server model}. Where the \textit{host} (AI application) communicates through an MCP \textit{client} with one or more \textit{servers} that expose capabilities. Communication is structured in two layers:
 (i) \textbf{Data layer:} uses JSON-RPC 2.0 to define primitives, discovery mechanisms, and lifecycle management;
 (ii) \textbf{Transport layer:} handles message delivery (e.g., stdio for local, HTTP/SSE for remote) and authentication \cite{mcp-architecture}.
 
@@ -163,9 +181,9 @@ MCP follows a \textit{client--server model}. The \textit{host} (AI application) 
 \end{itemize}
 
 MCP contributes to the shift toward \textit{agentic LLMs}, where models not only generate text but also plan, act, and learn through external capabilities.  
-It has rapidly become a key standard for connecting AI applications to external systems, already implemented as an MCP client in platforms such as Docker, Claude Desktop, and VS Code, and supported by multiple servers including MongoDB, Google Workspace, and LangChain.  
+It has rapidly become a key standard for connecting AI applications to external systems, with implementations as an MCP client in platforms such as Docker, Claude Desktop, and VS Code, and supported by multiple servers including MongoDB, Google Workspace, and LangChain.  
 Additional open-source implementations include the \texttt{docker/mcp-toolkit}, \texttt{anthropic/mcp}, and \texttt{mongodb-js/mcp-server}.  
-One of these servers—the \textbf{Weaviate MCP server}—was developed as part of this thesis to expose Weaviate’s schema and query interface as callable MCP \texttt{tools}.  
+One of these servers—the \textbf{Weaviate MCP server}—was developed in this thesis to expose Weaviate’s schema and query interface as callable MCP \texttt{tools}.  
 
-MCP’s main advantages are its \textbf{standardization}, by providing a unified protocol across heterogeneous backends; \textbf{reproducibility}, through versioned prompts and schema-defined tools; \textbf{extensibility}, since new capabilities can be added without architectural changes. \cite{mcp-spec}.  
-In this thesis, MCP serves as the interoperability layer between Weaviate and LLM agents, enabling schema-aware retrieval and controlled reasoning over enterprise information in a reproducible and standardized way.
+MCP’s main advantages are its \textbf{standardization} }—providing a unified protocol across heterogeneous backends; \textbf{reproducibility}\}\}— through versioned prompts and schema-defined tools; \textbf{extensibility}, allowing new capabilities to be added without architectural changes. \cite{mcp-spec}.  
+In this thesis, MCP functions as the interoperability layer between Weaviate and LLM agents, enabling schema-aware retrieval and controlled reasoning over enterprise information in a reproducible and standardized manner.

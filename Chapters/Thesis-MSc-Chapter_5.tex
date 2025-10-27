@@ -23,20 +23,20 @@ Multiple multimodal models were tested for information extraction: PrimaLayout a
 \section{Weaviate Schema: Case Study}
 \label{sec:schema_example_study}
 
-This section presents a concrete case study demonstrating how the Weaviate schema \ref{fig:weaviate_class} is used to enable semantic search that respects and leverages an existing organizational structure—rather than treating documents as isolated items. The organizational model follows the UML in Figure~\ref{fig:weaviate_class}, with classes \textit{Fluxo} (workflow), \textit{Etapa} (stage), \textit{Entidade} (entity), \textit{Pasta} (folder), \textit{Ficheiro} (file), and \textit{Metadados} (metadata). The goal is twofold:
+This section presents a concrete case study demonstrating how the Weaviate schema \ref{fig:weaviate_class} enables semantic search that respects and leverages the existing organizational structure,rather than treating documents as isolated items. The organizational model follows the UML in Figure~\ref{fig:weaviate_class}, with classes \textit{Fluxo} (workflow), \textit{Etapa} (stage), \textit{Entidade} (entity), \textit{Pasta} (folder), \textit{Ficheiro} (file), and \textit{Metadados} (metadata). The goal is twofold:
 
 \begin{itemize}
     \item \textbf{Structure-aware retrieval:} Queries can traverse relationships (e.g., workflow \(\rightarrow\) stages \(\rightarrow\) files) and return results grounded in that hierarchy.
-    \item \textbf{Semantic augmentation:} Each class is vectorized so that hybrid search (lexical + semantic) can surface relevant objects even when exact keywords or IDs are unknown.
+    \item \textbf{Semantic augmentation:} Each class embedded as vectors so that hybrid search (lexical + semantic) can surface relevant objects even when exact keywords or IDs are unknown.
 \end{itemize}
 
 \subsection{Objective and Use Case}
 
-This case study demonstrates structure-aware semantic search by considering a corporate repository with approvals and contracts organized by entity and folder, and operational progress tracked as workflows with stages. A query for "contract approvals" should: (1) identify relevant workflows and stages related to approvals, (2) traverse to file objects in appropriate folders/entities, and (3) surface associated metadata. This aligns with organizational requirements where context (ownership, location, workflow status) is as important as document content.
+This case study demonstrates structure-aware semantic search by considering a corporate repository with approvals and contracts organized by entity and folder, and operational progress tracked as workflows with stages. A query for "contract approvals" should: (1) identify relevant workflows and stages, (2) traverse to file objects within the appropriate folders and entities, and (3) surface associated metadata. This aligns with organizational requirements where context (ownership, location, workflow progress) is as important as document content.
 
 \subsection{Implementation Details}
 
-The schema instantiates six collections—Fluxo, Etapa, Entidade, Pasta, Ficheiro, Metadados—each with a textual property (e.g., name) vectorized via transformer encoding for semantic indexing. Named vectorization enables hybrid retrieval combining semantic scoring with graph traversal. Generative integration through Ollama and embeddings from sentence-transformers/all-MiniLM-L6-v2 supports grounded responses when appropriate.
+The schema instantiates six collections—Fluxo, Etapa, Entidade, Pasta, Ficheiro, Metadados—each with a textual property (e.g., name) vectorized via transformer encoding for semantic indexing. Named vectorization supports hybrid retrieval by combining semantic scoring with graph traversal. Generative integration through Ollama and embeddings from sentence-transformers/all-MiniLM-L6-v2 supports grounded responses when appropriate.
 
 \noindent\textbf{Cross-References (from UML)}\\
 References implement the hierarchy and traversal paths and are formed directly from the UML diagram in Figure~\ref{fig:weaviate_class}. They define the possible navigation paths starting from each object/class:
@@ -59,14 +59,14 @@ To validate the schema, synthetic data was inserted across classes with consiste
 \end{itemize}
 
 \subsection{Discussion and Key Findings}
-This example shows that vector databases like Weaviate can support company semantic retrieval that is \textit{aware of organizational structure}. By aligning collections and references with the UML model and enriching each node with embeddings, the system enables \textbf{explainable results} (returned items include their position in the hierarchy—e.g., which entity/folder/workflow they belong to—and their linked metadata), \textbf{flexible navigation} (agents or users can start from any node—workflow, entity, file—and traverse to related items), and \textbf{robust querying} (hybrid search compensates for inconsistent terminology while references maintain precise relationships).
+This example shows that vector databases like Weaviate can support company semantic retrieval that is \textit{aware of organizational structure}. By aligning collections and references with the UML model and enriching each node with embeddings, the system produces \textbf{explainable results} (returned items include their position in the hierarchy—e.g., which entity/folder/workflow they belong to—and their linked metadata), \textbf{flexible navigation} (agents or users can start from any node—workflow, entity, file—and traverse to related items), and \textbf{robust querying} (hybrid search compensates for inconsistent terminology while references maintain precise relationships).
 In practice, this approach supports agentic retrieval flows that combine semantic ranking with graph-like traversal, improving precision and user trust when working within complex corporate repositories.
 
 
 \section{Metadata Extraction versus Naive RAG}
 \subsection{LiHua-World Dataset}
 \label{subsec:LiHua-World}
-The knowledge graph experiment uses the \emph{LiHua-World} corpus: a time-indexed set of short textual records organized into weekly folders (e.g., \path{week11/20260318_1510.txt}) and topical subfolders (e.g., \path{bakery_deliver/20260531.txt}). Each file contains concise, structured messages or notes about daily life events (meetings, deliveries, fitness plans, chats, travel, garden updates), often with implicit participants and locations. This format provides:
+The knowledge graph experiment uses the \emph{LiHua-World} corpus: a time-indexed set of short textual records organized into weekly folders (e.g., \path{week11/20260318_1510.txt}) and topical subfolders (e.g., \path{bakery_deliver/20260531.txt}). Each file contains concise, structured messages or notes about daily events (meetings, deliveries, fitness plans, chats, travel, garden updates), often with implyingparticipants and locations. This format provides:
 \begin{itemize}
     \item \textbf{Temporal signals:} timestamps encoded in filenames (YYYYMMDD\_HHMM) and dates inside texts, enabling ordering and interval reasoning.
     \item \textbf{Multi-actor context:} recurring names across files (e.g., Li Hua, Wolfgang, Jennifer) support relationship extraction.
@@ -75,10 +75,10 @@ The knowledge graph experiment uses the \emph{LiHua-World} corpus: a time-indexe
 
 \subsection{Knowledge Graph Ingestion Pipeline}
 
-The corpus is processed through the metadata extraction framework performing: (1) \textbf{Entity extraction} using LLM-guided prompts to identify normalized entities (people, organizations, locations, events); (2) \textbf{Relation extraction} inferring semantic links between entities from embedding-based proximity; (3) \textbf{Object creation} storing extracted entities as Weaviate objects with cross-references; (4) \textbf{Vectorization} embedding textual properties for hybrid retrieval.
+The corpus is processed through the metadata extraction framework by performing: (1) \textbf{Entity extraction:} using LLM-guided prompts to identify normalized entities (people, organizations, locations, events); (2) \textbf{Relation extraction:} inferring semantic relationships between entities based on proximity; (3) \textbf{Object creation:} creating  Weaviate objects for extracted entities with cross-references; (4) \textbf{Vectorization}:embedding textual properties for hybrid retrieval.
 
 
-In this setup, answers were generated using sentence embedding model all-MiniLM-L6-v2 for retrieval and local LLM Qwen2M for generation. The benchmark dataset consisted of 628 questions categorized as: (1) \textbf{Single}—direct factoid questions answerable from one evidence source; (2) \textbf{Multi}—questions requiring multi-hop reasoning or temporal/causal understanding; (3) \textbf{Null}—questions with insufficient evidence.
+In this setup, answers were generated using sentence embedding model All-MiniLM-L6-v2 for retrieval and the local LLM Qwen2M for generation. The benchmark dataset consisted of 628 questions categorized as: (1) \textbf{Single}—direct factoid questions that can be answered from a single evidence source; (2) \textbf{Multi}—questions requiring multi-hop reasoning and/or temporal or causal understanding; (3) \textbf{Null}—questions with insufficient evidence.
 
 The experiment compares knowledge-graph–aware retrieval (Mini and Light) against a naive baseline.
 Figure~\ref{fig:Lihua-World} presents the results across all metrics.
@@ -93,20 +93,20 @@ Among the metrics, \textbf{Token Recall} achieved the highest score (44\%), and 
 \footnote{Note on metrics The full definitions and motivations for the evaluation metrics are provided in previous section \ref{sec:text-similarity-metrics}. Here we briefly reference the same set—lexical (Token Recall, Jaccard, Overlap), structural (Levenshtein, ROUGE, BLEU), and semantic (\gls{BERT} cosine)—and focus on interpreting the results in this experiment.}
 
 \subsection{Semantic Similarity}
-	\textbf{\gls{BERT} cosine similarity} scored moderately (35\%). This is largely due to length imbalance between very short gold answers (sometimes a single token) and longer generated responses: sentence-level embeddings like \textit{all-MiniLM-L6-v2} capture global semantics, so single-token vs. full-sentence comparisons tend to yield low cosine values.
+	\textbf{\gls{BERT} cosine similarity} score was moderate (35\%). This is largely due to length imbalance between short gold answers (sometimes a single token) and longer generated responses: sentence-level embeddings such as \textit{all-MiniLM-L6-v2} capture global semantics, so single-token vs. full-sentence comparisons tend to yield low cosine values.
 
 \subsection{Lexical Accuracy}
-	\textbf{Token Recall} (44\%) confirms that correct essential tokens are often present in predictions. The \textbf{Overlap Coefficient} (30\%) is comparatively robust when lengths differ, since it does not penalize extra tokens. In contrast, \textbf{Jaccard} (7\%) suffers when generated answers are longer, inflating the union and suppressing the overlap proportion—even for partially correct outputs.
+	\textbf{Token Recall} (44\%) confirms that essential tokens are often present in predictions. The \textbf{Overlap Coefficient} (30\%) is comparatively robust to length differences, since it does not penalize extra tokens. In contrast, \textbf{Jaccard} (7\%) performs poorly when generated answers are longer, as the inflated union suppresses the overlap proportion—even for partially correct outputs.
 
 \subsection{Structural Similarity}
-	\textbf{Levenshtein} (6\%) provides weak signal under large length differences. \textbf{ROUGE-1 F1} (11\%) and \textbf{ROUGE-2 F1} (3\%) partly mitigate this by balancing precision and recall over n-grams, but longer responses with irrelevant tokens reduce precision. ROUGE-2 is particularly low because short gold answers rarely contain bigrams. Finally, \textbf{BLEU} (3\%)—designed for machine translation—over-penalizes deviations and brevity mismatches in this setting, making it unsuitable here.
+	\textbf{Levenshtein} (6\%) provides a weak signal under large length differences. \textbf{ROUGE-1 F1} (11\%) and \textbf{ROUGE-2 F1} (3\%) partly mitigate this by balancing precision and recall over n-grams, although longer responses containing irrelevant tokens reduce precision. ROUGE-2 is particularly low because short gold answers rarely contain bigrams. Finally, \textbf{BLEU} (3\%)—originally designed for machine translation—over-penalizes deviations and brevity mismatches in this context, making it unsuitable for this task.
 
 \subsection{Summary}
-This experiment implemented an automated approach to forming a knowledge graph. The goal was to enable retrieval that leverages explicit entity relationships and organizational context, not just surface-level text.
+This experiment implemented an automated approach constructing a knowledge graph. The goal was to enable retrieval that leverages explicit entity relationships and organizational context rather than relying solely on surface-level text.
 
-However, results show that this automatic knowledge graph construction currently fails to reliably create a strong semantic structure for retrieval. In practice, direct embedding-based indexing (sentence transformers) remains significantly faster, cheaper and more effective for retrieval tasks, consistently outperforming the knowledge graph approach in this setup.
+However, the results show that the current automatic knowledge graph construction fails to reliably produce a strong semantic structure for retrieval. In practice, direct embedding-based indexing using sentence transformers remains significantly faster, cheaper, and more effective for retrieval tasks, consistently outperforming the knowledge graph approach in this setup.
 
-Profiling and structuring text with an LLM is also much more computationally expensive: each 200-token chunk is processed through a few-shot prompt (with many input tokens), up to three times, plus an additional pass for entity merging and summarization. This makes large-scale knowledge graph creation costly. While using a heavier LLM could improve the quality of the knowledge graph and its retrieval performance, the resource requirements and latency increase substantially.
+Profiling and structuring text with an LLM is also considerably more computationally expensive: each 200-token chunk is processed through a few-shot prompt (with many input tokens), up to three times, plus an additional pass for entity merging and summarization. This makes large-scale knowledge graph creation costly. While using a heavier LLM could improve the quality of the knowledge graph and its retrieval performance, the resource requirements and latency increase substantially.
 
 In summary, while knowledge graphs offer richer structure and could become more competitive with stronger \glspl{LLM}, current embedding models provide a more scalable and efficient solution for semantic retrieval. Future work may revisit knowledge graph approaches as \glspl{LLM} costs decrease and capabilities improve.
 

@@ -6,12 +6,12 @@
 \glsresetall
 % use \noindent in firts paragraph
 \noindent  
-This thesis designs and implements a retrieval‑augmented, agentic semantic search system for corporate document management, developed with Edoclink. Corporate repositories carry rich metadata and workflows that go beyond keyword search. For example, in regulatory compliance checks, when drafting a new contract the system retrieves the latest regulations and reasons over them to suggest whether the draft complies and which clauses may require revision, with citations to source passages.
-We leverage advances in \glsxtrfull{NLP}, centering on \glsxtrfull{RAG} and its extension into \glsxtrfull{AAI}. The system pipeline (i) ingests and normalizes heterogeneous documents, (ii) indexes content in a \glsxtrfull{VD} with metadata‑aware schemas, and (iii) uses \glsxtrfullpl{LLM} orchestrated via \glsxtrfull{PE} to ground answers in retrieved evidence. We study retrieval in isolation—structure‑aware/hierarchical chunking, metadata filtering, and hybrid sparse+dense search—and then implement Agentic RAG, where specialized agents perform query analysis, collection selection, iterative retrieval, tool use, and cited synthesis across distributed sources.
+This thesis designs and implements a retrieval‑augmented, agentic semantic search system for corporate document management, developed with Edoclink. Corporate repositories carry rich metadata and workflows that go beyond keyword search. For example, in regulatory compliance checks, when drafting a new contract the system retrieves the latest regulations and reasons over them to dettermine whether the draft complies and which clauses may require revision, with citations to source passages.
+We leverage advances in \glsxtrfull{NLP}, centering on \glsxtrfull{RAG} and its extension into \glsxtrfull{AAI}. The system pipeline (i) ingests and normalizes heterogeneous documents, (ii) indexes content in a \glsxtrfull{VD} with metadata‑aware schemas, and (iii) uses \glsxtrfullpl{LLM} orchestrated via \glsxtrfull{PE} to ground answers in retrieved evidence. We study retrieval in isolation—structure‑aware/hierarchical chunking, metadata filtering, and hybrid sparse and dense search—and then implement Agentic RAG, where specialized agents perform query analysis, collection selection, iterative retrieval, tool use, and cited synthesis across distributed sources.
 
 We validate on representative enterprise datasets and tasks aligned with Edoclink’s use cases, documenting design and evaluation (answer quality, traceability, latency, and cost) and providing a deployable blueprint for enterprise settings.
 
-Under Youden‑optimized thresholds on a 300‑question synthetic company \gls{QA} benchmark, Token Recall classified 61\% of answers as correct for the agentic system versus 12–19\% for naive baselines.
+Under Youden‑optimized thresholds on a 300‑question synthetic corporate \gls{QA} benchmark, Token Recall classified 61\% of answers as correct by the agentic system versus 12–19\% for naive baselines.
 
 
 
