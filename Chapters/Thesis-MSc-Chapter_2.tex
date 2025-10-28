@@ -6,13 +6,14 @@
 \fancychapter{Background}\label{chap:back}
 % The following line allows to ref this chapter
 
-This chapter introduces the fundamental concepts of \glsxtrfull{IR}, while \glsxtrfull{NLP} will be addressed in the following state-of-the-art chapter. \gls{IR} has evolved from lexical to semantic search, and understanding these approaches is essential to contextualize how \gls{NLP} later enables agents to reason over retrieved information to provide more intelligent responses. The following section presents these \gls{IR} approaches and the optimizations that have evolved from them.
+This chapter introduces the fundamental concepts of \glsxtrfull{IR}, while \glsxtrfull{NLP} will be 
+in the next chapter, which covers state-of-the-art. \gls{IR} has evolved from lexical to semantic search, and understanding these approaches is essential to contextualize how \gls{NLP} subsequently enables agents to reason over retrieved information to provide more intelligent responses. The following section presents these \gls{IR} approaches and the optimizations that derived from them.
 \section{Background on Transformers} 
 \label{sec:transformer}
 \subsection{The Transition from Sequential to Attention-Based Models}  
-Traditional sequence transduction models, such as \glsxtrfull{RNN} and its variants (e.g., \glsxtrfull{LSTM} \cite{hochreiter1997lstm} and \glsxtrfull{GRU} \cite{cho2014gru}), were widely used in tasks such as machine translation and language modeling. Although effective, these models relied on sequential calculations, which limited their parallelization and computational efficiency in long sequences \cite{vaswani2017attention}.
+Traditional sequence transduction models, such as \glsxtrfullpl{RNN} and its variants (e.g., \glsxtrfull{LSTM} \cite{hochreiter1997lstm} and \glsxtrfull{GRU} \cite{cho2014gru}), were widely used in tasks such as machine translation and language modeling. Although effective, these models relied on sequential calculations, which limited parallelization and computational efficiency, particularly in long sequences \cite{vaswani2017attention}.
 
-In 2017, Vaswani et al. introduced the Transformer architecture, marking a significant change from these sequential models. Transformer relies exclusively on attention mechanisms, specifically self-attention, to model dependencies between input and output sequences. By removing recursive and convolutional operations, Transformer achieves faster training times and superior performance in generative operations \cite{vaswani2017attention}.
+In 2017, Vaswani et al. introduced the Transformer architecture, marking a paradigm shift from these sequential models. Transformer relies exclusively on attention mechanisms, specifically self-attention, to model dependencies between input and output sequences. By removing recursive and convolutional operations, Transformer achieves faster training times and superior performance in generative tasks \cite{vaswani2017attention}.
 
 \begin{figure}[H]
     \centering
@@ -22,7 +23,7 @@ In 2017, Vaswani et al. introduced the Transformer architecture, marking a signi
     \caption{Transformer Architecture from~\cite{vaswani2017attention}}\label{fig:Tranformer}
 \end{figure}
 
-The Transformer is fundamentally structured as an \textit{encoder-decoder} model. The \textbf{encoder} processes the input sequence and produces a continuous representation, while the \textbf{decoder} generates the output sequence one token at a time, conditioning on both the encoder output and previously generated tokens. This architecture allows the model to handle variable-length input-output pairs and is the foundation for tasks like machine translation, summarization, and question answering.
+The Transformer is fundamentally structured as an \textit{encoder-decoder} model. The \textbf{encoder} processes the input sequence and produces a continuous vector representation, while the \textbf{decoder} generates the output sequence one token at a time, conditioning on both the encoder output and previously generated tokens. This architecture allows the model to handle input and output sequences at variable length and is the foundation for tasks such as machine translation, summarization, and question answering.
 
 \subsection{Main Innovations in Transformer Architecture}  
 \begin{itemize}
@@ -302,35 +303,35 @@ Summarization approaches are broadly categorized into two types: \textit{extract
 
 \subsection{LexRank: Graph-Based Extractive Summarization}
 
-LexRank, introduced by Erkan and Radev~\cite{erkan2004lexrank}, is a graph-based extractive summarization method that identifies and ranks the most important sentences in a document. Unlike abstractive methods that generate new text, LexRank operates by selecting sentences that are most representative of the document's content.
+LexRank, introduced by Erkan and Radev~\cite{erkan2004lexrank}, is a graph-based extractive summarization method, that identifies and ranks the most important sentences in a document. Unlike abstractive methods that generate new text, LexRank operates by selecting sentences that are most representative of the document's content.
 
 The core principle of LexRank is to compute sentence importance based on a concept of \textit{lexical centrality}. Sentences are represented as nodes in a graph, and edges are weighted by the degree of similarity between sentences, typically measured using cosine similarity over TF-IDF vectors. The algorithm then applies PageRank-style centrality computation to identify sentences that are semantically central to the document—that is, sentences that are similar to many other sentences in the document.
 
 The LexRank algorithm operates as follows:
 
 \begin{enumerate}
-    \item \textbf{Build Similarity Graph:} Compute pairwise cosine similarities between all sentences using TF-IDF representations. Create an edge between two sentences if their similarity exceeds a predefined threshold.
+    \item \textbf{Build Similarity Graph:} Compute pairwise cosine similarities between all sentences using TF-IDF representations. Create an edge between two sentences if their similarity exceeds a predefined similarity threshold.
     
     \item \textbf{Compute Centrality:} Apply a graph centrality algorithm (typically PageRank) to compute the importance of each sentence. Sentences that are central to the graph (well-connected to other sentences) receive higher scores.
     
     \item \textbf{Extract Summary:} Select the top-ranked sentences and arrange them in their original document order to form the summary.
 \end{enumerate}
 
-LexRank's strength lies in its simplicity, interpretability, and computational efficiency. Since it is entirely unsupervised and does not require labeled training data, it can be applied to any domain without domain-specific adaptation. Furthermore, the graph-based approach naturally captures the thematic coherence of documents by selecting sentences that are representative of the overall content.
+LexRank's strength lies in its simplicity, interpretability, and computational efficiency. Since it is entirely unsupervised and does not require labeled training data, it can be applied to any domain without requiring domain-specific tuning . Furthermore, the graph-based approach naturally captures the thematic coherence of documents by selecting sentences that are representative of the overall content.
 
-However, LexRank has notable limitations. First, as an extractive method, it is constrained to sentences that already exist in the source document, which can result in summaries that are less fluent or less concise than abstractive approaches. Second, the method may struggle with documents where important information is distributed across multiple dissimilar sentences, or where key concepts appear in unusual phrasings. Third, LexRank does not explicitly model semantic relationships beyond lexical similarity, potentially missing paraphrases or synonyms that convey the same meaning.
+However, LexRank has notable limitations. First, as an extractive method, it is constrained to sentences that already exist in the source document, which can result in summaries that are less fluent or concise than abstractive approaches. Second, the method may struggle with documents where important information is distributed across multiple dissimilar sentences, or where key concepts appear in unusual phrasings. Third, LexRank does not explicitly model semantic relationships beyond lexical similarity, potentially missing paraphrases or synonyms that convey the same meaning.
 
 \subsection{BART: Denoising Sequence-to-Sequence Pretraining}
 
-\gls{BART}, introduced by Lewis et al.~\cite{lewis2019bart}, is a sequence-to-sequence transformer model that combines the best aspects of both \gls{BERT} and \gls{GPT}-like architectures. \gls{BART} is pretrained using a denoising objective, where random segments of text in the input are corrupted (masked, deleted, or permuted), and the model learns to reconstruct the original text. This pretraining strategy makes \gls{BART} particularly effective for generation tasks, as it learns to handle both understanding (like \gls{BERT}) and generation (like \gls{GPT}).
+\gls{BART}, introduced by Lewis et al.~\cite{lewis2019bart}, is a sequence-to-sequence transformer model that combines the best aspects of both \gls{BERT} and \gls{GPT}-like architectures. \gls{BART} is pretrained using a denoising objective, where random segments of text in the input are corrupted (masked, deleted, or permuted), and the model learns to reconstruct the original text. This pretraining strategy makes \gls{BART} particularly effective for generation tasks, as it learns to handle both semantic understanding (like \gls{BERT}) and generation (like \gls{GPT}).
 
 \subsubsection{BART Architecture}
 
-The \gls{BART} architecture follows the standard encoder-decoder structure. The \textbf{Encoder} is a \gls{BERT}-like bidirectional transformer that processes the corrupted input and produces contextual representations. The \textbf{Decoder} is an autoregressive transformer (similar to \gls{GPT}) that generates the output sequence token-by-token, attending to both the encoder output and previously generated tokens. Both components use the standard Transformer building blocks (multi-head self-attention, feed-forward networks, layer normalization, and residual connections) as described in Section~\ref{sec:transformer}. The encoder-decoder attention allows the decoder to attend to relevant parts of the encoded input, facilitating the transfer of information from source to target.
+The \gls{BART} architecture follows the standard encoder-decoder structure. The \textbf{Encoder} is a \gls{BERT}-like bidirectional transformer that processes the corrupted input and produces contextual representations. The \textbf{Decoder} is an autoregressive transformer (similar to \gls{GPT}) that generates the output sequence token-by-token, attending to both the encoder output and previously generated tokens. Both components use the standard Transformer building blocks (multi-head self-attention, feed-forward networks, layer normalization, and residual connections) as described in Section~\ref{sec:transformer}. The encoder-decoder attention allows the decoder to attend to relevant parts of the encoded input, enabling effective informationtransfer from input to output sequences.
 
 \subsubsection{Denoising Pretraining Objective}
 
-\gls{BART} is pretrained on a denoising task where the input is artificially corrupted in various ways, and the model learns to denoise (reconstruct) the original text. The corruption strategies employed include: \textbf{Token Masking}, where random tokens are replaced with a special \texttt{[MASK]} token similar to \gls{BERT}; \textbf{Token Deletion}, where random tokens are removed entirely, forcing the model to infer missing information from context; \textbf{Text Infilling}, where spans of consecutive tokens are replaced with a single mask token, requiring the model to generate the complete missing phrase; \textbf{Sentence Permutation}, where the order of sentences in the document is randomly shuffled and the model learns to reorder them correctly; and \textbf{Document Rotation}, where the document is rotated by removing some initial tokens and moving them to the end, and the model learns to identify the original starting position.
+\gls{BART} is pretrained on a denoising task where the input is artificially corrupted in various ways, and the model learns to denoise (reconstruct) the original text. The corruption strategies employed include: \textbf{Token Masking}, where random tokens are replaced with a special \texttt{[MASK]} token, similar to \gls{BERT}; \textbf{Token Deletion}, where random tokens are removed entirely, forcing the model to infer missing information from context; \textbf{Text Infilling}, where spans of consecutive tokens are replaced with a single mask token, requiring the model to generate the complete missing phrase; \textbf{Sentence Permutation}, where the order of sentences in the document is randomly shuffled, and the model learns to reorder them correctly; and \textbf{Document Rotation}, where the document is rotated by removing some initial tokens and moving them to the end, and the model learns to identify the original starting position.
 
 This diverse corruption strategy ensures that \gls{BART} learns robust representations and can handle various downstream tasks. The denoising objective is formally expressed as:
 
@@ -342,13 +343,13 @@ where $x$ is the original text, $\text{corrupt}(x)$ is the corrupted version, an
 
 \subsubsection{Fine-tuning for Summarization}
 
-For abstractive summarization, \gls{BART} is fine-tuned on annotated summarization datasets (e.g., CNN/Daily Mail, XSum) where pairs of documents and their corresponding summaries are available. During fine-tuning, the model learns to map lengthy input documents to concise summary outputs. The fine-tuning objective is:
+For abstractive summarization, \gls{BART} is fine-tuned on annotated summarization datasets (e.g., CNN/Daily Mail, XSum), where pairs of documents and their corresponding summaries are available. During fine-tuning, the model learns to map lengthy input documents to concise summary outputs. The fine-tuning objective is:
 
 \begin{equation}
     \mathcal{L}_{\text{summ}} = -\log P(s | d)
 \end{equation}
 
-where $d$ is the input document and $s$ is the target summary. The decoder generates the summary autoregressively, one token at a time, conditioned on the encoder representation of the input document.
+where $d$ is the input document and $s$ is the target summary. The decoder generates the summary\textit{ autoregressively}, one token at a time, conditioned on the encoder representation of the input document.
 
 At inference time, the model generates summaries using beam search or sampling strategies, balancing between diversity and quality. Beam search maintains the top-$k$ most likely hypotheses at each decoding step, selecting the final sequence with the highest probability.
 
@@ -365,17 +366,17 @@ Practically, we pair the methods to balance their complementary trade-offs. LexR
 \section{Text Similarity Metrics}
 \label{sec:text-similarity-metrics}
 Since this thesis aims to enhance semantic search through Retrieval-Augmented Generation (\gls{RAG}), 
-evaluating similarity between texts becomes a critical component for evaluating the model and methodology. 
+evaluating similarity between texts becomes a critical component for assessing the model and methodology. 
 No single metric fully captures the notion of similarity: some emphasize exact lexical overlap, 
 while others account for structural variation or semantic equivalence. 
 Therefore, a diverse set of metrics is employed to provide a more comprehensive assessment, 
-ensuring that evaluation reflects the multifaceted nature of semantic search.
+ensuring that the evaluation reflects the multifaceted nature of semantic search.
 
 \subsection{Evaluation Metrics}
 
-Since this thesis focuses on enhancing semantic search through \gls{RAG}, the evaluation of similarity between retrieved passages, generated answers, and gold references is a critical step in evaluation. Different metrics capture complementary aspects of similarity, ranging from exact lexical overlap to semantic equivalence. Using a diverse set of metrics ensures that evaluation does not rely on a single definition of similarity, but instead reflects the multifaceted nature of semantic search.
+Since this thesis focuses on enhancing semantic search through \gls{RAG}, the evaluation of similarity between retrieved passages, generated answers, and gold references is a crucial step in evaluation. Different metrics capture complementary aspects of similarity, ranging from exact lexical overlap to semantic equivalence. Using a diverse set of metrics ensures that evaluation does not rely on a single definition of similarity, but instead reflects the multifaceted nature of semantic search.
 \subsubsection{Binary Matching}
-Exact match and substring match are both binary identification methods. Exact Match, checks if both texts are exacly the same. While substring match check if the gold reference is in the answer. These metrics are fast and simple, but are very lexically strict.
+Exact match and substring match are both binary identification methods. Exact Matchchecks if both texts are exactly the same. Substring match check if the gold reference is in the answer. These metrics are fast and simple, but very lexically strict.
 
 \subsubsection{Token Recall} 
 Token Recall measures the proportion of reference tokens covered by the prediction:
@@ -453,10 +454,7 @@ Youden's J statistic ranges from -1 to 1, where:
 Youden's J statistic is particularly useful for evaluating diagnostic tests and classifiers, as it provides a single metric that balances sensitivity and specificity. It is often used to determine the optimal cutoff point for a test, where the sum of sensitivity and specificity is maximized~\cite{fluss2005youden}.
 In the context of this thesis, Youden's J statistic is employed to evaluate the performance of (\gls{RAG}) systems, particularly in scenarios where both false positives and false negatives have significant implications. By maximizing Youden's J, the system can achieve a balance between correctly retrieving relevant information and minimizing the retrieval of irrelevant data.
 \section{Summary}
-This chapter established the foundations of retrieval in modern intelligent systems. Machine learning models based on \gls{BERT}-transformer \cite{bertpretrainingdeepbidirectional} architecture and variants surpass purely lexical methods by providing semantic understanding. Vector databases store their embeddings in efficient indexes for nearest neighbor search, enabling efficient retrieval tasks such as question answering. Similarity metrics complete the foundation by offering tools to evaluate performance, forming the basis for later experimentation with prompt engineering.
-
-
-
+This chapter established the foundations of retrieval in modern intelligent systems. Machine learning models based on \gls{BERT}-transformer \cite{bertpretrainingdeepbidirectional} architecture and variants surpass purely lexical methods by providing semantic understanding. Vector databases store their embeddings in efficient indexes for nearest neighbor search, enabling efficient retrieval tasks such as question answering. Similarity metrics complete the foundation by offering tools to evaluate performance, forming a foundation for subsequent experimentation with prompt engineering.
 %\subsection{Rag Variants}
 
 %\=printf("\glsxtrfull{%s}", toupper(submatch(1)))rag} is a novel approach to \glsxtrfull{nlp} that aims to improve the performance of \acpl{llm} on knowledge-intensive tasks. \glsxtrfull{rag} overcomes limitations of existing \acpl{llm} by combining a pre-trained sequence-to-sequence (seq2seq)  model (parametric memory) with a dense vector index to a vector database acessed via a neural retriever (non-parametric memory). Parametric memory, comes from the generator component \glsxtrfull{llm} itself. the non-parametric memory is part of the retrieval component,  based on a bi-encoder architecture. A document encoder produces a dense representaion of a document, and a query encoder produces a representation of the input query. The retriever is initialized using a pre-trained bi-encoder that has been trained to retrieve documents containing answers to questions. There reason why it is important to differentiate parametric memory with non-parametric memory is that they have some key differences. Non-parametric memory for can be easily updated by replacing the document index, is also more interpretable because it consists of raw text that is human readable, 
