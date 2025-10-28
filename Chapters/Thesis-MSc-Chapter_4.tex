@@ -20,17 +20,26 @@ The first step involved defining a semantic data layer using Weaviate to capture
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=1\linewidth]{Images/Classe UML.jpeg}
-    \caption{Abstract UML representation of the schema structure, showing the relationships between objects, entities, folders, files, stages, and workflows in the Edoclink platform.}\label{fig:weaviate_class}
+    \includegraphics[width=1\linewidth]{Images/Classe UML.png}
+    \caption{Abstract UML representation of a common corporate information schema, illustrating how documents, folders, and entities are typically organized and related within corporate repositories.}\label{fig:weaviate_class}
 \end{figure}
 
 The purpose for this research is to prove the possibility of semantic querying by organizational structure. A few examples were tested on a synthetically populated Weaviate database with this schema, including entities, stages, fluxes.
 
 As research progressed, the schema evolved by embedding entity data, file paths, and metadata directly into object representations, enabling consistent deletion cascades and reducing reliance on cross-reference traversal. Figure~\ref{fig:weaviate_class} illustrates this abstract model, which served as a foundation for evaluating design choices. 
+To clarify the purpose of this diagram, it first represents how companies typically organize their internal data. Most organizations follow a hierarchical structure of \textbf{folders} and \textbf{files}, where documents are stored according to organizational preferences. In addition, many companies structure their operations into projects, represented as a \textbf{flux}, which contain several \textbf{stages}, such as development, production, or sales — often in sequential order.
+
+As organizations scale, this structure becomes more complex, requiring higher-level abstractions. For example, companies may group information by \textbf{entities}, such as clients, suppliers, or internal employees, to track progress and associate multiple projects or files under each entity.
+
+
+To leverage these structures for context-aware search and retrieval, it was used a\gls{AI} featured vector database, Weaviate, which is capable of managing multiple collections through a single instance. Each collection corresponds to one class defined in the UML model of Figure~\ref{fig:weaviate_class}, and cross-references were created between them. These cross-references represent the associations defined in the UML diagram, such as \textit{Fluxo--Etapa}, \textit{Entidade--Pasta}, and \textit{Pasta--Ficheiro}.
+
+This implementation enables more structured semantic retrieval by allowing the system to traverse the logical hierarchy of the organization’s data during query execution. Rather than retrieving objects solely based on vector similarity, Weaviate can follow reference links to gather semantically related entities across collections. For example, a query about a specific project (\textit{Fluxo}) can automatically retrieve its corresponding \textit{Etapas}, or a search for an \textit{Entidade} can extend to all related \textit{Pastas} and their contained \textit{Ficheiros} and vice-versa.
+
+By combining dense vector search with explicit relational connections, the system returns results that are semantically relevant and structurally consistent with corporate hierarchy. This design also enables structured traversal across corporate repositories—e.g., from an \textit{Entidade} to its \textit{Pastas} and their \textit{Ficheiros}, or from a \textit{Fluxo} to its \textit{Etapas}—which supports context-aware retrieval without inventing relationships or assumptions.
 
 In practice, the real deployment is more complex, but this abstraction guided scalable semantic retrieval development for Edoclink.
-
-Weaviate supports multiple collections in a single instance, enabling Edoclink to store independent datasets under a shared schema, each exposed through webhooks that keep the database available and synchronized. This decentralized-style architecture distributes data across instances, increasing retrieval complexity because agents must identify and query appropriate webhooks when traversing datasets.
+Edoclink aims to store independent datasets under a shared schema, each exposed through webhooks that keep the database available and synchronized. Which can be easily done with Weaviate instances. This decentralized-style architecture distributes data across instances, increasing retrieval complexity because agents must identify and query appropriate webhooks when traversing datasets.
 
 In summary, this section has focused on the database perspective: defining the schema and refining it through embedded fields, while keeping in mind decentralized scalable storage with efficient data distribution. The next section shifts attention to Agentic AI, where the challenge is not schema design but orchestrating retrieval with agents. This transition reflects the broader research landscape, where developments such as Weaviate's Query Agent \cite{weaviate} exemplify the move toward automated reasoning layers capable of multi-step retrieval and problem solving. 
 
@@ -61,7 +70,8 @@ The architecture is composed of two main pipelines:
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{Images/Fluxograma_Data_Processing_Pipeline.jpeg}
-    \caption{Data Processing Pipeline}\label{fig:data-pipeline}
+    \caption{Document Processing Pipeline.
+Grey elements represent document preprocessing, blue elements denote LLM-driven information extraction, and green elements correspond to storage databases— vector, graph, and key–value}\label{fig:data-pipeline}
 \end{figure}
 
 \subsection{Knowledge Graph Construction}

@@ -17,22 +17,25 @@ A design was proposed for structure-aware systems that leverage an organization'
 
 Prompt-engineering recipes for document analysis were also explored (e.g., metadata extraction, organization suggestions, targeted entity extraction, and summarization). While initial results were modest due to compute and budget constraints, the approach is promising and likely to improve with more efficient optimization, stronger models, and better tuning or few-shot prompting for the application-specific schema.
 
-\gls{AAI} systems—incorporating planning, retrieval, observation, and reflection—were compared to a naive retrieval-augmented generation (\gls{RAG}) baseline. Across the tasks considered, the agentic approach produced more accurate and relevant answers, underscoring the value of reasoning frameworks and prompt engineering for making information more accessible, even to non-expert users.
+\gls{AAI} systems—incorporating planning, retrieval, observation, and reflection—were compared to a naive retrieval-augmented generation (\gls{RAG}) baseline. Across the tasks considered, the agentic approach produced more accurate and relevant answers, underscoring the value of reasoning frameworks and prompt engineering for making information more intuitively accessible.
 
 From an engineering perspective, extensive use was made of the Weaviate vector database, which enabled rapid experimentation with configurations and provides a clear path to scalability and reproducibility. An \gls{MCP} server was also built to interface with Weaviate, allowing standard \gls{MCP} clients (e.g., agents and chatbots) to interact with the knowledge base.
 
 Collectively, these contributions advance the practice of semantic search, prompt design, and agentic systems, and provide a practical foundation for building more effective and user-friendly information-retrieval systems across domains.
 % #############################################################################
 \section{System Limitations and Future Work}
-The primary limitations of this work were computational resources and data availability, which constrained the breadth of our experiments and the size and complexity of models and datasets we could evaluate. These constraints also limited the evaluation of document-analysis pipelines, which were comparatively costly and produced modest gains in our setting. Moreover, our choice of models restricted the generality of the conclusions. Finally, the absence of a publicly available dataset tailored to structure-aware retrieval prevented a comprehensive end-to-end evaluation of the proposed architecture.
+The primary limitations of this work were computational resources, financial budget, and data availability. Our local compute was sufficient to run only small open \glspl{LLM}; evaluating stronger models with longer context windows required using hosted APIs. Per-token pricing for hosted \glspl{LLM} (e.g., OpenAI, Google Gemini) kept day-to-day iteration affordable but made large-scale ablations and benchmarking costly, which in turn limited the breadth of experiments, the size and complexity of models we could test, and the context-window lengths we could routinely exercise. These constraints also curtailed our evaluation of document-analysis pipelines: they were comparatively expensive to run and yielded only modest gains in our setting. Finally, the lack of a publicly available dataset tailored to structure-aware retrieval hindered a comprehensive end-to-end assessment, and the specific model choices narrow the generality of our conclusions.
+
+By design, this thesis does not propose new \gls{ML} or \gls{LLM} architectures. It assumes that contemporary \glspl{LLM} and embedding models are already sufficiently capable for many enterprise scenarios and will continue to improve primarily through scale (more parameters and longer context windows). Accordingly, the focus is on \gls{RAG} and prompt-engineering techniques that exploit long-context models to deliver better answers—especially for non-expert users who may not know how to prompt \glspl{LLM} effectively.
 
 Future work should:
 \begin{itemize}
-	\item evaluate stronger models and architectures on larger, more diverse datasets;
-	\item develop and release a benchmark for structure-aware retrieval that captures cross-references and organizational context;
-	\item systematically compare prompting and reasoning strategies across domains and tasks;
-	\item integrate additional external knowledge sources and more robust grounding techniques (e.g., entity linking, schema alignment, retrieval-augmented planning);
-	\item study user experience with non-experts through controlled user studies, focusing on usability, transparency, latency, and cost.
+	\item evaluate stronger base and instruction-tuned models, with longer context windows, on larger and more diverse datasets;
+	\item develop and release a public benchmark for structure-aware retrieval that captures cross-references, hierarchies, and organizational context, with human-annotated relevance judgments;
+	\item systematically compare prompting and reasoning strategies (e.g., self-consistency, tree-of-thought, \textsc{ReAct}) across domains and tasks;
+	\item integrate additional external knowledge sources and more robust grounding (e.g., entity linking, schema alignment, knowledge graphs, retrieval-augmented planning), and evaluate hallucination/faithfulness;
+	\item study user experience with non-experts via controlled studies, measuring usability, transparency, latency, cost, and confidence calibration;
+	\item quantify cost–quality trade-offs and throughput under realistic workloads, including caching, reranking, and distillation for efficiency.
 \end{itemize}
 
 These directions would enable a fuller assessment of the architecture and its benefits in real-world deployments.
