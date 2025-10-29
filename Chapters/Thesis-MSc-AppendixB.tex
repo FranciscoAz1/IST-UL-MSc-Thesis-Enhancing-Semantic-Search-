@@ -247,3 +247,25 @@ Instructions:
   \Return $a, R$\;
   \caption{Naive RAG over Weaviate using Hybrid($\alpha{=}0.7$) retrieval and grouped\_task generation}
 \end{algorithm}
+
+\section{Algorithm: ReAct reasoning--acting loop}\label{alg:react-loop}
+\begin{algorithm}[H]
+  \DontPrintSemicolon
+  \SetKwInOut{Input}{Input}
+  \SetKwInOut{Output}{Output}
+  \Input{Question $x$; tool set $\mathcal{A}$ (e.g., search, retrieve, calculate); max steps $T$}
+  \Output{Final answer $y$ (if produced), else failure}
+  \BlankLine
+  $h \leftarrow [\,]$ \tcp*{Initialize history of (Thought, Action, Observation)}
+  \For{$t \leftarrow 1$ \KwTo $T$}{
+    $\tau \leftarrow \text{LLM\_Thought}(x, h)$ \tcp*{Reason about what to do next}
+    \If{$\tau$ indicates final answer}{
+      \Return extracted answer from $\tau$
+    }
+    $a \leftarrow \text{LLM\_Decide\_Action}(x, h, \tau)$ with $a \in \mathcal{A}$ \tcp*{Choose a concrete tool call}
+    $o \leftarrow \text{Execute}(a)$ \tcp*{Run tool; obtain observation}
+    $h \leftarrow h \mathbin{\Vert} (\tau, a, o)$ \tcp*{Append to history}
+  }
+  \Return failure or best candidate if available \tcp*{No final answer within $T$ steps}
+  \caption{ReAct: Interleaving Thought, Action, and Observation}
+\end{algorithm}

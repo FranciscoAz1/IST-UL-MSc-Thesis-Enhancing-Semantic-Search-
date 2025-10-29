@@ -17,6 +17,31 @@
 
 This chapter validates the architecture and approaches developed in Chapter~\ref{chap:systemarch} through comprehensive experiments on document extraction, schema-aware retrieval, and agentic versus naive \gls{RAG} systems. We evaluate retrieval effectiveness across multiple datasets and measure answer quality using diverse similarity metrics.
 
+\section{Related Work: Semantic Document Retrieval for Chatbots}
+Contemporary systems demonstrate the value of grounding conversational agents in user-provided sources with citations and synthesis:
+\begin{itemize}
+    \item \textbf{Google NotebookLM} focuses on a personal, source-grounded assistant over curated notes and documents, producing footnoted syntheses and study guides \cite{notebooklm}.
+    \item \textbf{Perplexity AI} provides web-grounded conversational search with inline citations and multi-document aggregation \cite{perplexity}.
+    \item \textbf{OpenAI Assistants (File Search)} expose built-in file search and retrieval tools, enabling RAG behaviors with tool-calling in conversational workflows \cite{openai-assistants-file-search}.
+    \item \textbf{Anthropic Claude Projects} organize document-grounded workspaces with citations and project-level context \cite{anthropic-projects}.
+    \item \textbf{Microsoft Copilot (Graph Grounding)} emphasizes enterprise grounding over Microsoft Graph (SharePoint/OneDrive/Outlook/Teams), privacy, and compliance with source citations \cite{ms-copilot-graph}.
+\end{itemize}
+
+These products validate the pattern targeted in this thesis: source-grounded, multi-document conversational retrieval with explicit citations over user or organizational corpora. Methodologically, our system adopts ReAct to treat retrieval as a first-class action and standardizes tool access via the Model Context Protocol (MCP), exposing Weaviate's schema-aware, hybrid retrieval as typed tools. This design goal—interoperability—allows contemporary agents to combine their existing planning aids (e.g., \texttt{TODO.md}, scratchpads) with our retrieval capabilities without bespoke adapters.
+
+\paragraph{Open-source ecosystem.} Several open-source projects provide the building blocks for semantic retrieval chatbots:
+\begin{itemize}
+    \item \textbf{LangChain} and \textbf{LangGraph} orchestrate RAG pipelines and agent loops (e.g., ReAct), with broad connectors and stateful workflows \cite{langchain,langgraph}.
+    \item \textbf{LlamaIndex} offers ingestion, indexing, retrieval strategies (vector, keyword, graph), and observability for document-grounded agents \cite{llamaindex}.
+    \item \textbf{Haystack} provides modular retrievers, re-rankers, and readers with pipeline tooling and eval/labeling support \cite{haystack}.
+    \item Vector databases: \textbf{Weaviate} (schema-aware hybrid, used in this thesis), \textbf{Qdrant}, and \textbf{Milvus}, alongside libraries like FAISS for ANN search \cite{weaviate,qdrant,milvus,douze2024faiss}.
+    \item Evaluation: \textbf{RAGAS} and \textbf{TruLens} measure faithfulness, groundedness, and answer quality with trace-based diagnostics \cite{ragas,trulens}.
+    \item Programmatic prompting: \textbf{DSPy} compiles and optimizes LLM pipelines, including RAG components, with declarative specs \cite{dspy}.
+    \item Graph-augmented RAG: \textbf{GraphRAG} and \textbf{LightRAG} builds and queries knowledge graphs to support multi-hop retrieval and synthesis \cite{graphrag}.
+\end{itemize}
+
+Our MCP integration exposes Weaviate tools with typed I/O so these ecosystems can interoperate with the thesis system directly, enabling agents to reuse existing tooling while adding schema-aware retrieval.
+
 \section{Information Extraction and Document Structuring}
 
 Multiple multimodal models were tested for information extraction: PrimaLayout and PubLayNet showed promise but were insufficiently trained and produced unpredictable results. Nougat, an OCR engine that preserves document hierarchy in Markdown format, was selected for cases where PDFs lack embedded text metadata.
