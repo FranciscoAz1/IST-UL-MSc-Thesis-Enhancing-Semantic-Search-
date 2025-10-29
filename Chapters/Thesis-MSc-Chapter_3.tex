@@ -17,7 +17,7 @@ Building on the foundational retrieval methods introduced in Chapter~\ref{chap:b
 \section{Reasoning and Planning}
 \subsection{Chain of Thought (CoT)}
 CoT prompting was introduced by Wei et al.~\cite{chainofthought} to improve reasoning tasks where the input–output mapping is non-trivial (e.g., math problem $\to$ numerical answer). The method adds intermediate reasoning steps in natural language, which bridge the gap between question and solution.
-In benchmarks such as GSM8K and MultiArith, CoT significantly increased accuracy when compared to direct prompting. A refinement, \emph{Self-Consistency CoT} (CoT-SC), samples multiple reasoning chains and returns the most consistent answer, achieving further gains (e.g., PaLM 540B improved from 55\% $\to$ 74\% on GSM8K). However, CoT remains linear. as each reasoning chain is generated sequentially without exploring alternatives.
+In benchmarks such as GSM8K and MultiArith, CoT significantly increased accuracy when compared to direct prompting. A refinement, \emph{Self-Consistency CoT} (CoT-SC), samples multiple reasoning chains and returns the most consistent answer, achieving further gains (e.g., PaLM 540B improved from 55\% $\to$ 74\% on GSM8K). However, CoT remains linear. as each thought is generated sequentially without exploring alternatives.
 
 \subsubsection{Few-Shot Chain-of-Thought \cite{chainofthought}}
 \label{subsec:Few-ShotCoT}
