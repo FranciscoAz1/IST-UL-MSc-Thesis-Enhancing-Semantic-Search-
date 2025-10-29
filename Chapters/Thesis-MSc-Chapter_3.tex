@@ -10,14 +10,24 @@
 Building on the foundational retrieval methods introduced in Chapter~\ref{chap:back}, this chapter surveys \gls{AAI}—language-model driven agents that plan, use tools, and manage memory to improve retrieval and answer quality. We focus on methods that (i) reason and decompose tasks, (ii) call external tools and data sources, and (iii) maintain working memory and long-term context. These agentic capabilities address the challenges enterprises face with semantic search (Chapter~\ref{chap:intro}) by adding planning and reasoning to retrieval-augmented generation (\gls{RAG}) pipelines that must respect organizational structure (folders, metadata) and access control.
 
 \section{From Prompting to Agentic Behavior}
-\textbf{Prompt engineering.} Well-designed instructions can control output format, tone, and constraints, and can inject short domain context.  The dialog history may be summarized and re-provided as context; however, prompting alone does not guarantee factuality or stable tool use.
 
-\textbf{In-context learning vs.\ fine-tuning.} Few-shot prompts adapt behavior without training, at the cost of increased input token usage and brittle generalization. Fine-tuning bakes patterns into model weights, reducing prompt length and latency, but requires curated data, cost, and re-deployment.
+At their core, \glspl{LLM} are next-token predictors. Yet, with careful prompt design and light scaffolding, we can elicit behaviors that look like planning, tool use, and memory—turning a general model into an agent that can reason, act, and operate under constraints. In practice, this progression typically moves through three layers: (i) instruction and context shaping, (ii) structured reasoning, and (iii) controlled action via external tools and state. The rest of this chapter deepens each layer through Chain-of-Thought, Tree-of-Thoughts, and ReAct, and then discusses orchestration and protocol standards such as MCP.
+
+\textbf{Prompt engineering.} Clear, task-oriented instructions shape how models respond: roles (``You are a compliance analyst''), goals (``decide yes/no and explain''), constraints (``answer in JSON with fields X, Y''), style, and evaluation criteria. Context windows can be filled with distilled background (summaries, definitions, schemas) and the dialog history can be periodically summarized and re-provided to keep the model on track. Output schemas (e.g., few fields of JSON or a fixed template) further stabilize format and make downstream automation reliable. Prompting thus controls tone, structure, and short-term domain grounding. However, it does not by itself ensure factuality, robust adherence to tools or APIs, or reproducibility under distribution shifts; prompts remain brittle when the task departs from seen patterns.
+
+\textbf{In-context learning vs.\ fine-tuning.} Few-shot exemplars teach models how to behave by patterning on demonstrations placed directly in the prompt. This enables rapid adaptation without training but increases token usage and can generalize brittlely beyond the demonstrated cases. Fine-tuning, in contrast, bakes those patterns into the model weights, reducing prompt length and latency while improving stability on the tuned behaviors. The trade-offs are cost (data curation and training), operational complexity (versioning and re-deployment), and potential drift if the underlying APIs or schemas change. In this thesis we prefer minimal, reusable prompt patterns combined with retrieval of fresh context and explicit tool schemas; targeted fine-tuning is reserved for behaviors that must be consistent at scale.
 
 \section{Reasoning and Planning}
 \subsection{Chain of Thought (CoT)}
-CoT prompting was introduced by Wei et al.~\cite{chainofthought} to improve reasoning tasks where the input–output mapping is non-trivial (e.g., math problem $\to$ numerical answer). The method adds intermediate reasoning steps in natural language, which bridge the gap between question and solution.
-In benchmarks such as GSM8K and MultiArith, CoT significantly increased accuracy when compared to direct prompting. A refinement, \emph{Self-Consistency CoT} (CoT-SC), samples multiple reasoning chains and returns the most consistent answer, achieving further gains (e.g., PaLM 540B improved from 55\% $\to$ 74\% on GSM8K). However, CoT remains linear. as each thought is generated sequentially without exploring alternatives.
+CoT prompting, introduced by Wei et al.~\cite{chainofthought}, elicits an explicit sequence of intermediate \emph{rationales} $r=(r_1,\ldots,r_T)$ before producing the final answer $y$. Instead of directly mapping $x\to y$, the prompt conditions the model to first generate a plausible reasoning chain and then a concise answer. From a probabilistic view, the ideal predictor marginalizes over latent rationales,
+\begin{equation}
+ y^* = \arg\max_y \sum_r p(y,r\mid x),
+\end{equation}
+and CoT steers decoding to sample a high-probability $r$ followed by $y$. In practice, few-shot demonstrations of the pattern ``step-by-step reasoning $\Rightarrow$ final answer'' shape the token distribution so that the model decomposes the task (arithmetic sub-results, constraint checks, commonsense implications), reducing search depth and concentrating probability mass on correct completions.
+
+	\textbf{Why it helps.} CoT is effective on compositional problems (multi-step arithmetic, symbolic manipulation, multi-hop QA) because: (i) it decomposes the problem into locally verifiable steps; (ii) it exposes intermediate constraints to the model, enabling self-correction within the chain; and (iii) it regularizes decoding to match the stepwise structure seen in demonstrations. Empirically, CoT improves accuracy on GSM8K, MultiArith, and related benchmarks.
+
+	\textbf{Limitations.} Vanilla CoT is \emph{linear}: a single chain is generated left-to-right; early errors can propagate; and a single sample may miss alternative valid paths. This motivates ensembling (Self-Consistency) and structured search (Tree-of-Thoughts), discussed below.
 
 \subsubsection{Few-Shot Chain-of-Thought \cite{chainofthought}}
 \label{subsec:Few-ShotCoT}
@@ -30,61 +40,91 @@ A: [Step-by-step reasoning]. The answer is [final answer].
 
 Then use this for few-shot prompting. This is what made the paper achieve significantly increased accuracy.
 
-\subsubsection{Zero-Shot Chain-of-Thought ("Let's think step by step") \cite{chainofzero}}
-\begin{lstlisting}[language={},basicstyle=\ttfamily\footnotesize,caption={Zero-Shot Chain-of-Thought Prompt Template}]
-Q: [Your question here].\\
-Let's think step by step.
-\end{lstlisting}
-
-The paper \cite{chainofzero} tested this prompts on the MultiArith dataset with text-davinci-002. Such prompts were such as "Let's think about this logically" , " Before we dive into the answer", "Abrakadabra!"
-The template "Let's think step by step" got the highest score 78,7 \% , while others such as "Abrakadabra!" got a 15,5 \% which surprisingly isn't far from raw prompt template which scored 15,5 \%.
-
-\subsubsection{Conclusion}
-From the paper \cite{chainofzero}, the chain of thought method proposed in \cite{chainofthought} was tested to evaluate the actual difference when using few-shot prompt with chain of thought.
-The results, from the GSM8K benchmark, using PALM (540B) model \ref{tab:chainofzero}.
-
-\begin{table}[h!]
-    \centering
-    \begin{tabular}{|c|c|cc}
-        \hline
-        Method & GSM8K\\
-        \hline
-        Zero-Shot & 12,5 \\
-        \hline
-        Zero-Shot-CoT \cite{chainofzero} & 43,0 \\
-        \hline
-        Few-Shot-CoT \cite{chainofthought} & 56,9 \\
-        \hline
-    \end{tabular}
-    \caption{Selected experimental results using PALM (540B) \gls{LLM} model \cite{chainofzero}}
-    \label{tab:chainofzero}
-\end{table}
-
-According to the results see in the table above \ref{tab:chainofzero} in all the Few-Shot-CoT is still better. However, Zero-ShoT-CoT is much easier to implement withouth having to come up with specific domain CoT examples. This make it the preferred approach for the thesis, providing a universally applicable solution.
-
+\subsubsection{Self-Consistency (CoT-SC)}
+\label{subsec:cot-sc}
+Self-Consistency addresses the ``single-chain'' limitation by sampling multiple independent CoT chains and selecting the most consistent final answer. Algorithmically:
+\begin{enumerate}
+    \item Use a CoT-style prompt (few-shot or zero-shot) that ends with a clearly parseable final answer (e.g., ``The answer is [\dots]'').
+    \item Sample $k$ chains with stochastic decoding (e.g., temperature or nucleus sampling).
+    \item Parse the final answers $\{y^{(j)}\}_{j=1}^{k}$ from the chains.
+    \item Return the majority answer; break ties by likelihood or a lightweight verifier.
+\end{enumerate}
+This procedure approximates the marginalization $\arg\max_y \sum_r p(y,r\mid x)$ via Monte Carlo sampling of $r$. It yields substantial gains (e.g., PaLM 540B on GSM8K from 55\% to 74\%), with token/latency cost roughly linear in $k$.
 
 \subsection{Tree-of-Thoughts (ToT)}
 Yao et al.~\cite{treeofthought} extended CoT by introducing branching reasoning. Each intermediate step (a ``thought'') forms part of a search tree, where multiple candidate continuations can be generated, evaluated, and backtracked. This enables deliberate problem solving under uncertainty. On tasks such as the Game of 24, Mini Crosswords, and constrained story generation, ToT substantially outperformed both standard prompting and CoT (e.g., \gls{GPT}-4 with ToT achieved 74\% accuracy on Game of 24, versus 19\% with CoT). The main trade-off is computational cost: ToT requires generating and evaluating many reasoning branches, making it slower and more resource-intensive.
 
-The tree in ToT is made up of nodes, which represent states ($s=[x, z_{1...i}]$), that are partial solutions to the problem, with input the thoughts thus far. To generate states, it takes four steps. \textbf{Thought Decomposition}: a thought can be a a line of equation (Game of 24), a couple of words (crosswords),  a full paragraph of a writing plan (Creative Writing), or a class in a structured organizational folder (corporate structural search). Which is composed to a certain length so that a \glspl{LLM} can process it. \textbf{Thought Generator}, given a state ($s=[x, z_{1...i}]$), the model generates the next thoughts ($G(p_\theta,s,k)$. The paper ToT mentions two strategies:
+\textit{Relation to CoT-SC.} Both ToT and Self-Consistency explore \emph{multiple} reasoning paths. CoT-SC does so via independent samples of linear chains with a majority vote over final answers, approximating $\arg\max_y \sum_r p(y,r\mid x)$. ToT conducts a \emph{guided} search over a tree of partial solutions using generation plus heuristic evaluation and backtracking. This can focus computation on promising branches but typically incurs higher coordination and token cost.
+
+The tree in ToT is made up of nodes, which represent states ($s=[x, z_{1,\ldots,i}]$), that are partial solutions to the problem, with input the thoughts thus far. To generate states, it takes four steps. \textbf{Thought Decomposition}: a thought can be a a line of equation (Game of 24), a couple of words (crosswords),  a full paragraph of a writing plan (Creative Writing), or a class in a structured organizational folder (corporate structural search). Which is composed to a certain length so that a \glspl{LLM} can process it. \textbf{Thought Generator}, given a state ($s=[x, z_{1,\ldots,i}]$), the model generates the next thoughts $G(p_\theta,s,k)$. The paper ToT mentions two strategies:
 \begin{itemize}
-    \item Sample thoughts from a CoT prompt \ref{subsec:Few-ShotCoT}. This strategy works better for diverse and creative writing tasks,  where the thoughts take the form of full paragraphs.
-\begin{equation}
-    z^{j}  \sim p_\theta^{CoT}(z_{i+1}|s) = p_\theta^{CoT}(z_{i+1}|x, z_{1,...i})(j = 1 ...k)
-\end{equation}
-    \item  Propose thoughts sequentially using a "propose prompt". This works better when the thought space is constrained, when the thoughts are just a word or a line.
-\begin{equation}
-[z_{i+1}^{(1)}, \dots, z_{i+1}^{(k)}] \sim p_\theta^{\text{propose}}(z_{i+1}^{(1:k)} \mid x, z_1, \dots, z_i)
-\end{equation}
+    \item Sample thoughts from a CoT prompt~\ref{subsec:Few-ShotCoT}. This strategy works better for diverse and creative writing tasks,  where the thoughts take the form of full paragraphs.
+    \begin{equation}
+        z^{j}  \sim p_\theta^{CoT}(z_{i+1}\mid s) = p_\theta^{CoT}(z_{i+1}\mid x, z_{1,\ldots,i})\; (j = 1\,\ldots\,k)
+    \end{equation}
+    \item  Propose thoughts sequentially using a ``propose prompt''. This works better when the thought space is constrained, when the thoughts are just a word or a line.
+    \begin{equation}
+    [z_{i+1}^{(1)}, \dots, z_{i+1}^{(k)}] \sim p_\theta^{\text{propose}}(z_{i+1}^{(1:k)} \mid x, z_1, \dots, z_i)
+    \end{equation}
 \end{itemize}
 
 The next component is the \textbf{state evaluator} $V(p_\theta,S)$, which heuristically assesses whether a state has reached the goal. Which then determines if it is valuable to keep exploring this chain of thought. ToT \cite{chainofthought} uses a \gls{LLM} to evaluate.
 Then to further the tree ToT uses simple search algorithms in the tree structure such as Breadth-first search (BFS) and Depth-first search (DFS).
 
-The contribution of this paper to the thesis lies in demostrating  how an \gls{LLM} can be orchestrated to navigate the organizational structure in a semantically aware manner.
+The contribution of this paper to the thesis lies in demonstrating how an \gls{LLM} can be orchestrated to navigate the organizational structure in a semantically aware manner.
+
+\subsection{Zero-Shot Chain-of-Thought (``Let's think step by step'')~\cite{chainofzero}}
+\begin{lstlisting}[language={},basicstyle=\ttfamily\footnotesize,caption={Zero-Shot Chain-of-Thought Prompt Template}]
+Q: [Your question here].\\
+Let's think step by step.
+\end{lstlisting}
+
+The paper~\cite{chainofzero} tested several zero-shot reasoning cues on the MultiArith dataset with \texttt{text-davinci-002} (e.g., ``Let's think about this logically'', ``Before we dive into the answer'', ``Abrakadabra!''). The prompt ``Let's think step by step'' achieved the highest score (78,7\%), while unrelated cues like ``Abrakadabra!'' performed near the raw baseline (15,5\%). The takeaway is that explicitly inviting step-by-step reasoning can elicit a chain of thought even without few-shot exemplars.
+
+\subsection{Conclusion}
+Zero-shot CoT offers a low-effort way to elicit reasoning; Few-shot CoT provides stronger improvements when domain-specific exemplars are available; CoT-SC ensembles multiple chains to better approximate marginalization over rationales; and ToT adds branching search for deliberate problem solving at higher computational cost. In this thesis we prefer Zero-Shot-CoT for broad applicability, and strategies that resemble branching are also explored for improving queries to retrieve context.
+
+Representative results on GSM8K with PaLM (540B) are shown in Table~\ref{tab:chainofzero}.
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|l|c|}
+        \hline
+        Method & GSM8K\\
+        \hline
+    Zero-Shot & 17,9~\cite{chainofthought} \\
+        Zero-Shot-CoT~\cite{chainofzero} & 43,0 \\
+        Few-Shot-CoT~\cite{chainofthought} & 56,9 \\
+        CoT-SC (Self-Consistency)~\cite{chainofthought} & 74,0 \\
+        \hline
+    \end{tabular}
+    \caption{Selected experimental results using PaLM (540B) on GSM8K~\cite{chainofthought}.}
+    \label{tab:chainofzero}
+\end{table}
+
+\subsubsection{Note on comparability.} In the ToT study (Yao et al.~\cite{treeofthought}), GSM8K was evaluated with \gls{GPT}-4 in a zero-shot setup on a 100-question subset. \textbf{IO} (Input\textendash Output) denotes the standard direct prompting baseline without step-by-step rationales (i.e., no CoT). Because the model and evaluation protocol differ from the PaLM (540B) setup above, we report those numbers separately for clarity.
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|l|c|}
+        \hline
+        Method & GSM8K\\
+        \hline
+        IO (direct prompting)~\cite{treeofthought} & 51,0 \\
+        CoT~\cite{treeofthought} & 86,0 \\
+        ToT (zero-shot, GPT-4)~\cite{treeofthought} & 90,0 \\
+        \hline
+    \end{tabular}
+    \caption{GSM8K results reported by Yao et al.~\cite{treeofthought} using GPT-4 in a zero-shot ToT setup (100-question subset). Results are shown separately because the model and evaluation protocol differ from the PaLM (540B) setup above.}
+    \label{tab:tot-gpt4-gsm8k}
+\end{table}
 
 \subsection{Reasoning \emph{and} Acting (ReAct)}
-Yao et al.~\cite{react} proposed the ReAct framework, which interleaves reasoning traces with external actions (e.g., database queries, web search, or calculator calls) and corresponding observations. Unlike CoT, which is limited to internal reasoning, ReAct closes the loop between planning and evidence gathering, enabling the model to ground its reasoning in retrieved information. In knowledge-intensive QA tasks such as \textbf{\textit{HotpotQA}} and \textbf{\textit{FEVER}}, ReAct improved factual accuracy and significantly reduced hallucinations (e.g., from 14\% to 6\%). It also achieved strong performance in interactive environments such as ALFWorld, where reasoning must be combined with sequential decision-making. The main trade-off lies is increased latency and token cost, since each step requires both reasoning tokens and tool interactions. However, the gains in groundedness and reliability are substantial for retrieval-augmented applications.
+Yao et al.~\cite{react} propose ReAct, a prompting framework that \emph{interleaves} short natural-language \textit{thoughts} with concrete \textit{actions} and observed evidence. At each step the model reasons about what to do next, calls a tool (e.g., Wikipedia search, database query, calculator), receives an \textit{observation}, and updates its working state (the history of thoughts, actions, and observations). In contrast to purely internal Chain-of-Thought (CoT), ReAct closes the loop between planning and evidence gathering, which reduces hallucinations by grounding intermediate claims in retrieved information and enables recovery from early mistakes via subsequent actions.
+
+Concretely, ReAct was evaluated on knowledge-intensive QA and fact verification by coupling the LLM with a simple Wikipedia API on \textbf{\textit{HotpotQA}} and \textbf{\textit{FEVER}}. It also tested sequential decision making in \textbf{ALFWorld} and \textbf{WebShop}. Compared to CoT-style baselines, ReAct improves verification accuracy and produces human-interpretable trajectories (reasoning + actions + observations). The main trade-off lies in increased latency and token cost, since each step emits reasoning tokens and performs tool I/O. In retrieval-augmented settings, however, the gains in groundedness and reliability are substantial.
+
+
 
 \subsubsection{Example}
 ReAct interleaves reasoning traces with external actions and observations. The framework follows this pattern:
@@ -117,7 +157,20 @@ Final Answer: Paris has approximately 2.16 million inhabitants, while London has
 making London about 4.16 times larger than Paris.
 \end{lstlisting}
 
-This interleaving of reasoning (Thought) with external actions (Action) and observations allows ReAct to ground its responses in retrieved information, rather than relying solely on parametric knowledgestored in model weights, thereby significantly reducing hallucinations while improving factual accuracy.
+This interleaving of reasoning (Thought) with external actions (Action) and observations allows ReAct to ground its responses in retrieved information, rather than relying solely on parametric knowledge stored in model weights, thereby reducing hallucinations while improving factual accuracy.
+
+\paragraph{Formalization.} Given a question or task $x$, define the agent state at step $t$ as $s_t = (x, h_t)$, where $h_t$ is the history of prior thoughts, actions, and observations. The agent alternates between emitting a \textit{Thought} $\tau_t$ and an \textit{Action} $a_t$:
+\begin{itemize}
+    \item Thought: $\tau_t = f_\theta(\text{``Think''} \mid s_t)$ produces a short rationale that decides the next operation.
+    \item Action: $a_t \in \mathcal{A}$ is executed against an external environment $\mathcal{E}$ (e.g., search, retrieve, calculate), yielding observation $o_t = \mathcal{E}(a_t)$.
+\end{itemize}
+The history is updated $h_{t+1} = h_t \cup \{\tau_t, a_t, o_t\}$ and the loop repeats until a termination condition emits a \textit{Final Answer}. A simple ReAct policy thus alternates $\text{Thought} \rightarrow \text{Action} \rightarrow \text{Observation}$, using observations to correct or refine subsequent thoughts.
+
+\paragraph{Algorithmic reference.} A formal pseudocode of this loop is provided in Appendix B (Section~\ref{alg:react-loop}); we refer readers there for the step-by-step algorithm.
+
+\paragraph{Reported results.} Using PaLM-540B with a Wikipedia API, the ReAct paper reports (first value HotpotQA Exact Match (EM), second value FEVER accuracy): Standard (28.7, 57.1), CoT~\cite{chainofthought} (29.4, 56.3), CoT-SC~\cite{chainofthought} (33.4, 60.4), Act-only (25.7, 58.9), ReAct (\textbf{27.4}, \textbf{60.9}), CoT-SC$\,\Rightarrow$ReAct (\textbf{34.2}, \textbf{64.6}), ReAct$\,\Rightarrow$CoT-SC (35.1, 62.0). Error analysis shows hallucinated reasoning traces or facts are substantially lower for ReAct than CoT (\textbf{6\%} vs. \textbf{14\%}) in the successful predictions breakdown. On interactive environments, ReAct achieves strong gains (e.g., ALFWorld average success rate up to \textbf{71\%}, beating best Act at 45\% and BUTLER at 37\%; absolute improvements of \textbf{+34\%} on ALFWorld and \textbf{+10\%} on WebShop over imitation/reinforcement learning baselines)~\cite{react}.
+
+
 \section{Tool Use and Orchestration}
 
 While ReAct already integrates tool use within its action step, this section focuses on how such capabilities can be further optimized for accuracy.  
@@ -185,5 +238,12 @@ It has rapidly become a key standard for connecting AI applications to external 
 Additional open-source implementations include the \texttt{docker/mcp-toolkit}, \texttt{anthropic/mcp}, and \texttt{mongodb-js/mcp-server}.  
 One of these servers—the \textbf{Weaviate MCP server}—was developed in this thesis to expose Weaviate’s schema and query interface as callable MCP \texttt{tools}.  
 
-MCP’s main advantages are its \textbf{standardization} }—providing a unified protocol across heterogeneous backends; \textbf{reproducibility}\}\}— through versioned prompts and schema-defined tools; \textbf{extensibility}, allowing new capabilities to be added without architectural changes. \cite{mcp-spec}.  
+MCP’s main advantages are its \textbf{standardization} —providing a unified protocol across heterogeneous backends; \textbf{reproducibility}— through versioned prompts and schema-defined tools; \textbf{extensibility}, allowing new capabilities to be added without architectural changes. \cite{mcp-spec}.  
 In this thesis, MCP functions as the interoperability layer between Weaviate and LLM agents, enabling schema-aware retrieval and controlled reasoning over enterprise information in a reproducible and standardized manner.
+
+\section{Related Work}
+
+\section{Summary}
+This chapter traced the progression from prompting to agentic behavior and motivated ReAct—interleaving Thought, Action, and Observation—as the pattern we adopt in this thesis (formal loop in Appendix~B, Section~\ref{alg:react-loop}). In practice, agents benefit from many tools. Contemporary assistants such as Copilot and Claude already provide file-backed tools (e.g., project-local \texttt{TODO.md} and lightweight Markdown scratchpads) to externalize short plans and track progress across turns. We do not reimplement these tools; instead, we ensure our solution is compatible so they can be used alongside our retrieval components, improving the reliability of semantic search tasks.
+
+To enable this interoperability, we expose Weaviate via the Model Context Protocol (MCP). We developed a Weaviate MCP server that provides schema-aware search and fetch as typed tools. In our implementation, this MCP interface is used with contemporary agent frameworks—initially a LangChain agent and later an OpenAI tool-calling agent, following its recent release—for benchmarking and for structured, schema-informed cross-references during semantic search. Because MCP is a common, typed interface, any MCP-compatible agent—including those with built-in tools like TODO lists and scratchpads—can plug our server in immediately and extend it with additional tools over time, leveraging the latest Agentic AI tooling without bespoke adapters.

@@ -464,6 +464,33 @@ For the devlopment of an enhanced hybrid structure and semantic search system. W
 
 %\section{Access Control Lists}
 
+% ---------------------------------------------------------------------------
+% Thesis-specific setup (appended to Summary)
+% ---------------------------------------------------------------------------
+
+Concretely, this thesis will operationalize the above background as follows:
+\begin{itemize}
+    \item \textbf{Language Models (\glspl{LLM})} (cf. Section~\ref{sec:llm}). For local development and rapid iteration, we will employ a compact open model, \emph{Qwen2.5}, that runs on the available hardware. For benchmarks and higher-quality reasoning, we will use OpenAI-hosted models from the GPT-4o family (e.g., GPT-4o and GPT-4o-mini), accessed via the OpenAI API, with careful budget control through selective evaluation.
+
+    \item \textbf{Retrieval methods} (cf. Section~\ref{sec:rag}). We will evaluate both sparse and dense retrieval:
+    \begin{itemize}
+        \item \emph{BM25} for strong lexical baselines.
+        \item \emph{Dense Passage Retrieval (DPR)} (Section~\ref{par:dpr}) for semantic retrieval using dual encoders and dot-product similarity.
+    \end{itemize}
+    Each method will be tested with two backends: (i) a minimal, open-source, in-memory \emph{nano} implementation---using an inverted index for BM25 and an HNSW-based vector index for DPR---to enable lightweight, customizable experimentation; and (ii) a fully featured, easily configured SDK (\emph{Weaviate}, cf. Section~\ref{sec:vector-store}) leveraging HNSW for approximate nearest neighbor (\gls{ANN}) search and providing built-in \emph{hybrid} (lexical + vector) search. BM25 does not require a vector database and will be maintained as a separate inverted index; Weaviate's hybrid search will be used when combining lexical and semantic signals.
+    To clarify the roles of these backends: the \emph{nano} implementation is primarily a learning and ablation environment---open-source, in-memory, and highly customizable---used to inspect indexing internals (e.g., \gls{HNSW} parameters and inverted lists) and to isolate algorithmic effects (BM25 vs. DPR) without SDK abstractions. For the actual benchmarks and scale-oriented comparisons, we use \emph{Weaviate}, whose SDK is much easier to configure (schema, ingestion, \gls{HNSW} tuning, and hybrid queries), enabling reproducible experiments while approximating realistic deployment settings.
+
+    \item \textbf{Sentence embeddings} (cf. Section~\ref{sec:Sentence-Transformers}). We will use a strong general-purpose Sentence Transformer, \emph{all-MiniLM-L6-v2} \cite{reimers2019sentence}, and consider domain/language-optimized alternatives when appropriate (e.g., \emph{Serafim 900M IR} for Portuguese \cite{gomes2024opensentenceembeddingsportuguese}).
+
+    \item \textbf{Summarization for storage and context optimization} (cf. Section~\ref{sec:text-summarization}). To reduce index size and context length while preserving salient information, we will experiment with extractive \emph{LexRank} and with abstractive \emph{BART} techniques. Extractive summaries help prevent hallucinations and reduce stored tokens, while abstractive summaries improve readability and coverage; we will measure the trade-offs of both within the \gls{RAG} pipeline.
+
+    \item \textbf{Evaluation}. We will assess retrieval and generation quality using the diverse text similarity metrics in Section~\ref{sec:text-similarity-metrics} (lexical, structural, and semantic), and use Youden's J statistic (Section~\ref{sec:youden}) when threshold selection is required to balance sensitivity and specificity in binary decisions (e.g., relevance cutoffs or filtering).
+\end{itemize}
+
+
+
+This configuration allows cost-effective iteration (local small \gls{LLM} + nano index), scalable deployment experiments (Weaviate + HNSW), and rigorous comparisons between lexical and semantic retrieval (BM25 vs. DPR), while controlling storage and latency via summarization.
+
 % #############################################################################
 
 
