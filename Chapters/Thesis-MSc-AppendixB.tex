@@ -229,9 +229,9 @@ Instructions:
     $query{=}q,$ $alpha{=}\alpha,$ $limit{=}k,$\\
     $target\_vector{=}$\texttt{"text\_vector"}, $grouped\_task{=}grouped\_task,$\\
     $return\_metadata{=}$\texttt{MetadataQuery(distance=True)}$)$
-  	cp*{Hybrid retrieval + grouped generation}
+  	\tcp*{Hybrid retrieval + grouped generation}
   \BlankLine
-  	cp{Extract grouped answer; if empty, fallback to concatenated retrieved texts}
+  	\tcp{Extract grouped answer; if empty, fallback to concatenated retrieved texts}
   $gen \leftarrow result.generative$; $a \leftarrow$ \texttt{None}\;
   \If{$gen \neq \varnothing$ \textbf{and} $gen.text$ exists}{
     $a \leftarrow gen.text$
@@ -241,7 +241,7 @@ Instructions:
     $a \leftarrow$ join($T$, ``\textbackslash n---\textbackslash n'')\; 
   }
   \BlankLine
-  	cp{Collect provenance and scores}
+  	\tcp{Collect provenance and scores}
   $R \leftarrow [\; (obj.properties[\texttt{"file\_path"}], obj.metadata.distance) \;\mid\; obj \in result.objects\; ]$\;
   \BlankLine
   \Return $a, R$\;

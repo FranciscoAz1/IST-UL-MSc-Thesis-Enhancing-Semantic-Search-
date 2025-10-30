@@ -149,11 +149,13 @@ The server functions as an intermediary between clients and the Weaviate backend
 This design enables the use of Weaviate’s full toolkit, including object properties, multiple collections, and cross-references between them. Although ACL management is implemented within Edoclink, Weaviate natively supports this feature, which facilitates its use in secure and multi-tenant environments. Clients are typically \gls{LLM}-powered agents capable of communicating over \gls{MCP}, allowing them to seamlessly integrate external structured knowledge into their reasoning processes.
 
 \subsection{MCP features}
+The Weaviate MCP server exposes the following tools and resources to clients:
 \begin{itemize}
-    \item weaviate query : fetch objects throught a hybrid query (vector and BM25 search). The vector searches are ranked 70 \% higher than BM25. To use mostly semantic, but also BM25 when semantic searches are not good.
-    \item Weaviate generation : Same as weaviate query, but uses weaviate database to generate, and returns generation instead of objects
-    \item Weaviate query cross-references : same as weaviate query, but finds cross-references, and suggest searching throught them
-    \item  weaviate query with cross-reference : Follows the last query. Searches a collectiong and the selected cross-reference for information. Then suggests other cross references to search through. Guiding the model to search the database in a structured way.
+    \item \textbf{\texttt{weaviate-query}}: Hybrid retrieval (vector + BM25) over a chosen collection. Inputs: \texttt{query}, \texttt{collection}, \texttt{targetProperties}, optional \texttt{limit} (default 3). Properties are validated against the collection schema; invalid fields yield a descriptive error listing valid ones. Returns the requested properties of the top-$k$ objects, with the vector signal prioritized over BM25.
+    \item \textbf{\texttt{weaviate-generate-text}}: Same inputs as \texttt{weaviate-query}, but leverages Weaviate's generative grouped task to produce a concise answer grounded in the retrieved objects. Returns the generated text together with the structured result. This trades a small amount of latency---one additional LLM call---for a more concise response to the client.
+    \item \textbf{\texttt{weaviate-origin}}: Collection-centric hybrid search that also summarizes first-hop cross-references (incoming and outgoing) discovered from the schema, and highlights unrequested ``missed'' fields. Helps plan the next traversal step by suggesting which references to follow.
+    \item \textbf{\texttt{weaviate-follow-ref}}: One-hop traversal. Given a \texttt{collection}, a reference property \texttt{refProp}, base fields \texttt{baseProps}, referenced fields \texttt{refProps}, and optional \texttt{limit} (default 5), it runs a hybrid search and expands the chosen cross-reference, returning base objects with their referenced neighbors. All fields are validated against the base and target classes. This tool enables structured traversal across collections and implements cross-reference following as illustrated in Figure~\ref{fig:weaviate_class}. The implementation is dynamic: it discovers cross-references at inference time, enabling different collection schemas to be used without code changes.
+    \item \emph{Schema resource}: In addition to tools, the server exposes collection schemas as MCP resources at \texttt{weaviate://schema/\{collection\}} so clients can discover available classes, properties, and references before querying.
 \end{itemize}
 
 

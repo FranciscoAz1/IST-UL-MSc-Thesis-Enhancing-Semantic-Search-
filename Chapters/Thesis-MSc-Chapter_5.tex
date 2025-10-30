@@ -20,54 +20,7 @@ This chapter validates the architecture and approaches developed in Chapter~\ref
 \section{Information Extraction and Document Structuring}
 
 Multiple multimodal models were tested for information extraction: PrimaLayout and PubLayNet showed promise but were insufficiently trained and produced unpredictable results. Nougat, an OCR engine that preserves document hierarchy in Markdown format, was selected for cases where PDFs lack embedded text metadata.
-\section{Weaviate Schema: Case Study}
-\label{sec:schema_example_study}
 
-This section presents a concrete case study demonstrating how the Weaviate schema \ref{fig:weaviate_class} enables a semantic search that respects and leverages the existing organizational structure,rather than treating documents as isolated items. The organizational model follows the UML in Figure~\ref{fig:weaviate_class}, with classes \textit{Fluxo} (workflow), \textit{Etapa} (stage), \textit{Entidade} (entity), \textit{Pasta} (folder), \textit{Ficheiro} (file), and \textit{Metadados} (metadata). The goal is twofold:
-
-\begin{itemize}
-    \item \textbf{Structure-aware retrieval:} Queries can traverse relationships (e.g., workflow \(\rightarrow\) stages \(\rightarrow\) files) and return results grounded in that hierarchy.
-    \item \textbf{Semantic augmentation:} Each class embedded as vectors so that hybrid search (lexical + semantic) can surface relevant objects even when exact keywords or IDs are unknown.
-\end{itemize}
-
-\subsection{Objective and Use Case}
-
-This case study demonstrates structure-aware semantic search by considering a corporate repository with approvals and contracts organized by entity and folder, and operational progress tracked as workflows with stages. A query for "contract approvals" should: (1) identify relevant workflows and stages, (2) traverse to file objects within the appropriate folders and entities, and (3) surface associated metadata. This aligns with organizational requirements where context (ownership, location, workflow progress) is as important as document content.
-
-\subsection{Implementation Details}
-
-The schema instantiates six collections—Fluxo, Etapa, Entidade, Pasta, Ficheiro, Metadados—each with a textual property (e.g., name) vectorized via transformer encoding for semantic indexing. Named vectorization supports hybrid retrieval by combining semantic scoring with graph traversal. Generative integration through Ollama and embeddings from sentence-transformers/all-MiniLM-L6-v2 supports grounded responses when appropriate.
-
-\noindent\textbf{Cross-References (from UML)}\\
-References implement the hierarchy and traversal paths and are formed directly from the UML diagram in Figure~\ref{fig:weaviate_class}. They define the possible navigation paths starting from each object/class:
-\begin{itemize}
-    \item \textit{Fluxo} \(\rightarrow\) \texttt{hasEtapas}, \texttt{belongsToFicheiros}, \texttt{belongsToPastas}.
-    \item \textit{Etapa} \(\rightarrow\) \texttt{belongsToFluxo}, \texttt{hasFicheiros}.
-    \item \textit{Entidade} \(\rightarrow\) \texttt{hasPastas}, \texttt{hasFicheiros}.
-    \item \textit{Pasta} \(\rightarrow\) \texttt{hasEntidades}, \texttt{hasFluxos}, \texttt{hasFicheiros}.
-    \item \textit{Ficheiro} \(\rightarrow\) \texttt{belongsToMetadados}, \texttt{hasEtapas}, \texttt{hasPastas}, \texttt{hasEntidades}.
-    \item \textit{Metadados} \(\rightarrow\) \texttt{hasFicheiros}, \texttt{hasEtapas}, \texttt{hasPastas}, \texttt{hasEntidades}.
-\end{itemize}
-These references allow queries to traverse from workflows to stages to files, or from entities to folders to files and their associated metadata.
-
-\noindent\textbf{Sample Data and Tests} \\
-To validate the schema, we inserted a synthetic corpus with enumerated placeholders and explicit cross-references, aligned with the UML in Figure~\ref{fig:weaviate_class}.
-
-The synthetic corpus consists of class objects identified by name and number: 2 \textit{Entities}, each with 5 \textit{Folders} and 8 \textit{Files} per folder, and 5 \textit{Fluxes}, each containing 10 \textit{Stages}.
-
-The following test queries illustrate structure-aware and semantic retrieval:
-\begin{itemize}
-    \item \textbf{Flux \& Stages:} Fetch \textit{Flux} objects with their \textit{Stage} names to verify workflow-stage traversal.
-    \item \textbf{Deep Entidade hierarchy:} Fetch \textit{Entity} with nested \textit{Folder} \(\rightarrow\) \textit{File} \(\rightarrow\) \textit{Stage} \(\rightarrow\) \textit{Flux} to demonstrate hierarchical expansion.
-    \item \textbf{Global semantic search:} Run a hybrid search across all collections for a free-text query (e.g., “File 1”) and sort results by semantic score, showing how relevant objects are surfaced even when exact locations or identifiers are unknown.
-\end{itemize}
-Still to put the results for latency, under scalable environments, test is running
-
-\subsection{Limitations and Scope}
-These experiments do not directly benchmark semantic-search accuracy because no suitably labeled evaluation set was available. Constructing a large, domain-appropriate semantic benchmark via synthetic generation would require running costly \glspl{LLM} at scale and an agent for end-to-end testing, which exceeded this project's budget. Instead, we isolate and measure the scalability impact of using multiple cross-references, since the Weaviate documentation \cite{weaviate} notes that extensive cross-referencing can increase query latency. Semantic retrieval quality is evaluated separately, without cross-references, to decouple concerns. Although structure and semantics are assessed in separate experiments, together they provide actionable evidence on the feasibility and trade-offs of integrating both approaches.
-\subsection{Discussion and Key Findings}
-This example shows that vector databases like Weaviate can support company semantic retrieval that is \textit{aware of organizational structure}. By aligning collections and references with the UML model and enriching each node with embeddings, the system produces \textbf{explainable results} (returned items include their position in the hierarchy—e.g., which entity/folder/workflow they belong to—and their linked metadata), \textbf{flexible navigation} (agents or users can start from any node—workflow, entity, file—and traverse to related items), and \textbf{robust querying} (hybrid search compensates for inconsistent terminology while references maintain precise relationships).
-In practice, this approach supports agentic retrieval flows that combine semantic ranking with graph-like traversal, improving precision and user trust when working within complex corporate repositories.
 
 
 \section{Metadata Extraction versus Naive RAG}
@@ -130,7 +83,7 @@ For this experiment, a synthetic company QA dataset was created in two automated
 This process produces the \gls{QA} benchmark used to evaluate thedeveloped \gls{RAG} systems, where each question can only be answerable by retrieving the correct company file and reasoning over its content. The dataset is well-suited for evaluating (\gls{RAG}) systems, as it necessitates both accurate retrieval and grounded answer generation.
 
 \subsection{Vector Database Setup}
-The vector database employed in this work is Weaviate. It is populated with 1000 synthetic company documents created earlier (see Section~\ref{sec:schema_example_study} and the dataset generation steps) and indexed using \textit{sentence-transformers/all-MiniLM-L6-v2} embeddings. The schema is straightforward: a single class, \textit{Ficheiro} (file), with properties \texttt{text} and \texttt{file\_path}. Each document is stored as one object, with \texttt{text} vectorized (named vector \texttt{text\_vector}) to support semantic search; \texttt{file\_path} stores the document source for grounding answers. This index is employed by both the naive and agentic systems in the following experiments.
+The vector database employed in this work is Weaviate. It is populated with 1000 synthetic company documents created earlier (see Section~\ref{sec:expNaiveVsAgenticRAG}) and indexed using \textit{sentence-transformers/all-MiniLM-L6-v2} embeddings. The schema is straightforward: a single class, \textit{Ficheiro} (file), with properties \texttt{text} and \texttt{file\_path}. Each document is stored as one object, with \texttt{text} vectorized (named vector \texttt{text\_vector}) to support semantic search; \texttt{file\_path} stores the document source for grounding answers. This index is employed by both the naive and agentic systems in the following experiments.
 
 \subsection{Naive RAG and CoT Baselines}
 \label{sec:naive-rag-and-cot-baseline}
@@ -344,6 +297,114 @@ LexRank also improved Token Recall and Jaccard scores (29.5\% and 35.9\%, respec
 However, in the case of BART, Token Recall and Jaccard scores were markedly lower (3.0\% and 11.1\%, respectively), indicating althrough retrieval improved, the generated answers were less accurate. This suggests that BART's abstractive summarization may have omitted critical information for precise answering.
 With these results, it is concluded that summarization of documents is a valuable step in a \gls{RAG} pipeline, functioning as a filter to reduce noise (irrelevant content).
 However, the choice of summarization technique needs to be carefully considered: extractive methods like LexRank appear more effective as they preserve essential details, while abstractive methods like BART may risk losing important details.
+
+
+\section{Cross-References Functionality}
+\label{sec:crossrefs}
+To ground the agentic traversal results, we briefly recap the underlying Weaviate schema used throughout this chapter (cf. Figure~\ref{fig:weaviate_class}). The organizational model spans six classes—\textit{Fluxo} (workflow), \textit{Etapa} (stage), \textit{Entidade} (entity), \textit{Pasta} (folder), \textit{Ficheiro} (file), and \textit{Metadados} (metadata)—with named-vector properties for hybrid search (BM25 + vectors). Cross-references implement the navigation paths and serve as the "relational glue":
+\begin{itemize}
+    \item \textit{Fluxo} \(\rightarrow\) \texttt{hasEtapas}, \texttt{belongsToFicheiros}, \texttt{belongsToPastas}.
+    \item \textit{Etapa} \(\rightarrow\) \texttt{belongsToFluxo}, \texttt{hasFicheiros}.
+    \item \textit{Entidade} \(\rightarrow\) \texttt{hasPastas}, \texttt{hasFicheiros}.
+    \item \textit{Pasta} \(\rightarrow\) \texttt{hasEntidades}, \texttt{hasFluxos}, \texttt{hasFicheiros}.
+    \item \textit{Ficheiro} \(\rightarrow\) \texttt{belongsToMetadados}, \texttt{hasEtapas}, \texttt{hasPastas}, \texttt{hasEntidades}.
+    \item \textit{Metadados} \(\rightarrow\) \texttt{hasFicheiros}, \texttt{hasEtapas}, \texttt{hasPastas}, \texttt{hasEntidades}.
+\end{itemize}
+These edges enable queries to traverse from workflows to stages to files, or from entities to folders to files and their associated metadata. In practice, hybrid search is used to find an entry point on any class, and references are followed to assemble grounded context for answering. As noted in the Weaviate documentation \cite{weaviate}, extensive cross-referencing can increase query latency; our agent therefore issues targeted traversals, following only the minimal set of edges required for each question.
+
+\subsection{Latency and Scalability}
+To complement the qualitative results above, we report the latency behavior of the system under increasing data sizes. The following figures summarize insertion and query times measured in our Weaviate setup. They illustrate that inserts scale near-linearly with the number of files and that query latency remains low and stable, even as collections grow.
+
+% NOTE: Add the three PNG files below to the Figures/ folder with the same filenames.
+% If your filenames differ, update the \includegraphics paths accordingly.
+\begin{figure}[htbp]
+    \centering
+    % Three plots side by side
+    \subfigure[Insert latency vs. files]{%
+        \includegraphics[width=0.32\linewidth]{Figures/insert_latency_vs_files.png}%
+        \label{fig:insert-latency-vs-files}%
+    }
+    \hfill
+    \subfigure[Query latency vs. files]{%
+        \includegraphics[width=0.32\linewidth]{Figures/query_latency_vs_files.png}%
+        \label{fig:query-latency-vs-files}%
+    }
+    \hfill
+    \subfigure[Global semantic search vs. total files]{%
+        \includegraphics[width=0.32\linewidth]{Figures/semantic_latency_vs_files.png}%
+        \label{fig:global-semantic-search-vs-total-files}%
+    }
+    \caption{Latency and scalability results: (a) Insert Latency vs Number of Files (x577.5 growth, with linear and exponential trends and associated $R^2$); (b) Query Latency vs Number of Files comparing a structured query (Fluxo $\rightarrow$ Etapas) to a Global Semantic Search; (c) Global Semantic Search latency as total files increase (x2.3 growth).}
+\end{figure}
+
+This section validates the practical value of cross-references by running two complementary tests on a compact, real-world–styled example: a structured Weaviate traversal demo and an \gls{ARAG} workflow that follows references via our developed \gls{MCP} server from Section~\ref{sec:weaviate-mcp-server}. 
+
+\noindent\textbf{Realistic newsroom setting.} The example intentionally imitates how an international journalism company operates: frontline journalists and editors continuously file reports into the database according to the companies standards for keeping organization in a highly scalable and dynamic environment. And so making journalist work some more for delivering information is necessary. Here is a flow of how a journalist might file information.
+
+A journalist like Jane Doe will follow these steps to submit a report:
+\begin{enumerate}
+    \item inserts the document by filing the report as a \textit{Ficheiro} (with title, body, date);
+    \item adds the topic in \textit{Fluxo} (storyline) and links the report to it;
+    \item records people/organizations/countries in \textit{Entidade} and links them to the report (and stages when relevant);
+    \item captures the event/tagging as an \textit{Etapa} (date, category, event) linked to the topic and the report.
+\end{enumerate}
+
+Cross-references transform the corpus from a flat, tag-based catalogue into a navigable graph. Unlike standard metadata tagging or hierarchical folder structures, graph organization is dynamic and traversable in high dimensions: edges encode who/what/where/when/etc. and enable deterministic multi-hop traversals. This design also benefits agentic systems by keeping context windows small—retrieving only the minimal set of linked nodes rather than entire files—thereby reducing token usage and latency. We adopt a newsroom scenario because editorial workflows align naturally with this structure: What is the news (\textit{Ficheiro})? To which storyline does it belong (\textit{Fluxo})? Who is involved (\textit{Entidade})? When did it occur (\textit{Etapa})? Keeping the example compact allows us to demonstrate how explicit edges yield grounded, auditable answers. Importantly, structure-aware retrieval improves explainability, trust, and compliance; it reduces ambiguity and accelerates handoffs in high-stakes environments. The schema mirrors the UML in Figure~\ref{fig:weaviate_class} and illustrates how explicit relationships complement semantic search, improving precision without sacrificing flexibility. In production deployments, schemas typically include additional classes and relationships; here we intentionally keep the model small to foreground the core functionality.
+
+\subsection{Structured Demo in Weaviate (Deterministic Traversal)}
+\label{subsec:weaviate-xref-structured}
+
+We implemented a minimal newsroom graph using UML classes from \ref{fig:weaviate_class}, that mirrors a common editorial workflow using four classes and cross-references. This graph is dynamic and extensible, edges and nodes can be added as needed to capture new relationships. The Folder class was skipped, it was irrelevant in the example. 
+The four classes and their key properties/references are:
+\begin{itemize}
+    \item \textbf{Entidade} (entity): countries, people, organizations; \texttt{hasReports} \(\rightarrow\) \textit{Ficheiro}
+    \item \textbf{Ficheiro} (report/file): title, body, date; \texttt{hasEntidades} \(\rightarrow\) \textit{Entidade}, \texttt{belongsToFluxo} \(\rightarrow\) \textit{Fluxo}, \texttt{triggersEtapas} \(\rightarrow\) \textit{Etapa}
+    \item \textbf{Fluxo} (topic/storyline): name, description; \texttt{hasStages} \(\rightarrow\) \textit{Etapa}, \texttt{hasReports} \(\rightarrow\) \textit{Ficheiro}
+    \item \textbf{Etapa} (stage/event): name, date, description, category; \texttt{belongsToFluxo} \(\rightarrow\) \textit{Fluxo}, \texttt{aboutReports} \(\rightarrow\) \textit{Ficheiro}, \texttt{aboutEntities} \(\rightarrow\) \textit{Entidade}
+\end{itemize}
+
+The demo starts by illustrating how a journalist reports: they insert their document and then add information around it—\textit{Entidade} (who is involved), \textit{Fluxo} (topic/storyline), and \textit{Etapa} (event/date). It then inserts one topic (\enquote{Russia vs Ukraine War}), a report (\enquote{Drone attack hits military base}), entities (\enquote{Russia}, \enquote{Ukraine}, and a journalist \enquote{Jane Doe}), and a stage (\enquote{Destruction of a military base}, category \texttt{war\_crime}). It links objects along the graph edges so traversal is possible.
+
+\begin{quote}
+\enquote{Ficheiro.title}: \enquote{Drone attack hits military base} \quad \enquote{Ficheiro.date}: \enquote{2024-07-12T00:00:00Z}\\
+\enquote{Fluxo.name}: \enquote{Russia vs Ukraine War}\\
+\enquote{Entidade.name}: \enquote{Russia}, \enquote{Ukraine}, \enquote{Jane Doe} (role: \enquote{Journalist})\\
+\enquote{Etapa.name}: \enquote{Destruction of a military base} \quad (category: \enquote{war\_crime}; date: \enquote{2024-07-12T00:00:00Z})
+\end{quote}
+
+For the complete insertion listing with all fields and cross-references, see Appendix~\ref{chapter:appendixA}, Section~\ref{app:newsroom-insertion}.
+
+\noindent\textit{In practice.} This structure enables immediate, deterministic traversals that answer common newsroom questions:
+\begin{itemize}
+    \item \textbf{Topic status:} Load the \textit{Fluxo}, follow \texttt{hasStages} and \texttt{hasReports}, sort stages by \texttt{date} client-side, and return the latest stage and report count.
+    \item \textbf{Latest war crime:} From the \textit{Fluxo}, traverse \texttt{hasStages} and filter \textit{Etapa} by \texttt{category = war\_crime}; pick the most recent by \texttt{date}.
+    \item \textbf{Who reported?:} From the latest \textit{Etapa}, follow \texttt{aboutReports} $\rightarrow$ \textit{Ficheiro} and then \texttt{hasEntidades} to extract people whose \texttt{role} contains \enquote{Journalist}.
+    \item \textbf{Start anywhere:} Use hybrid search (BM25 + vectors) on any class to find an entry point (e.g., report, entity, stage), then follow references to aggregate the full context.
+\end{itemize}
+
+
+ Topics (process steps): These mirror the newsroom workflow outlined above, so we omit restating them for brevity. Practically, this structured linking improves retrieval: finding any one of the linked objects (e.g., the report, topic, entity, or stage) is sufficient for the system to follow references and surface all related context. This reduces reliance on text-only retrieval and enables fast, explainable navigation across the repository.
+
+\noindent\textit{Outcome (qualitative).} Because relationships are explicit, these questions are answered by graph navigation rather than free-text similarity. For the inserted example, \texttt{topic\_status} returns the most recent stage; \texttt{latest\_war\_crime} yields the staged event tagged as \texttt{war\_crime}; and \texttt{reporters\_for\_latest\_stage} surfaces the journalist linked to the report that triggered that stage. Hybrid search provides a flexible fallback and a cross-class discovery view, but the multi-hop answers are grounded by references.
+Although illustrative, the foregoing results are obtained with manually engineered queries—a capability long established in relational database systems. The next subsection evaluates whether an autonomous agent can exploit these references programmatically. Agent-mediated traversal of references is comparatively more novel and potentially more powerful, as it enables autonomous planning and execution over the graph rather than reliance on fixed, hand-coded traversals. 
+\subsection{Agentic RAG over Cross-References (Tool-using ReAct)}
+\label{subsec:agentic-xref}
+To test whether an agent can leverage cross-references programmatically, we implemented a ReAct-style agent using OpenAI SDK that connects to Weaviate via the \gls{MCP} server developed in this work (Section~\ref{sec:weaviate-mcp-server}). The agent uses a system prompt instructing it to request \enquote{weaviate-origin} and \enquote{weaviate-follow-ref} tools when it needs data and to extract key fields from results. It maintains a persistent session (SQLite) and includes retry/backoff logic.
+
+The agent is asked the same three questions as in the structured demo:
+\begin{enumerate}
+    \item \enquote{How is the war on Russia and Ukraine?}
+    \item \enquote{What is the latest war crime?}
+    \item \enquote{Who reported?}
+\end{enumerate}
+Under the hood, the agent plans, issues a reference-origin query (e.g., load the \textit{Fluxo}), follows references (e.g., \texttt{hasStages} \(\rightarrow\) \textit{Etapa}, \texttt{aboutReports} \(\rightarrow\) \textit{Ficheiro}, \texttt{hasEntidades} \(\rightarrow\) \textit{Entidade}), inspects properties (\texttt{date}, \texttt{category}, \texttt{role}), and produces a concise, grounded answer. Ordered navigation traces for these questions are provided in Appendix~\ref{app:agentic-navigation-traces}, and a graph visualization of this example is provided in Appendix~\ref{fig:schema-example}.
+Connectivity checks, Windows-specific event loop policy, and transport selection (stdio or HTTP) are handled by the script.
+
+\noindent\textit{Outcome (qualitative).} On the inserted example, the agent retrieves the topic status, identifies the most recent war-crime stage, and extracts the reporter by following references, matching the deterministic traversal results via tool calls. This validates that cross-references are usable not only by handcrafted queries but also by an autonomous planner that reasons over the graph.
+
+\subsection{Takeaways and Scope}
+Cross-references provide the \emph{relational glue} required for multi-hop questions: latest-by-date, filtered-by-category, \enquote{who caused/reported what}, and similar patterns. In the structured setting (Section~\ref{subsec:weaviate-xref-structured}), answers are repeatable and explainable because they follow explicit edges. In the agentic setting (Section~\ref{subsec:agentic-xref}), the same edges become \emph{tools} that an \gls{LLM} can call to plan-and-execute traversals. While we did not run a large-scale accuracy benchmark here ---as none are available for complex agentic structure retrieval, and a synthetic benchmark is over the thesis's budget --- these tests demonstrate functional correctness and integration readiness: the schema supports reference navigation, and the agent can exploit it to produce grounded, auditable answers. Results are in Appendix~\ref{app:agentic-navigation-traces}.
+
 
 % Finally, the summarization techniques were also evaluated in the mixed dataset from Section~\ref{sec:agentic-retrieval-multiple}, combining both LiHua-World and synthetic company questions. The same naive RAG pipeline (using \texttt{qwen2.5m} for generation) was run on the mixed 400-question benchmark, using the same Weaviate collections with summarized documents. In this case the collections were merged in to one, as the decision making of a agent is not relevant in this experiment. The goal of this experiment, is evaluating the impact of summarization techniques in a mixed dataset scenario.
 

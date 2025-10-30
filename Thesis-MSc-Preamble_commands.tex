@@ -44,7 +44,13 @@
 % -----------------------------------------------------------------------------
 % Tikz  for creating graphics programmatically.
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows, positioning}
+\usetikzlibrary{shapes.geometric, arrows, positioning,fit,shapes.multipart,arrows.meta}
+\tikzset{
+  class/.style = {draw, rounded corners, minimum width=22mm, minimum height=7mm, align=center},
+  ref/.style   = {-{Latex}, line width=0.9pt},
+  lab/.style   = {midway, fill=white, inner sep=1pt, font=\scriptsize},
+  note/.style  = {draw, dashed, rounded corners, inner sep=2pt, font=\scriptsize, align=left}
+}
 % -----------------------------------------------------------------------------
 % PACKAGES array, booktabs, multirow, colortbl, spreadtab:
 % -----------------------------------------------------------------------------
@@ -71,6 +77,9 @@
 % The package 'graphicx' supports formats PNG and JPG.
 % Package 'subfigure' allows to place figures within figures with own caption. 
 % For each of the subfigures use the command \subfigure.
+
+
+\usepackage{graphviz}
 \usepackage{graphicx}
 \usepackage[hang,small,bf,tight]{subfigure}
 %

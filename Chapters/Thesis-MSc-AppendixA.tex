@@ -5,8 +5,256 @@
 \chapter{Project Code}
 \label{chapter:appendixA}
 
+% Plain text listings style (match Appendix B)
+\lstdefinelanguage{plaintext}{}
+\lstset{
+	language=plaintext,
+	breaklines=true,
+	basicstyle=\ttfamily\small,
+	columns=fullflexible,
+	keepspaces=true,
+	breakatwhitespace=true,
+	showstringspaces=false,
+	keywordstyle=,
+	commentstyle=,
+	stringstyle=,
+	% Color brace-delimited placeholders and keep braces visible
+	moredelim=**[s][\color{blue}]{\{}{\}},
+	% Ensure UTF-8 accents render inside listings
+	literate=
+		{á}{{\'a}}1 {Á}{{\'A}}1
+		{à}{{\`a}}1 {À}{{\`A}}1
+		{ã}{{\~a}}1 {Ã}{{\~A}}1
+		{â}{{\^a}}1 {Â}{{\^A}}1
+		{é}{{\'e}}1 {É}{{\'E}}1
+		{ê}{{\^e}}1 {Ê}{{\^E}}1
+		{í}{{\'\i}}1 {Í}{{\'I}}1
+		{ó}{{\'o}}1 {Ó}{{\'O}}1
+		{ô}{{\^o}}1 {Ô}{{\^O}}1
+		{õ}{{\~o}}1 {Õ}{{\~O}}1
+		{ú}{{\'u}}1 {Ú}{{\'U}}1
+		{ü}{{\"u}}1 {Ü}{{\"U}}1
+		{ç}{{\c c}}1 {Ç}{{\c C}}1
+}
+
+
+\section{Agentic RAG Ordered Navigation Traces}
+\label{app:agentic-navigation-traces}
+This section reports the ordered tool-call navigation traces produced by the Agentic RAG system (Section~\ref{sec:agentic-test}) for the cross-references demo (Section~\ref{subsec:agentic-xref}). Each trace shows the exact sequence of origin, query, and follow-reference actions executed to answer the question.
+
+\subsection*{Question 1: How is the war on Russia and Ukraine?}
+\begin{lstlisting}
+== Ordered navigation trace ==
+
+-- Question 1: How is the war on Russia and Ukraine?
+01 weaviate-origin [news] q="current status of the Russia-Ukraine war; frontline situation, major offensives, peace talks, Western aid, 2025 update"
+02 weaviate-origin [Ficheiro] q="guerra Rússia Ucrânia status 2025; frente de batalha; ofensivas; negociações; ajuda ocidental; cessar-fogo; mapa de guerra"
+05 weaviate-query [Ficheiro] q="Russia Ukraine war status 2025 update; frontline; offensives; negotiations; Western aid; ceasefire"
+06 weaviate-query [Ficheiro] q="Russia Ukraine war 2024 2025 frontline counteroffensive battlefield situation map"
+07 weaviate-origin [Etapa] q="Russia Ukraine war stages frontline 2024 2025 major events"
+08 weaviate-origin [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025"
+09 weaviate-follow-ref [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025" ref=aboutReports -> Ficheiro
+11 weaviate-follow-ref [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025" ref=aboutEntities -> Entidade
+12 weaviate-follow-ref [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025" ref=belongsToFlux -> Fluxo
+13 weaviate-origin [Fluxo] q="Russia vs Ukraine War"
+14 weaviate-follow-ref [Fluxo] q="Russia vs Ukraine War" ref=hasStages -> Etapa
+\end{lstlisting}
+
+\noindent\textbf{Final answer.} It remains an active, violent conflict.
+
+\noindent\textbf{Grounding (evidence).}
+\begin{itemize}
+	\item A matched stage in the \enquote{Russia vs Ukraine War} flow is tied to a report dated 2024-07-12 titled \enquote{Drone attack hits military base}.
+	\item Excerpt: \enquote{A drone strike has reportedly destroyed parts of a military base near the front. Witnesses describe significant damage and casualties.}
+\end{itemize}
+
+\noindent\textbf{Interpretation.}
+\begin{itemize}
+	\item Continued strikes on military targets near the front and ongoing casualties, involving both Russia and Ukraine as the referenced entities.
+\end{itemize}
+
+\subsection*{Question 2: What is the latest war crime?}
+\begin{lstlisting}
+== Ordered navigation trace ==
+01 weaviate-origin [news] q="current status of the Russia-Ukraine war; frontline situation, major offensives, peace talks, Western aid, 2025 update"
+02 weaviate-origin [Ficheiro] q="guerra Rússia Ucrânia status 2025; frente de batalha; ofensivas; negociações; ajuda ocidental; cessar-fogo; mapa de guerra"
+05 weaviate-query [Ficheiro] q="Russia Ukraine war status 2025 update; frontline; offensives; negotiations; Western aid; ceasefire"
+06 weaviate-query [Ficheiro] q="Russia Ukraine war 2024 2025 frontline counteroffensive battlefield situation map"
+07 weaviate-origin [Etapa] q="Russia Ukraine war stages frontline 2024 2025 major events"
+08 weaviate-origin [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025"
+09 weaviate-follow-ref [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025" ref=aboutReports -> Ficheiro
+11 weaviate-follow-ref [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025" ref=aboutEntities -> Entidade
+12 weaviate-follow-ref [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025" ref=belongsToFlux -> Fluxo
+13 weaviate-origin [Fluxo] q="Russia vs Ukraine War"
+14 weaviate-follow-ref [Fluxo] q="Russia vs Ukraine War" ref=hasStages -> Etapa
+16 weaviate-query [Ficheiro] q="war crime Russia Ukraine 2024 2025 civilian strike torture execution hospital attack cluster munitions latest"
+17 weaviate-follow-ref [Ficheiro] q="war crime Russia Ukraine 2024 2025 civilian strike torture execution hospital attack cluster munitions latest" ref=triggersEtapas -> Etapa
+18 weaviate-follow-ref [Ficheiro] q="war crime Russia Ukraine 2024 2025 civilian strike torture execution hospital attack cluster munitions latest" ref=hasEntidades -> Entidade
+\end{lstlisting}
+
+\noindent\textbf{Final answer.} \enquote{Destruction of a military base} (category: \texttt{war\_crime}).
+
+\noindent\textbf{Details.}
+\begin{itemize}
+	\item Date: 2024-07-12
+	\item Triggering report: \enquote{Drone attack hits a military base}
+	\item Involved entities: Russia; Ukraine
+\end{itemize}
+
+\noindent\textbf{Quoted evidence.}
+\begin{quote}
+\enquote{A drone strike has reportedly destroyed parts of a military base near the front. Witnesses describe significant damage and casualties.}
+\end{quote}
+
+\subsection*{Question 3: Who reported?}
+\begin{lstlisting}
+== Ordered navigation trace ==
+01 weaviate-origin [news] q="current status of the Russia-Ukraine war; frontline situation, major offensives, peace talks, Western aid, 2025 update"
+02 weaviate-origin [Ficheiro] q="guerra Rússia Ucrânia status 2025; frente de batalha; ofensivas; negociações; ajuda ocidental; cessar-fogo; mapa de guerra"
+05 weaviate-query [Ficheiro] q="Russia Ukraine war status 2025 update; frontline; offensives; negotiations; Western aid; ceasefire"
+06 weaviate-query [Ficheiro] q="Russia Ukraine war 2024 2025 frontline counteroffensive battlefield situation map"
+07 weaviate-origin [Etapa] q="Russia Ukraine war stages frontline 2024 2025 major events"
+08 weaviate-origin [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025"
+09 weaviate-follow-ref [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025" ref=aboutReports -> Ficheiro
+11 weaviate-follow-ref [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025" ref=aboutEntities -> Entidade
+12 weaviate-follow-ref [Etapa] q="Russia Ukraine war timeline; frontline; offensives; negotiations; ceasefire; 2024 2025" ref=belongsToFlux -> Fluxo
+13 weaviate-origin [Fluxo] q="Russia vs Ukraine War"
+14 weaviate-follow-ref [Fluxo] q="Russia vs Ukraine War" ref=hasStages -> Etapa
+16 weaviate-query [Ficheiro] q="war crime Russia Ukraine 2024 2025 civilian strike torture execution hospital attack cluster munitions latest"
+17 weaviate-follow-ref [Ficheiro] q="war crime Russia Ukraine 2024 2025 civilian strike torture execution hospital attack cluster munitions latest" ref=triggersEtapas -> Etapa
+18 weaviate-follow-ref [Ficheiro] q="war crime Russia Ukraine 2024 2025 civilian strike torture execution hospital attack cluster munitions latest" ref=hasEntidades -> Entidade
+19 weaviate-follow-ref [Ficheiro] q="Drone attack hits military base 2024-07-12 war crime report" ref=hasEntidades -> Entidade
+\end{lstlisting}
+
+\noindent\textbf{Final answer.} Jane Doe — Journalist.
+
+\noindent\textbf{Grounding (evidence).}
+\begin{itemize}
+	\item Linked entities on the report \enquote{Drone attack hits military base} (2024-07-12) include \enquote{Jane Doe} with role \enquote{Journalist}.
+\end{itemize}
+
+\subsection{Visual Representation of Traversal}
+% Figure
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=25mm]
+  % Class nodes
+  \node[class] (Ficheiro) {Ficheiro};
+  \node[class, right=35mm of Ficheiro] (Etapa) {Etapa};
+  \node[class, right=40mm of Etapa] (Fluxo) {Fluxo};
+  \node[class, below=20mm of Etapa] (Entidade) {Entidade};
+
+  % Cross-references (directional + spaced)
+  \draw[ref] (Fluxo)   to[out=170,in=10]  node[lab, above] {hasStages / hasEtapas} (Etapa);
+  \draw[ref] (Etapa)   to[out=350,in=190] node[lab, below] {belongsToFluxo} (Fluxo);
+
+  \draw[ref] (Etapa)   to[out=190,in=350] node[lab, above] {aboutReports} (Ficheiro);
+  \draw[ref] (Etapa)   -- node[lab, right] {aboutEntities} (Entidade);
+
+  \draw[ref] (Ficheiro) to[out=10,in=170] node[lab, below] {triggersEtapas} (Etapa);
+  \draw[ref] (Ficheiro) to[out=-20,in=200] node[lab, below] {hasEntidades} (Entidade);
+\end{tikzpicture}
+\caption{Schema of class relationships and cross-references used for structured retrieval.}\label{fig:schema-example}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=25mm]
+  % Nodes (layout: Ficheiro -- Etapa -- Fluxo; Entidade below Etapa)
+  \node[class] (Ficheiro) {Ficheiro};
+  \node[class, right=35mm of Ficheiro] (Etapa) {Etapa};
+  \node[class, right=40mm of Etapa] (Fluxo) {Fluxo};
+  \node[class, below=20mm of Etapa] (Entidade) {Entidade};
+
+  % Query/Origin notes (since we removed 'news', annotate at nodes)
+  \node[note, above=6mm of Ficheiro] {search:\\ 02, 05, 06};
+  \node[note, above=6mm of Etapa]    {search:\\ 07, 08};
+  \node[note, above=6mm of Fluxo]    {search:\\ 13};
+
+  % Traversal (references)
+  \draw[ref] (Fluxo)   to[out=170,in=10]  node[lab, above] {14 hasStages} (Etapa);
+  \draw[ref] (Etapa)   -- node[lab, above] {09 aboutReports} (Ficheiro);
+  \draw[ref] (Etapa)   -- node[lab, right] {11 aboutEntities} (Entidade);
+  \draw[ref] (Etapa)   to[out=350,in=190]  node[lab, below] {12 belongsToFluxo} (Fluxo);
+\end{tikzpicture}
+\caption{Q1 walkthrough: base searches at each class and schema-guided hops.}\label{fig:q1-walkthrough}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=25mm]
+  \node[class] (Ficheiro) {Ficheiro};
+  \node[class, right=35mm of Ficheiro] (Etapa) {Etapa};
+  \node[class, right=40mm of Etapa] (Fluxo) {Fluxo};
+  \node[class, below=20mm of Etapa] (Entidade) {Entidade};
+
+  % Base search notes (optional but helpful)
+  \node[note, above=6mm of Ficheiro] {search:\\ 02, 05, 06, \textbf{16 (war crime … latest)}};
+  \node[note, above=6mm of Etapa]    {search:\\ 07, 08};
+  \node[note, above=6mm of Fluxo]    {search:\\ 13};
+
+  % Traversal (reuse + war-crime branch)
+  \draw[ref] (Fluxo)   to[out=170,in=10]  node[lab, above] {14 hasStages} (Etapa);
+
+  % From Etapa (reuse)
+  \draw[ref] (Etapa)   to[out=190,in=350] node[lab, above] {09 aboutReports} (Ficheiro);
+  \draw[ref] (Etapa)   -- node[lab, right] {11 aboutEntities} (Entidade);
+  \draw[ref] (Etapa)   to[out=350,in=190]  node[lab, below] {12 belongsToFluxo} (Fluxo);
+
+  % From Ficheiro (war-crime-driven)
+  \draw[ref] (Ficheiro) to[out=10,in=170]  node[lab, above] {17 triggersEtapas} (Etapa);
+  \draw[ref] (Ficheiro) to[out=-20,in=200] node[lab, below] {18 hasEntidades} (Entidade);
+\end{tikzpicture}
+\caption{Q2 walkthrough: add the war-crime-focused search (16) and follow refs 17–18.}\label{fig:q2-walkthrough}
+\end{figure}
+
+% #############################################################################
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=25mm]
+  \node[class] (Ficheiro) {Ficheiro};
+  \node[class, right=35mm of Ficheiro] (Etapa) {Etapa};
+  \node[class, right=40mm of Etapa] (Fluxo) {Fluxo};
+  \node[class, below=20mm of Etapa] (Entidade) {Entidade};
+
+  % Notes (reuse + specific example)
+  \node[note, above=6mm of Ficheiro] {search:\\ 02, 05, 06, 16\\ example:\\ \textbf{19} “Drone attack hits military base …”};
+  \node[note, above=6mm of Etapa]    {search:\\ 07, 08};
+  \node[note, above=6mm of Fluxo]    {search:\\ 13};
+
+  % Reused traversal
+  \draw[ref] (Fluxo)   to[out=170,in=10]  node[lab, above] {14 hasStages} (Etapa);
+  \draw[ref] (Etapa)   to[out=190,in=350] node[lab, above] {09 aboutReports} (Ficheiro);
+  \draw[ref] (Etapa)   -- node[lab, right] {11 aboutEntities} (Entidade);
+  \draw[ref] (Etapa)   to[out=350,in=190]  node[lab, below] {12 belongsToFluxo} (Fluxo);
+
+  % War-crime branch + “who reported”
+  \draw[ref] (Ficheiro) to[out=10,in=170]  node[lab, above] {17 triggersEtapas} (Etapa);
+  \draw[ref] (Ficheiro) to[out=-20,in=200] node[lab, below, pos=0.35] {18 hasEntidades} (Entidade);
+  \draw[ref] (Ficheiro) to[out=-20,in=200] node[lab, below] {19 hasEntidades (who reported)} (Entidade);
+\end{tikzpicture}
+\caption{Q3 walkthrough: identify reporter entities from specific files (edge 19).}\label{fig:q3-walkthrough}
+\end{figure}
+% #############################################################################
 
 
 
+\section{Complete newsroom insertion listing (Weaviate demo)}
+\label{app:newsroom-insertion}
+This listing enumerates exactly what the demo script inserts for the structured newsroom example in Section~\ref{subsec:weaviate-xref-structured}.
+
+\begin{quote}
+\enquote{Ficheiro.title}: \enquote{Drone attack hits military base}\\
+\enquote{Ficheiro.body}: \enquote{A drone strike has reportedly destroyed parts of a military base near the front. Witnesses describe significant damage and casualties.}\\
+\enquote{Ficheiro.date}: \enquote{2024-07-12T00:00:00Z}\\
+\enquote{Fluxo.name}: \enquote{Russia vs Ukraine War}\\
+\enquote{Fluxo.description}: \enquote{Coverage of the ongoing Russia-Ukraine war.}\\
+\enquote{Entidade}: \enquote{Russia} (kind: \enquote{Country}), \enquote{Ukraine} (kind: \enquote{Country}), \enquote{Jane Doe} (kind: \enquote{Person}; role: \enquote{Journalist})\\
+\enquote{Etapa.name}: \enquote{Destruction of a military base}\\
+\enquote{Etapa.date}: \enquote{2024-07-12T00:00:00Z}\\
+\enquote{Etapa.description}: \enquote{Base infrastructure severely damaged following a drone attack.}\\
+\enquote{Etapa.category}: \enquote{war\_crime}\\
+	extit{References}: \enquote{Entidade.hasReports} $\rightarrow$ \enquote{Ficheiro}; \enquote{Ficheiro.hasEntidades} $\rightarrow$ \enquote{Entidade}; \enquote{Ficheiro.partOfFlux} $\rightarrow$ \enquote{Fluxo}; \enquote{Ficheiro.triggersEtapas} $\rightarrow$ \enquote{Etapa}; \enquote{Fluxo.hasStages} $\rightarrow$ \enquote{Etapa}; \enquote{Fluxo.hasReports} $\rightarrow$ \enquote{Ficheiro}; \enquote{Etapa.belongsToFlux} $\rightarrow$ \enquote{Fluxo}; \enquote{Etapa.aboutReports} $\rightarrow$ \enquote{Ficheiro}; \enquote{Etapa.aboutEntities} $\rightarrow$ \enquote{Entidade}.
+\end{quote}
 
 

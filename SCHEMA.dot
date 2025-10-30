@@ -1,0 +1,20 @@
+digraph SCHEMA {
+rankdir=LR;
+node [shape=box, style=rounded];
+
+News [label="news"];
+Ficheiro; Etapa; Fluxo; Entidade;
+
+// Cross-references
+Fluxo -> Etapa [label="hasStages / hasEtapas"];
+Etapa -> Fluxo [label="belongsToFlux(o)"];
+Etapa -> Ficheiro [label="aboutReports"];
+Etapa -> Entidade [label="aboutEntities"];
+Ficheiro -> Etapa [label="triggersEtapas"];
+Ficheiro -> Entidade [label="hasEntidades"];
+
+// Optional: show origin ingestion
+News -> Ficheiro [label="origin"];
+News -> Etapa [label="origin"];
+News -> Fluxo [label="origin"];
+}
