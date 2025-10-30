@@ -26,7 +26,7 @@ Multiple multimodal models were tested for information extraction: PrimaLayout a
 \section{Metadata Extraction versus Naive RAG}
 \subsection{LiHua-World Dataset}
 \label{subsec:LiHua-World}
-The knowledge graph experiment uses the \emph{LiHua-World} corpus: a time-indexed set of short textual records organized into weekly folders (e.g., \path{week11/20260318_1510.txt}) and topical subfolders (e.g., \path{bakery_deliver/20260531.txt}). Each file contains concise, structured messages or notes about daily events (meetings, deliveries, fitness plans, chats, travel, garden updates), often implying participants and locations. This format provides:
+The knowledge graph experiment uses the \emph{LiHua-World} corpus from \cite{fan2025minirag}: a time-indexed set of short textual records organized into weekly folders (e.g., \path{week11/20260318_1510.txt}) and topical subfolders (e.g., \path{bakery_deliver/20260531.txt}). Each file contains concise, structured messages or notes about daily events (meetings, deliveries, fitness plans, chats, travel, garden updates), often implying participants and locations. This format provides:
 \begin{itemize}
     \item \textbf{Temporal signals:} timestamps encoded in filenames (YYYYMMDD\_HHMM) and dates inside texts, enabling ordering and interval reasoning.
     \item \textbf{Multi-actor context:} recurring names across files (e.g., Li Hua, Wolfgang, Jennifer) support relationship extraction.
@@ -70,14 +70,14 @@ Profiling and structuring text with an LLM is also considerably more computation
 
 In summary, while knowledge graphs offer richer structure representations and could become more competitive with stronger \glspl{LLM}, current embedding models provide a more scalable and efficient solution for semantic retrieval. Future work may revisit knowledge graph approaches as the cost of \glspl{LLM} decrease and their capabilities improve.
 
-\section{Naive versus Agentic RAG on Company Data}
+\section{Naive \gls{RAG} versus \gls{ARAG} on Company Information}
 \label{sec:expNaiveVsAgenticRAG}
 This experiment aims to evaluate the effectiveness of an agentic retrieval-augmented generation (\gls{RAG}) approach compared to a naive \gls{RAG} baseline for answering context-specific questions about company information. The goal is to determine whether an agent capable of planning and reasoning over retrieved documents can provide more accurate and relevant answers than a straightforward retrieval and generation pipeline.
 
 For this experiment, a synthetic company QA dataset was created in two automated stages:
 \begin{enumerate}
-        \item \textbf{Document Generation:} First, a set of 1,000 realistic administrative documents was generated using a \gls{GPT}-5 model. Each document was produced by prompting the model with a specific archival classification (from a public-sector taxonomy)—including its description, notes, and index terms—while instructing the model never to mention the class name in the content. The result is a diverse collection of plausible, well-structured company files, each corresponding to a different administrative or legal context. The total cost of generating these documents was approximately 5 dollars (about 10,000 tokens per request).
-        \item \textbf{QA Pair Generation:} \label{subsec:qa-generation} Next, for a random subset of these documents, a second generative model (also \gls{GPT}-5) was employed to create question-answer pairs. The model was prompted with the full content of each document and instructed to generate a specific, contextually relevant question that could only be answered by reading that document, along with a precise answer based solely on its content. This ensures that each QA pair is tightly coupled to a single file and cannot be answered from general knowledge or other documents. The cost of generating 300 such QA pairs was approximately 0.85 dollars.
+        \item \textbf{Document Generation:} We synthesized 1{,}000 realistic administrative documents using a \gls{GPT}-5 via the OpenAI API. For each document, we sampled a classifiable node from a hierarchical public-sector classification (e.g., legislation, planning, HR, finance, justice, health, education) and prompted the model with the node’s description, notes, and index terms——while explicitly instructing it not to reveal the class name, both to preserve confidentiality when transmitting prompts to external APIs and to avoid label leakage. This produced a diverse set of plausible, well-structured administrative files spanning distinct legal and organizational contexts.
+        \item \textbf{QA Pair Generation:} \label{subsec:qa-generation} Next, for a random subset of these documents, a second generative model (also \gls{GPT}-5) was employedto create question-answer pairs. The model was prompted with the full content of each document and instructed to generate a specific, contextually relevant question that could only be answered by reading that document, along with a precise answer based solely on its content. This ensures that each QA pair is tightly coupled to a single file and cannot be answered from general knowledge or other documents. The cost of generating 300 such QA pairs was approximately 0.85 dollars.
 \end{enumerate}
 
 This process produces the \gls{QA} benchmark used to evaluate thedeveloped \gls{RAG} systems, where each question can only be answerable by retrieving the correct company file and reasoning over its content. The dataset is well-suited for evaluating (\gls{RAG}) systems, as it necessitates both accurate retrieval and grounded answer generation.
@@ -166,10 +166,9 @@ From the TPR and FPR confidence intervals (Figure~\ref{fig:confidence-intervals}
     \caption{Best thresholds by metric (max True--False pass-rate difference) for File: AgentOpenAI\_300}\label{tab:agentopenai300-best-thresholds}
 \end{table}
 
-Table~\ref{tab:agentopenai300-best-thresholds}
 
 \subsection{Overall Metric Results}
-Based on the previous subsection, the analysis indicates that the optimal metric thresholds (according to Youden's J statistic) are delivered from the agentic RAG system; these thresholds are subsequently used to classify answers as correct or incorrect across benchmarks. The analysis is also narrowed to the best naive RAG variant (weaviateNaive1\_300), using qwen2.5 and OpenAI models, and the agentic RAG system (AgentOpenAI\_300). The results are presented in Figure~\ref{fig:median-metric} and Table~\ref{tab:gain-loss-reference-median}. The median metric scores are also presented for reference.
+Based on the previous subsection, the analysis indicates that the optimal metric thresholds (according to Youden's J statistic) are delivered from the agentic RAG system; these thresholds from table \ref{tab:agentopenai300-best-thresholds} are subsequently used to classify answers as correct or incorrect across benchmarks. The analysis is also narrowed to the best naive RAG variant (weaviateNaive1\_300), using qwen2.5 and OpenAI models, and the agentic RAG system (AgentOpenAI\_300). The results are presented in Figure~\ref{fig:median-metric} and Table~\ref{tab:gain-loss-reference-median}. The median metric scores are also presented for reference.
 \begin{figure}
     \centering
     \includegraphics[width=0.75\linewidth]{Figures/Median Metric.png}
@@ -205,7 +204,7 @@ Compared to the median-based thresholds, the agentic reference thresholds yield 
     \centering
     \begin{tabular}{l r r r r r r}
         \hline
-        Approach & token\_recall & jaccard & rouge1\_f & overlap & bleu & \gls{BERT} cosine \\
+        Approach & token recall & jaccard & rouge1f & overlap & bleu & \gls{BERT} cosine \\
         \hline
         Agentic ReAct (\gls{GPT}-5) & 61\% & 56\% & 55\% & 64\% & 41\% & 61\% \\
         Naive \gls{RAG} (\gls{GPT}-5) & 12\% & 14\% & 14\% & 29\% & 2\% & 28\% \\
