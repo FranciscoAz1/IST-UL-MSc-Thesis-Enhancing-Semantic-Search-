@@ -55,18 +55,16 @@ This thesis aims to design and implement a lightweight yet functional architectu
 \textit{Note:} Web-integrated search and a fully-featured chatbot interface are considered extensions for future work, as the current scope focuses on internal document retrieval within corporate systems.
 
 \section{Contributions}
-The thesis delivers a cohesive open-source stack for structure-aware semantic search and agentic retrieval.
-The grouped research code is in Repository: \url{https://github.com/FranciscoAz1/Thesis_Code.git}
-The main code contributions are as follows:
+The thesis delivers a cohesive open-source stack for structure-aware semantic search and agentic retrieval. The grouped research code is available at \url{https://github.com/FranciscoAz1/Thesis_Code.git}, which contains the following components as submodules. The main code contributions are as follows:
 
 \begin{itemize}
-	\item \textbf{Weaviate schema and cross-references for organizational context} — The schema developed and the implementation of cross-references to structure documents by entity, folder, workflow, and metadata, enabling traversal and schema-aware retrieval in company settings. Includes Docker Compose to run a local Weaviate instance. Repository: weaviate submodules.
+	\item \textbf{Weaviate schema and cross-references for organizational context} — The schema developed and the implementation of cross-references to structure documents by entity, folder, workflow, and metadata, enabling traversal and schema-aware retrieval in company settings. Includes Docker Compose to run a local Weaviate instance. Repository: \texttt{weaviate} submodule.
 
-	\item \textbf{Weaviate MCP Servers (standardization for AI agents)} — Two \gls{MCP} server implementations that expose Weaviate as typed tools and resources for LLM agents: (i) a Docker-compatible Go version for registry inclusion and easy containerization, and (ii) a more feature-rich TypeScript version with HTTP transport and grouped query tasks. Repositories: mcp-server-weaviate and mcp-server-weaviate-ts submodules.
+	\item \textbf{Weaviate MCP Servers (standardization for AI agents)} — Two \gls{MCP} server implementations that expose Weaviate as typed tools and resources for LLM agents: (i) a Docker-compatible Go version for registry inclusion and easy containerization, and (ii) a more feature-rich TypeScript version with HTTP transport and grouped query tasks. Repositories: \texttt{mcp-server-weaviate} and \texttt{mcp-server-weaviate-ts} submodules.
 
-	\item \textbf{MiniRAG: retrieval pipeline with query modes and optimizations} — A modular RAG pipeline with additional query modes for different use cases and a Weaviate integration that respects cross-references. Includes optimization techniques such as BART and LexRank summarization, plus notebooks and guidance to implement the system effectively using asynchronous functions (asyncio). Repository: MiniRAG submodule.
+	\item \textbf{MiniRAG: retrieval pipeline with query modes and optimizations} — A modular RAG pipeline with additional query modes for different use cases and a Weaviate integration that respects cross-references. Includes optimization techniques such as BART and LexRank summarization, plus notebooks and guidance to implement the system effectively using asynchronous functions (asyncio). Repository: \texttt{MiniRAG} submodule.
 
-	\item \textbf{Agentic system, benchmark, and evaluation} — An agentic retrieval framework with planning and reflection capabilities, evaluation notebooks, and comparative analysis across retrieval strategies (naive vs.\ agentic, single vs.\ multi-collection). Built to operate with Weaviate backends. Repository: in AgenticChatbot and DocumentGenerator submodule.
+	\item \textbf{Agentic system, benchmark, and evaluation} — An agentic retrieval framework with planning and reflection capabilities, evaluation notebooks, and comparative analysis across retrieval strategies (naive vs.\ agentic, single vs.\ multi-collection). Built to operate with Weaviate backends. Repositories: \texttt{AgenticChatbot} and \texttt{DocumentGenerator} submodules.
 \end{itemize}
 
 
