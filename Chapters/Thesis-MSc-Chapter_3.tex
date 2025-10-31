@@ -174,15 +174,15 @@ The history is updated $h_{t+1} = h_t \cup \{\tau_t, a_t, o_t\}$ and the loop re
 \section{Tool Use and Orchestration}
 
 While ReAct already integrates tool use within its action step, this section focuses on how such capabilities can be further optimized for accuracy.  
-Tool-use frameworks aim to improve how language models identify, select, and execute external tools, thereby reducing hallucinations and minimizing execution errors.  
+Tool-use frameworks aim to improve how language models discover, select, and execute external tools, thereby reducing hallucinations and minimizing execution errors.  
 
 For instance, consider a WebCommerce assistant that interfaces with an e-commerce database, enabling customers to place new orders, track deliveries, or request refunds directly through conversation.
 Each of these actions relies on precise and validated tool calls to backend APIs—such as \texttt{createOrder()}, \texttt{getOrderStatus()}, or \texttt{updatePayment()}—where incorrect parameters or schema mismatches can lead to failed transactions or inconsistent records, emphasizing the importance of accurate and validated orchestration. 
 
-In such a setting, precision in tool call is crucial: misunderstood or malformed parameters can cause transactions failures or data inconsistencies—highlighting the necessity of reliable tool intefration  mechanisms.
+In such a setting, precision in tool call is crucial: misunderstood or malformed parameters can cause transactions failures or data inconsistencies—highlighting the necessity of reliable tool integration  mechanisms.
 
 \textbf{Toolformer}~\cite{schick2023toolformer} introduced the concept of \emph{self-taught tool use}.  
-It fine-tunes a language model (based on \gls{GPT}-J)through a self-annotation loop: during training, the model is prompted to insert possible API calls into text, these calls are executed, the returned outputs are evaluated based on whether they reduce the model's prediction loss over masked tokens.
+It fine-tunes a language model (based on \gls{GPT}-5)through a self-annotation loop: during training, the model is prompted to insert possible API calls into text, these calls are executed, the returned outputs are evaluated based on whether they reduce the model's prediction loss over masked tokens.
 If an API’s result helps the model predict the next token more accurately, that example is kept as supervision.  
 This process allows the model to learn when a tool should be invoked and how to integrate its output into natural language responses.  
 
