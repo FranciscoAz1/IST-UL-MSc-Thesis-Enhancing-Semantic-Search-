@@ -126,6 +126,8 @@ It integrates keyword extraction, contextual retrieval, and answer generation wi
     \caption{Mini Query Flux}\label{fig:mini-query-flux}
 \end{figure}
 
+The diagram from Figure~\ref{fig:mini-query-flux} and subsequent diagrams follow ISO 5807 flowchart notation~\cite{iso5807}: rounded rectangles denote processes, diamonds represent decision or processing steps, cylinders indicate databases, and rectangles with double vertical edges signify predefined processes or constants.
+
 \subsection{Weaviate Integration}
 
 By leveraging MiniRAG's modular retrieval and storage design, a Weaviate integration was developed to enable automatic document insertion into the vector database following the defined schema, including automated cross-reference creation to mantain relational coherence. This architecture supports both retrieval and querying across cross-references, with documents automatically indexed according the organizational structure defined in Section~\ref{sec:schema}. The integration enables seamless flow from entity extraction and relationship identification directly into persistent storage, where the knowledge graph can later be queried and traversed by agents.
