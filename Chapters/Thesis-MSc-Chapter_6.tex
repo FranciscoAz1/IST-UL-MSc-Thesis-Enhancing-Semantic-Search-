@@ -12,7 +12,7 @@
 % #############################################################################
 \section{Conclusions}
 
-This thesis examinad strategies to enhance semantic search by integrating retrieval, large language models, structure-aware system design, and agentic workflows. The findings demonstrate that carefully engineered prompting, robust reasoning strategies, and precise grounding in external knowledge souces significantly improves retrieval and answer quality.
+This thesis examined strategies to enhance semantic search by integrating retrieval, large language models, structure-aware system design, and agentic workflows. The findings demonstrate that carefully engineered prompting, robust reasoning strategies, and precise grounding in external knowledge sources significantly improve retrieval and answer quality.
 
 This thesis proposes a design for structure-aware systems that exploit an organization's inherent information structure—including cross-references, collection descriptions, and metadata—to inform and constrain retrieval processes. Although large-scale empirical evaluation was beyond the project's scope, the analysis indicates that, within enterprise environments, structural signals can meaningfully enhance retrieval precision and interpretability.
 
@@ -33,9 +33,7 @@ Future work should:
 \begin{itemize}
 	\item evaluate stronger base and instruction-tuned models, with longer context windows, on larger and more diverse datasets;
 	\item develop and release a public benchmark for structure-aware retrieval that captures cross-references, hierarchies, and organizational context, with human-annotated relevance judgments;
-	\item systematically compare prompting and reasoning strategies 
-	
-	(e.g., self-consistency, tree-of-thought, \textsc{ReAct}) across domains and tasks;
+	\item systematically compare prompting and reasoning strategies (e.g., self-consistency, tree-of-thought, \textsc{ReAct}) across domains and tasks;
 	\item integrate additional external knowledge sources and more robust grounding (e.g., entity linking, schema alignment, knowledge graphs, retrieval-augmented planning), and evaluate hallucination/faithfulness;
 	\item study user experience with non-experts via controlled studies, measuring usability, transparency, latency, cost, and confidence calibration;
 	\item quantify cost–quality trade-offs and throughput under realistic workloads, including caching, reranking, and distillation for efficiency.

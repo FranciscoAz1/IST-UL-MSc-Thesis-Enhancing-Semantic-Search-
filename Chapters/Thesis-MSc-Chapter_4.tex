@@ -141,13 +141,13 @@ A \glsxtrfull{MCP} server was developed to interface with a Weaviate vector data
 
 \subsection{Server Design}
 
-The MCP server has been implemented in both Go and TypeScript. A Go implementation was necessary because the \texttt{mcp-registry} accepts pull requests only for Go servers. Moreover, Go offers excellent concurrency and produces lightweight binaries that are easy tocontainerized. If accepted, the Go version will ne included  in the official Docker registry, simplifying deployment.
+The MCP server has been implemented in both Go and TypeScript. A Go implementation was necessary because the \texttt{mcp-registry} accepts pull requests only for Go servers. Moreover, Go offers excellent concurrency and produces lightweight binaries that are easy to containerize. If accepted, the Go version will be included in the official Docker registry, simplifying deployment.
 %% Add here a diagram showing Go server
 
-However, the project also provides a full TypeScript implementation. This version was refactored from the original Go codebase, with additional features enabled by the improved compatibility with both the Weaviate and Anthropic SDKs \cite{stainless_mcp_comparison}. While the Go version currently supports only \texttt{stdio} transport and hybrid querying, the TypeScript implementation extends functionality with HTTP transport and native Weaviate query generation using grouped tasks. These enhancements, along with stronger documentation and tighter integration with Weaviate’s API, make the TypeScript version a more flexible and developer-friendly option, whereas Go remains easier to containerized, offering better compatibility with current \gls{MCP} registries.
+However, the project also provides a full TypeScript implementation. This version was refactored from the original Go codebase, with additional features enabled by the improved compatibility with both the Weaviate and Anthropic SDKs \cite{stainless_mcp_comparison}. While the Go version currently supports only \texttt{stdio} transport and hybrid querying, the TypeScript implementation extends functionality with HTTP transport and native Weaviate query generation using grouped tasks. These enhancements, along with stronger documentation and tighter integration with Weaviate's API, make the TypeScript version a more flexible and developer-friendly option, whereas Go remains easier to containerize, offering better compatibility with current \gls{MCP} registries.
 %% Add here a diagram showing typescript Server
 \subsection{Functionality}
-The server functions as an intermediary between clients and the Weaviate backend. It registers the required tools and resources to support both querying and schema inspection. By exposing schema information as MCP resources (e.g., \texttt{weaviate://schema/Dataset}), the server enables clients to discover available collections, their properties (such as \texttt{targetProperties}: \{\texttt{text}: string, \texttt{filepath}: string\}) and cross-references (such as \texttt{refProperties: \texttt{text}: string} (e.g. \texttt{belongsToSomething}, \texttt{HasSomething}). This ensures that all interactions with the database are schema-aware and self-correcting, since invalid queries are met with descriptive feedback rather than failing silently (e.g., corrective validation logic shown in Figure~\ref{fig:sequence-diagram-weaviate-query}).
+The server functions as an intermediary between clients and the Weaviate backend. It registers the required tools and resources to support both querying and schema inspection. By exposing schema information as MCP resources (e.g., \texttt{weaviate://schema/Dataset}), the server enables clients to discover available collections, their properties (such as \texttt{targetProperties}: \{\texttt{text}: string, \texttt{filepath}: string\}) and cross-references (such as \texttt{refProperties} like \texttt{belongsToSomething} or \texttt{HasSomething}). This ensures that all interactions with the database are schema-aware and self-correcting, since invalid queries are met with descriptive feedback rather than failing silently (e.g., corrective validation logic shown in Figure~\ref{fig:sequence-diagram-weaviate-query}).
 This design enables the use of Weaviate’s full toolkit, including object properties, multiple collections, and cross-references between them. Although ACL management is implemented within Edoclink, Weaviate natively supports this feature, which facilitates its use in secure and multi-tenant environments. Clients are typically \gls{LLM}-powered agents capable of communicating over \gls{MCP}, allowing them to seamlessly integrate external structured knowledge into their reasoning processes.
 
 \subsection{MCP features}
@@ -176,9 +176,9 @@ While the proposed architecture provides a solid foundation for semantic search 
     
     \item \textbf{Embedding Quality:} The quality of semantic retrieval is directly dependent on the embedding model used. While \textit{all-MiniLM-L6-v2} provides good performance, domain-specific embedding models trained on enterprise corpora may yield better results.
     
-    \item \textbf{Hallucination in LLMs:} Even when using \gls{RAG}, large language models may hallucinate or produce plausible-sounding yetincorrect information. The grounding in retrieved documents mitigates but does not eliminate this risk.
+    \item \textbf{Hallucination in LLMs:} Even when using \gls{RAG}, large language models may hallucinate or produce plausible-sounding yet incorrect information. The grounding in retrieved documents mitigates but does not eliminate this risk.
     
-    \item \textbf{Privacy and Security:} Embeddings and retrieved documents are processed in external APIs (e.g., OpenAI). For highly sensitive data, on-premises \gls{LLM} deployments may be required, through this comes at the expense of reduced performance.
+    \item \textbf{Privacy and Security:} Embeddings and retrieved documents are processed in external APIs (e.g., OpenAI). For highly sensitive data, on-premises \gls{LLM} deployments may be required, though this comes at the expense of reduced performance.
     
     \item \textbf{Cost at Scale:} While \gls{GPT}-4o offers superior reasoning, its cost scales with the number of queries. Cost-conscious deployments may need to balance accuracy against budget constraints using smaller models.
     
@@ -188,7 +188,7 @@ While the proposed architecture provides a solid foundation for semantic search 
     
 \end{itemize}
 
-These limitations are addressed partly through experimental validation (Chapters~\ref{chap:results}) and provide direction for future work (Chapter~\ref{chap:conclusion}).
+These limitations are addressed partly through experimental validation (Chapter~\ref{chap:results}) and provide direction for future work (Chapter~\ref{chap:conclusion}).
 
 
 

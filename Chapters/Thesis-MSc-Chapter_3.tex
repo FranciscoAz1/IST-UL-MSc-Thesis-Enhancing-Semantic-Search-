@@ -220,7 +220,7 @@ The following section describes MCP’s architecture in detail and how it was ap
 The \textbf{Model Context Protocol (MCP)} is an open standard introduced by Anthropic to connect large language models with external systems in a modular and reproducible way. It provides a universal interface---often described as a ``USB-C port for AI applications''---to integrate tools, data sources, and prompt templates without ad-hoc engineering \cite{mcp-intro}.
 
 \subsection{Architecture} 
-MCP follows a \textit{client--server model}. Where the \textit{host} (AI application) communicates through an MCP \textit{client} with one or more \textit{servers} that expose capabilities. Communication is structured in two layers:
+MCP follows a \textit{client--server model}, where the \textit{host} (AI application) communicates through an MCP \textit{client} with one or more \textit{servers} that expose capabilities. Communication is structured in two layers:
 (i) \textbf{Data layer:} uses JSON-RPC 2.0 to define primitives, discovery mechanisms, and lifecycle management;
 (ii) \textbf{Transport layer:} handles message delivery (e.g., stdio for local, HTTP/SSE for remote) and authentication \cite{mcp-architecture}.
 
@@ -236,9 +236,9 @@ MCP follows a \textit{client--server model}. Where the \textit{host} (AI applica
 MCP contributes to the shift toward \textit{agentic LLMs}, where models not only generate text but also plan, act, and learn through external capabilities.  
 It has rapidly become a key standard for connecting AI applications to external systems, with implementations as an MCP client in platforms such as Docker, Claude Desktop, and VS Code, and supported by multiple servers including MongoDB, Google Workspace, and LangChain.  
 Additional open-source implementations include the \texttt{docker/mcp-toolkit}, \texttt{anthropic/mcp}, and \texttt{mongodb-js/mcp-server}.  
-One of these servers—the \textbf{Weaviate MCP server}—was developed in this thesis to expose Weaviate’s schema and query interface as callable MCP \texttt{tools}.  
+One of these servers—the \textbf{Weaviate MCP server}—was developed in this thesis to expose Weaviate's schema and query interface as callable MCP \texttt{tools}.  
 
-MCP’s main advantages are its \textbf{standardization} —providing a unified protocol across heterogeneous backends; \textbf{reproducibility}— through versioned prompts and schema-defined tools; \textbf{extensibility}, allowing new capabilities to be added without architectural changes. \cite{mcp-spec}.  
+MCP's main advantages are its \textbf{standardization}—providing a unified protocol across heterogeneous backends; \textbf{reproducibility}—through versioned prompts and schema-defined tools; \textbf{extensibility}, allowing new capabilities to be added without architectural changes \cite{mcp-spec}.
 In this thesis, MCP functions as the interoperability layer between Weaviate and LLM agents, enabling schema-aware retrieval and controlled reasoning over enterprise information in a reproducible and standardized manner.
 
 \section{Related Work}
@@ -261,7 +261,7 @@ These products validate the pattern targeted in this thesis: source-grounded, mu
     \item Vector databases: \textbf{Weaviate} (schema-aware hybrid, used in this thesis), \textbf{Qdrant}, and \textbf{Milvus}, alongside libraries like FAISS for ANN search \cite{weaviate,qdrant,milvus,douze2024faiss}.
     \item Evaluation: \textbf{RAGAS} and \textbf{TruLens} measure faithfulness, groundedness, and answer quality with trace-based diagnostics \cite{ragas,trulens}.
     \item Programmatic prompting: \textbf{DSPy} compiles and optimizes LLM pipelines, including RAG components, with declarative specs \cite{dspy}.
-    \item Graph-augmented RAG: \textbf{GraphRAG} and \textbf{LightRAG} builds and queries knowledge graphs to support multi-hop retrieval and synthesis \cite{graphrag}.
+    \item Graph-augmented RAG: \textbf{GraphRAG} and variants like \textbf{LightRAG}, \textbf{MiniRAG} build and query knowledge graphs to support multi-hop retrieval and synthesis \cite{graphrag}.
 \end{itemize}
 
 Our MCP integration exposes Weaviate tools with typed I/O so these ecosystems can interoperate with the thesis system directly, enabling agents to reuse existing tooling while adding schema-aware retrieval.

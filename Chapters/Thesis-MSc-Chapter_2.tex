@@ -6,8 +6,7 @@
 \fancychapter{Background}\label{chap:back}
 % The following line allows to ref this chapter
 
-This chapter introduces the fundamental concepts of \glsxtrfull{IR}, while \glsxtrfull{NLP} will be 
-in the next chapter, which covers state-of-the-art. \gls{IR} has evolved from lexical to semantic search, and understanding these approaches is essential to contextualize how \gls{NLP} subsequently enables agents to reason over retrieved information to provide more intelligent responses. The following section presents these \gls{IR} approaches and the optimizations that derived from them.
+This chapter introduces the fundamental concepts of \glsxtrfull{IR}, while \glsxtrfull{NLP} will be covered in the next chapter, which covers state-of-the-art. \gls{IR} has evolved from lexical to semantic search, and understanding these approaches is essential to contextualize how \gls{NLP} subsequently enables agents to reason over retrieved information to provide more intelligent responses. The following section presents these \gls{IR} approaches and the optimizations that derived from them.
 \section{Background on Transformers} 
 \label{sec:transformer}
 \subsection{The Transition from Sequential to Attention-Based Models}  
@@ -28,11 +27,10 @@ The Transformer is fundamentally structured as an \textit{encoder-decoder} model
 \subsection{Main Innovations in Transformer Architecture}  
 \begin{itemize}
     \item \textbf{Embeddings}: Learned embeddings convert input and output tokens to vectors of dimension $d$ depending on the dimension of the model. Tokens are discrete symbols of words or subwords.
-    
     \item \textbf{Positional Coding}:  
-    Transformers do not need recurrence nor convolution, instead some information about relative or absolute position of the tokens is injected in the sequences. This is the positional encodings added to the input embeddings. \cite{vaswani2017attention}.
+    Transformers do not need recurrence nor convolution, instead some information about relative or absolute position of the tokens is injected in the sequences. These are the positional encodings added to the input embeddings \cite{vaswani2017attention}.
+    \item \textbf{Layer Normalization}: Applied after attention and feed-forward layers (or before, in pre-norm variants), layer normalization stabilizes training by normalizing activations to zero mean and unit variance. It is essential for enabling deep stacking of transformer blocks without training instability.
     
-    \item \textbf{Layer Normalization}: Applied after attention and feed-forward layers (or before, in pre-norm variants), layer normalization stabilizes training by normalizing activations to zero mean and unit variance. It is essential for enabling deep stacking of transformer blocks without training instability.  
     \item  \textbf{Scaled Dot-Product Attention} \ref{eq:Attention}: Is an attention function \ref{eq:Attention} that maps a query and a set of key-value pairs to an output.
     \begin{equation}
         \label{eq:Attention}
@@ -43,7 +41,7 @@ The Transformer is fundamentally structured as an \textit{encoder-decoder} model
         \item Q is a set of queries packed together into a matrix.
         \item K and V are also matrices packed together of keys and values, respectively
     \end{itemize}
-    \item \textbf{Multi-Head Attention}:  Queries, keys and values are linearly projected $h$ different times with different learned linear projections\ref{eq:MultiHead}. Multiple attention heads allow the model to jointly attend to information from different representation subspaces at different positions, enabling simultaneous focus on syntactic and semantic features. This is more effective than a single large attention head.
+    \item \textbf{Multi-Head Attention}:  Queries, keys and values are linearly projected $h$ different times with different learned linear projections \ref{eq:MultiHead}. Multiple attention heads allow the model to jointly attend to information from different representation subspaces at different positions, enabling simultaneous focus on syntactic and semantic features. This is more effective than a single large attention head.
     \begin{equation}
         \label{eq:MultiHead}
         \text{MultiHead}(Q,K,V) = \text{Concat}(head_1, ..., head_h)W^O  
@@ -132,7 +130,6 @@ TF-IDF is then the combination of both TF and IDF:
 \end{equation}
 
 The uniqueness of the TF-IDF approach in retrieval is how it combines a local component (frequency in the current document) and a global component (frequency across the entire collection). TF-IDF has the advantage of being straightforward, interpretable, and computationally efficient.
-
 \paragraph{BM25 (Okapi BM25)}
 
 The Okapi BM25 system, first introduced in \cite{Bm25foundation}, culminated in BM25 (short for ``Best Match 25''), a probabilistic information retrieval model. BM25 improves upon TF-IDF by using a probabilistic basis rather than a purely heuristic one, and by introducing parameters to control term frequency saturation and document length normalization.
@@ -165,7 +162,6 @@ where:
 \subsubsection{Dense Retrieval Methods}
 
 Recent advancements in \gls{LLM}, particularly transformer-based models like \gls{BERT} \cite{bertpretrainingdeepbidirectional}, have led to dense retrieval systems that overcome the limitations of sparse methods. In dense retrieval, queries and documents are represented as low-dimensional vectors that better capture semantic similarity. However, dense methods often require large training datasets (i.e., labeled question–passage pairs) to surpass classical methods such as TF-IDF/BM25. Modern pre-trained language models help mitigate this requirement by providing robust initial embeddings that can be fine-tuned on relatively smaller sets of question–context examples, enabling dense retrieval methods to outperform traditional sparse approaches in many open-domain QA tasks.
-
 \paragraph{Dense Passage Retrieval (DPR)}
 \label{par:dpr}
 
@@ -327,7 +323,7 @@ However, LexRank has notable limitations. First, as an extractive method, it is 
 
 \subsubsection{BART Architecture}
 
-The \gls{BART} architecture follows the standard encoder-decoder structure. The \textbf{Encoder} is a \gls{BERT}-like bidirectional transformer that processes the corrupted input and produces contextual representations. The \textbf{Decoder} is an autoregressive transformer (similar to \gls{GPT}) that generates the output sequence token-by-token, attending to both the encoder output and previously generated tokens. Both components use the standard Transformer building blocks (multi-head self-attention, feed-forward networks, layer normalization, and residual connections) as described in Section~\ref{sec:transformer}. The encoder-decoder attention allows the decoder to attend to relevant parts of the encoded input, enabling effective informationtransfer from input to output sequences.
+The \gls{BART} architecture follows the standard encoder-decoder structure. The \textbf{Encoder} is a \gls{BERT}-like bidirectional transformer that processes the corrupted input and produces contextual representations. The \textbf{Decoder} is an autoregressive transformer (similar to \gls{GPT}) that generates the output sequence token-by-token, attending to both the encoder output and previously generated tokens. Both components use the standard Transformer building blocks (multi-head self-attention, feed-forward networks, layer normalization, and residual connections) as described in Section~\ref{sec:transformer}. The encoder-decoder attention allows the decoder to attend to relevant parts of the encoded input, enabling effective information transfer from input to output sequences.
 
 \subsubsection{Denoising Pretraining Objective}
 
@@ -352,16 +348,15 @@ For abstractive summarization, \gls{BART} is fine-tuned on annotated summarizati
 where $d$ is the input document and $s$ is the target summary. The decoder generates the summary\textit{ autoregressively}, one token at a time, conditioned on the encoder representation of the input document.
 
 At inference time, the model generates summaries using beam search or sampling strategies, balancing between diversity and quality. Beam search maintains the top-$k$ most likely hypotheses at each decoding step, selecting the final sequence with the highest probability.
-
 \subsection{Summary}
 
-\gls{BART} suits \gls{RAG} summarization for three reasons. i) superior performance on CNN/Daily Mail and XSum, outperforming T5 and PEGASUS with state-of-the-art ROUGE scores\footnote{The \gls{BART} paper reports ROUGE-2 F1 scores of 21.45 on CNN/Daily Mail and 45.14 on XSum, surpassing comparable T5 and PEGASUS configurations \cite{lewis2019bart}. } ii) efficient GPU deployment with a modest memory footprint (~1.2 GB base; ~2.5 GB large), enabling co-location with embedding models\footnote{GPU memory estimates are based on typical inference measurements with batch size 1 using the Hugging Face Transformers library. Actual memory consumption may vary depending on batch size, sequence length, and hardware configuration. See \texttt{https://huggingface.co/docs/transformers/model\_memory\_anatomy} for detailed memory profiling guidance.}. iii) minimal latency overhead by sharing the same GPU as retrieval, keeping additional cost low while meeting strict latency budgets.
+\gls{BART} suits \gls{RAG} summarization for three reasons: i) superior performance on CNN/Daily Mail and XSum, outperforming T5 and PEGASUS with state-of-the-art ROUGE scores\footnote{The \gls{BART} paper reports ROUGE-2 F1 scores of 21.45 on CNN/Daily Mail and 45.14 on XSum, surpassing comparable T5 and PEGASUS configurations \cite{lewis2019bart}.}; ii) efficient GPU deployment with a modest memory footprint (~1.2 GB base; ~2.5 GB large), enabling co-location with embedding models\footnote{GPU memory estimates are based on typical inference measurements with batch size 1 using the Hugging Face Transformers library. Actual memory consumption may vary depending on batch size, sequence length, and hardware configuration. See \texttt{https://huggingface.co/docs/transformers/model\_memory\_anatomy} for detailed memory profiling guidance.}; iii) minimal latency overhead by sharing the same GPU as retrieval, keeping additional cost low while meeting strict latency budgets.
 
 % Other summarization methods exist in the literature, including TextRank \cite{mihalcea2004textrank}, LexRank \cite{erkan2004lexrank}, SumBasic \cite{vanderwende2007sumbasic}, PEGASUS \cite{zhang2019pegasus}, T5 \cite{raffel2020exploring}, FLAN-T5 \cite{wei2021finetuned}, mBART \cite{tang2020multilingual}, and UniLM \cite{dong2019unified}, though these typically do not match \gls{BART}'s performance on standard benchmarks.
 
-While \gls{BART} excels on benchmarks, extractive LexRank offers two key benefits for \gls{RAG} systems. i) hallucination prevention by preserving source text. ii) storage optimization by keeping only salient sentences, reducing embeddings stored in the \gls{VD}.
+While \gls{BART} excels on benchmarks, extractive LexRank offers two key benefits for \gls{RAG} systems: i) hallucination prevention by preserving source text; ii) storage optimization by keeping only salient sentences, reducing embeddings stored in the \gls{VD}.
 
-Practically, we pair the methods to balance their complementary trade-offs. LexRank preserves factuality and reduces storage by selecting source sentences, but being extractive it can leave context gaps that hinder \gls{LLM} reasoning. \gls{BART} produces context-rich, readable summaries that bridge those gaps, but it may hallucinate. 
+Practically, we pair the methods to balance their complementary trade-offs. LexRank preserves factuality and reduces storage by selecting source sentences, but being extractive it can leave context gaps that hinder \gls{LLM} reasoning. \gls{BART} produces context-rich, readable summaries that bridge those gaps, but it may hallucinate.
 
 \section{Text Similarity Metrics}
 \label{sec:text-similarity-metrics}
@@ -401,7 +396,7 @@ where \(\text{ED}\) is the edit distance between token sequences.
 \footnote{Edit distance is defined as the minimum number of operations (insertions, deletions, or substitutions of tokens) required to transform one sequence into the other.(e.g., transforming “cat sat” into “the cat” requires one insertion and one deletion)}
 
 \subsubsection{ROUGE-n} 
-Introduced by Lin \cite{lin2004rouge}, ROUGE measures n-gram overlap between candidate and reference. 
+Introduced by Lin \cite{lin2004rouge}, ROUGE measures n-gram overlap between candidate and reference.
 \footnote{An \emph{n-gram} is a contiguous sequence of \(n\) tokens from a text; for example, for the sentence ``the cat sat'', the unigrams (\(n=1\)) are {the, cat, sat}, while the bigrams (\(n=2\)) are {the cat, cat sat}.
 ROUGE-1 therefore evaluates unigram overlap, while ROUGE-2 evaluates bigram overlap, which captures short phrase structure in addition to individual words. }
 For n-grams of size \(n\), the metric is defined as:
@@ -411,20 +406,20 @@ For n-grams of size \(n\), the metric is defined as:
 F1 = \frac{2PR}{P+R}
 \]
 
-\subsubsection{\gls{BERT}-based Cosine Similarity.} 
-This metric employs dense sentence embeddings from \textit{SentenceTransformer all-MiniLM-L6-v2} \cite{reimers2019sentence}. 
+\subsubsection{\gls{BERT}-based Cosine Similarity} 
+This metric employs dense sentence embeddings from \textit{SentenceTransformer all-MiniLM-L6-v2} \cite{reimers2019sentence}.
 Similarity is computed as cosine similarity:
 \[
 \cos(\theta) = \frac{v \cdot u}{\|v\| \, \|u\|}
 \]
 
-\subsubsection{Overlap Coefficient.} 
+\subsubsection{Overlap Coefficient} 
 Also known as the Szymkiewicz--Simpson coefficient \cite{simpson1960similarity}, it is defined as
 \[
 \text{Overlap}(A,B) = \frac{|A \cap B|}{\min(|A|,|B|)}
 \]
 
-\subsubsection{BLEU.} 
+\subsubsection{BLEU} 
 Introduced by Papineni et al. \cite{papineni2002bleu}, BLEU computes modified n-gram precision with a brevity penalty:
 \[
 \text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right)
@@ -432,7 +427,7 @@ Introduced by Papineni et al. \cite{papineni2002bleu}, BLEU computes modified n-
 where \(p_n\) are modified n-gram precisions, \(w_n\) are weights, and BP is the brevity penalty.
 
 By combining these metrics, the evaluation captures complementary perspectives:  
-lexical accuracy (Exact Match, Substring, Jaccard), structural similarity (Levenshtein, ROUGE, BLEU), coverage of reference information (Token Recall, Overlap coefficient), and semantic equivalence (\gls{BERT} cosine).This multidimensional evaluation approach allows for a comprehensive assessment by testing both surface-level metrics and deeper semantic understanding.
+lexical accuracy (Exact Match, Substring, Jaccard), structural similarity (Levenshtein, ROUGE, BLEU), coverage of reference information (Token Recall, Overlap coefficient), and semantic equivalence (\gls{BERT} cosine). This multidimensional evaluation approach allows for a comprehensive assessment by testing both surface-level metrics and deeper semantic understanding.
 
 \section{Youden's J Statistic}
 \label{sec:youden}
