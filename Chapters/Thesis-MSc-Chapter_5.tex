@@ -45,7 +45,7 @@ Figure~\ref{fig:Lihua-World} presents the results across all metrics.
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{Figures/Lihua-World.jpg}
-    \caption{3 query types tested. With qwen2m as the \gls{LLM} and all-MiniLM-L6-v2 as embedding model}
+    \caption{3 query types tested. With qwen2.5 as the \gls{LLM} and all-MiniLM-L6-v2 as embedding model}
     \label{fig:Lihua-World}
 \end{figure}
 Among the metrics, \textbf{Token Recall} achieved the highest score (44\%), and is the most relevant for this type of QA dataset.
@@ -66,9 +66,11 @@ This experiment implemented an automated approach constructing a knowledge graph
 
 However, the results show that the current automatic knowledge graph construction fails to reliably produce a strong semantic structure for retrieval. In practice, direct embedding-based indexing using sentence transformers remains significantly faster, cheaper, and more effective for retrieval tasks, consistently outperforming the knowledge graph approach in this setup.
 
+\textbf{Limitation acknowledgment:} It is important to note that this evaluation used \textbf{Qwen2.5}—a relatively small, locally-run language model—for knowledge graph construction (entity extraction, relation extraction, and summarization). The modest performance observed may therefore reflect the limitations of this specific model rather than the knowledge graph approach itself. Evaluating KG construction with stronger models (e.g., GPT-5 or similar) was beyond the scope and budget of this thesis, but would likely yield substantial improvements in both graph quality and downstream retrieval accuracy.
+
 Profiling and structuring text with an LLM is also considerably more computationally expensive: each 200-token chunk is processed through a few-shot prompt (with many input tokens), up to three times, followed by an additional pass for entity merging and summarization. This makes large-scale knowledge graph construction costly. While using a heavier LLM could improve the quality of the knowledge graph and its retrieval performance, the resource requirements and latency increase substantially.
 
-In summary, while knowledge graphs offer richer structure representations and could become more competitive with stronger \glspl{LLM}, current embedding models provide a more scalable and efficient solution for semantic retrieval. Future work may revisit knowledge graph approaches as the cost of \glspl{LLM} decrease and their capabilities improve.
+In summary, while knowledge graphs offer richer structure representations and could become more competitive with stronger \glspl{LLM}, current embedding models provide a more scalable and efficient solution for semantic retrieval. Future work should revisit knowledge graph approaches with more capable models, as the cost of \glspl{LLM} decreases and their capabilities improve.
 
 \section{Naive \gls{RAG} versus \gls{ARAG} on Company Information}
 \label{sec:expNaiveVsAgenticRAG}
@@ -76,7 +78,7 @@ This experiment aims to evaluate the effectiveness of an agentic retrieval-augme
 
 For this experiment, a synthetic company QA dataset was created in two automated stages:
 \begin{enumerate}
-        \item \textbf{Document Generation:} We synthesized 1{,}000 realistic administrative documents using  \gls{GPT}-5 via the OpenAI API. For each document, a classifiable node was sampled from a hierarchical public-sector classification (e.g., legislation, planning, HR, finance, justice, health, education) and prompted the model with the node’s description, notes, and index terms—while explicitly instructing it not to reveal the class name, both to preserve confidentiality when transmitting prompts to external APIs and to avoid label leakage. This produced a diverse set of plausible, well-structured administrative files spanning distinct legal and organizational contexts.
+        \item \textbf{Document Generation:} We synthesized 1{,}000 realistic administrative documents using  \gls{GPT}-5 via the OpenAI API. For each document, a classifiable node was sampled from a hierarchical public-sector classification (e.g., legislation, planning, HR, finance, justice, health, education) and prompted the model with the node’s description, notes, and index terms—while explicitly instructing it not to reveal the class name, both to preserve confidentiality when transmitting prompts to external APIs and to avoid label leakage. This produced a diverse set of plausible, well-structured administrative files spanning distinct legal and organizational contexts. This cost was approximately 2.50 dollars.
         \item \textbf{QA Pair Generation:} \label{subsec:qa-generation} Next, for a random subset of these documents, a second generative model (also \gls{GPT}-5) was employedto create question-answer pairs. The model was prompted with the full content of each document and instructed to generate a specific, contextually relevant question that could only be answered by reading that document, along with a precise answer based solely on its content. This ensures that each QA pair is tightly coupled to a single file and cannot be answered from general knowledge or other documents. The cost of generating 300 such QA pairs was approximately 0.85 dollars.
 \end{enumerate}
 
@@ -293,9 +295,9 @@ Naive \gls{RAG} (Qwen2.5) & 13.8\% & 19.1\% & 22.1\% \\
 
 The results show that summarization techniques help reduce noise in the \gls{VD}, as Avg. Retrieval Rate increased for both summarization approaches compared to the naive RAG baseline (13.8\%): LexRank achieved 33.6\% and BART 17.8\%.
 LexRank also improved Token Recall and Jaccard scores (29.5\% and 35.9\%, respectively), indicating that the extractive summaries preserved key information needed for accurate answering.
-However, in the case of BART, Token Recall and Jaccard scores were markedly lower (3.0\% and 11.1\%, respectively), indicating althrough retrieval improved, the generated answers were less accurate. This suggests that BART's abstractive summarization may have omitted critical information for precise answering.
+However, in the case of BART, Token Recall and Jaccard scores were markedly lower (3.0\% and 11.1\%, respectively), indicating although retrieval improved, the generated answers were less accurate. This suggests that BART's abstractive summarization omitted critical details during paraphrasing—likely by condensing or rephrasing factual information in ways that changed key terms required for precise answering. Extractive methods like LexRank preserve exact source text, avoiding this issue.
 With these results, it is concluded that summarization of documents is a valuable step in a \gls{RAG} pipeline, functioning as a filter to reduce noise (irrelevant content).
-However, the choice of summarization technique needs to be carefully considered: extractive methods like LexRank appear more effective as they preserve essential details, while abstractive methods like BART may risk losing important details.
+However, the choice of summarization technique needs to be carefully considered: extractive methods like LexRank appear more effective as they preserve essential details, while abstractive methods like BART may risk losing important details or altering critical factual information.
 
  
 
@@ -314,7 +316,7 @@ To ground the agentic traversal results, we briefly recap the underlying Weaviat
 These edges enable queries to traverse from workflows to stages to files, or from entities to folders to files and their associated metadata. In practice, hybrid search is used to find an entry point on any class, and references are followed to assemble grounded context for answering. As noted in the Weaviate documentation \cite{weaviate}, extensive cross-referencing can increase query latency; our agent therefore issues targeted traversals, following only the minimal set of edges required for each question.
 
 \subsection{Latency and Scalability}
-To complement the qualitative results above, we report the latency behavior of the system under increasing data sizes. The following figures summarize insertion and query times measured in our Weaviate setup. They illustrate that inserts scale near-linearly with the number of files and that query latency remains low and stable, even as collections grow.
+To complement the qualitative results above, we report the latency behavior of the system under increasing data sizes. The following figures summarize insertion and query times measured in our Weaviate setup.
 
 % NOTE: Add the three PNG files below to the Figures/ folder with the same filenames.
 % If your filenames differ, update the \includegraphics paths accordingly.
@@ -335,7 +337,7 @@ To complement the qualitative results above, we report the latency behavior of t
         \includegraphics[width=0.32\linewidth]{Figures/semantic_latency_vs_files.png}%
         \label{fig:global-semantic-search-vs-total-files}%
     }
-    \caption{Latency and scalability results measured on our Weaviate setup: (a) Insert Latency vs Number of Files (x577.5 growth, with linear and exponential trends and associated $R^2$); (b) Query Latency vs Number of Files comparing a structured traversal (Fluxo $\rightarrow$ Etapas) to a global semantic search; (c) Global semantic search latency as total files increase (x2.3 growth).}
+    \caption{Latency and scalability results measured on our Weaviate setup: (a) Insert Latency vs Number of Files showing x577.5 growth with both linear and exponential trend fits and their associated $R^2$ values; (b) Query Latency vs Number of Files comparing a structured traversal (Fluxo $\rightarrow$ Etapas) to an Entidade hierarchy query—note that only the Entidade hierarchy exhibits exponential growth due to cross-reference fan-out, going four layers deep, while Fluxo$\rightarrow$Etapas remains stable; (c) Global semantic search latency as total files increase, showing x2.3 growth and remaining relatively flat.}
 \end{figure}
 
 This section validates the practical value of cross-references by running two complementary tests on a compact, real-world–styled example: a structured Weaviate traversal demo and an \gls{ARAG} workflow that follows references via our developed \gls{MCP} server from Section~\ref{sec:weaviate-mcp-server}. 
@@ -403,7 +405,11 @@ Connectivity checks, Windows-specific event loop policy, and transport selection
 \noindent\textit{Outcome (qualitative).} On the inserted example, the agent retrieves the topic status, identifies the most recent war-crime stage, and extracts the reporter by following references, matching the deterministic traversal results via tool calls. This validates that cross-references are usable not only by handcrafted queries but also by an autonomous planner that reasons over the graph.
 
 \subsection{Takeaways and Scope}
-Cross-references provide the \emph{relational glue} required for multi-hop questions: latest-by-date, filtered-by-category, \enquote{who caused/reported what}, and similar patterns. In the structured setting (Section~\ref{subsec:weaviate-xref-structured}), answers are repeatable and explainable because they follow explicit edges. In the agentic setting (Section~\ref{subsec:agentic-xref}), the same edges become \emph{tools} that an \gls{LLM} can call to plan-and-execute traversals. While we did not run a large-scale accuracy benchmark here ---as none are available for complex agentic structure retrieval, and a synthetic benchmark is over the thesis's budget --- these tests demonstrate functional correctness and integration readiness: the schema supports reference navigation, and the agent can exploit it to produce grounded, auditable answers. Results are in Appendix~\ref{app:agentic-navigation-traces}.
+Cross-references provide the \emph{relational glue} required for multi-hop questions: latest-by-date, filtered-by-category, \enquote{who caused/reported what}, and similar patterns. In the structured setting (Section~\ref{subsec:weaviate-xref-structured}), answers are repeatable and explainable because they follow explicit edges. In the agentic setting (Section~\ref{subsec:agentic-xref}), the same edges become \emph{tools} that an \gls{LLM} can call to plan-and-execute traversals. 
+
+\textbf{Limitation acknowledgment:} This section presents a qualitative validation using a single hand-crafted newsroom example to demonstrate functional correctness. We did not conduct a large-scale quantitative evaluation (measuring retrieval accuracy, precision, or recall over a benchmark dataset) for two reasons: (i) no public benchmark exists for evaluating agentic cross-reference traversal in structured enterprise repositories, and (ii) creating a synthetic benchmark with sufficient complexity and diversity was beyond the scope and budget constraints of this thesis. Future work should develop standardized benchmarks for structure-aware agentic retrieval to enable rigorous comparative evaluation.
+
+Despite this limitation, these tests successfully demonstrate integration readiness and functional correctness: the schema supports reference navigation, and the agent can exploit it to produce grounded, auditable answers. The ordered navigation traces in Appendix~\ref{app:agentic-navigation-traces} show that the system correctly follows cross-references to answer multi-hop questions, validating the core architectural contribution.
 
 
 % Finally, the summarization techniques were also evaluated in the mixed dataset from Section~\ref{sec:agentic-retrieval-multiple}, combining both LiHua-World and synthetic company questions. The same naive RAG pipeline (using \texttt{qwen2.5m} for generation) was run on the mixed 400-question benchmark, using the same Weaviate collections with summarized documents. In this case the collections were merged in to one, as the decision making of a agent is not relevant in this experiment. The goal of this experiment, is evaluating the impact of summarization techniques in a mixed dataset scenario.
